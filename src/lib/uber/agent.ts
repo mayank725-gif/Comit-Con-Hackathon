@@ -21,6 +21,7 @@ export class MultiAgentDriverCopilot {
       q.includes("namaste") ||
       q.includes("shuru") ||
       q.includes("chalo") ||
+      q.includes("jaun") ||
       (q.includes("stadium") && (q.includes("kyu") || q.includes("kyon"))) ||
       (q.includes("traffic") && (q.includes("kaisa") || q.includes("kya")));
 
@@ -83,10 +84,52 @@ Instructions:
 
     // 2. Comprehensive Local Multi-Agent Engine (Zero Latency & 100% Offline Functional)
 
-    // A. REPOSITIONING / DISPATCH AGENT
+    // A. TOURIST PLACES & OUTSTATION INTELLIGENCE (Checked first to prevent 'go' in 'goa' collision)
+    if (
+      q.includes("tourist") ||
+      q.includes("taj") ||
+      q.includes("agra") ||
+      q.includes("goa") ||
+      q.includes("kedarnath") ||
+      q.includes("mysore") ||
+      q.includes("hampi") ||
+      q.includes("manali") ||
+      q.includes("varanasi") ||
+      q.includes("outstation") ||
+      q.includes("travel") ||
+      q.includes("पर्यटन") ||
+      q.includes("ताज") ||
+      q.includes("आगरा") ||
+      q.includes("गोवा") ||
+      q.includes("केदारनाथ") ||
+      q.includes("मैसूर") ||
+      q.includes("हम्पी") ||
+      q.includes("मनाली") ||
+      q.includes("काशी") ||
+      q.includes("घूमने")
+    ) {
+      const textEn = `🏛️ **Pan-India Tourist Intelligence**: 32+ premier heritage & travel destinations are active across India. For **Taj Mahal (Agra)**, typical Uber Outstation fare from Delhi NCR is ~₹2,800. For **Mysore Palace**, fare from Bengaluru via the Expressway is ~₹2,400. You can also click on any tourist badge or use the map search bar to fly directly to that site!`;
+      const textHi = `🏛️ **अखिल भारतीय पर्यटन व आउटस्टेशन**: देश के 32+ प्रमुख पर्यटन स्थल सक्रिय हैं। **ताज महल (आगरा)** के लिए दिल्ली से अनुमानित आउटस्टेशन किराया लगभग **₹2,800** है। **मैसूर पैलेस** के लिए बेंगलुरु एक्सप्रेसवे से **₹2,400** है। आप नक्शे में पर्यटन बैज पर क्लिक करके सीधे वहां नेविगेट कर सकते हैं!`;
+
+      return {
+        id,
+        sender: "ASSISTANT",
+        agentType: "EVENT_INTEL",
+        text: isHindi ? textHi : textEn,
+        timestamp,
+        routingTrace: {
+          confidenceScore: 0.988,
+          tokensEvaluated: 165,
+          featuresQueried: ["national_tourism_corridors", "uber_outstation_intercity_pricing", "expressway_toll_rates"],
+          latencyMs: 5.6,
+        },
+      };
+    }
+
+    // B. REPOSITIONING / DISPATCH AGENT
     if (
       q.includes("where") ||
-      q.includes("go") ||
+      /\bgo\b/i.test(q) ||
       q.includes("drive") ||
       q.includes("hotspot") ||
       q.includes("high fare") ||
@@ -97,7 +140,10 @@ Instructions:
       q.includes("किधर") ||
       q.includes("जाऊँ") ||
       q.includes("सवारी") ||
-      q.includes("ride")
+      q.includes("kahan") ||
+      q.includes("kidhar") ||
+      q.includes("jaun") ||
+      (q.includes("kamai") && (q.includes("kahan") || q.includes("jaun") || q.includes("kidhar") || q.includes("milegi")))
     ) {
       let bestZone: ZoneId = "STADIUM";
       let maxDeficit = -1;
@@ -135,7 +181,43 @@ Instructions:
       };
     }
 
-    // B. MONSOON & WEATHER SAFETY AGENT
+    // C. EARNINGS & PACING AGENT
+    if (
+      q.includes("earning") ||
+      q.includes("money") ||
+      q.includes("hourly") ||
+      q.includes("made") ||
+      q.includes("income") ||
+      q.includes("pacing") ||
+      q.includes("pace") ||
+      q.includes("कमाई") ||
+      q.includes("पैसे") ||
+      q.includes("रुपये") ||
+      q.includes("घंटे") ||
+      q.includes("इनकम") ||
+      q.includes("kamai") ||
+      q.includes("paisa") ||
+      q.includes("paise")
+    ) {
+      const textEn = `💰 **Shift Telemetry**: Your current pace is **₹${state.metrics.avgDriverHourlyRate}/hr** (₹2,070 earned today across 4.5 hours). You are pacing **+64% above the unassisted market baseline** (₹280/hr) thanks to predictive surge positioning.`;
+      const textHi = `💰 **शिफ्ट टेलीमेट्री**: आपकी वर्तमान कमाई दर **₹${state.metrics.avgDriverHourlyRate}/घंटा** है (आज 4.5 घंटे में कुल ₹2,070 अर्जित)। प्रेडिक्टिव सर्ज पोजिशनिंग के कारण आप बिना-असिस्टेड बेसलाइन (₹280/घंटा) से **+64% अधिक** कमा रहे हैं।`;
+
+      return {
+        id,
+        sender: "ASSISTANT",
+        agentType: "EARNINGS",
+        text: isHindi ? textHi : textEn,
+        timestamp,
+        routingTrace: {
+          confidenceScore: 0.995,
+          tokensEvaluated: 110,
+          featuresQueried: ["driver_shift_elapsed_hours", "cumulative_fare_inr", "pacing_projection_model"],
+          latencyMs: 4.8,
+        },
+      };
+    }
+
+    // D. MONSOON & WEATHER SAFETY AGENT
     if (
       q.includes("rain") ||
       q.includes("flood") ||
@@ -147,7 +229,9 @@ Instructions:
       q.includes("बाढ़") ||
       q.includes("पानी") ||
       q.includes("मौसम") ||
-      q.includes("सुरक्षा")
+      q.includes("सुरक्षा") ||
+      q.includes("barish") ||
+      q.includes("baad")
     ) {
       const textEn = `🌧️ **Monsoon Weather Advisory**: Bellandur underpass and Silk Board junction are experiencing waterlogging. Michelangelo has enabled flood avoidance routing: avoid Outer Ring Road low-lying segments and utilize the elevated flyover towards Electronic City or Old Airport Road. Surge across wet zones is **2.8x - 2.9x**.`;
       const textHi = `🌧️ **मौसम व मानसून एडवाइजरी**: बेलंदूर अंडरपास और सिल्क बोर्ड जंक्शन पर जलभराव की स्थिति है। माइकल एंजेलो ने सुरक्षित एलिवेटेड फ्लाईओवर्स रूटिंग चालू कर दी है। भीगे इलाकों में सर्ज **2.8x - 2.9x** चल रहा है। सुरक्षित गति से चलें।`;
@@ -172,23 +256,24 @@ Instructions:
       };
     }
 
-    // C. EVENT INTEL & SURGE EXPLANATION AGENT
+    // E. EVENT INTEL & SURGE EXPLANATION AGENT
     if (
-      q.includes("why") ||
       q.includes("surge") ||
       q.includes("stadium") ||
       q.includes("airport") ||
       q.includes("chinnaswamy") ||
       q.includes("match") ||
       q.includes("concert") ||
-      q.includes("red") ||
       q.includes("event") ||
       q.includes("सर्ज") ||
       q.includes("स्टेडियम") ||
       q.includes("हवाई") ||
       q.includes("मैच") ||
       q.includes("भीड़") ||
-      q.includes("क्यों")
+      q.includes("क्यों") ||
+      q.includes("kyon") ||
+      q.includes("kyu") ||
+      /\bwhy\b/i.test(q)
     ) {
       if (state.activeScenario.type === "STADIUM_CONCERT_END") {
         const textEn = `🏟️ **Event Alert**: The IPL T20 match at **M. Chinnaswamy Stadium** has concluded with 40,000 spectators exiting along MG Road & Cubbon Park. Rider booking requests surged **+440%**. Michelangelo has set dynamic surge to **${state.zones.STADIUM.surgeMultiplier}x**. Anti-herd protection is managing inflow to prevent road gridlock.`;
@@ -254,46 +339,43 @@ Instructions:
       }
     }
 
-    // D. EARNINGS & PACING AGENT
+    // F. TRAFFIC & ROUTING QUESTIONS
     if (
-      q.includes("earning") ||
-      q.includes("money") ||
-      q.includes("hourly") ||
-      q.includes("made") ||
-      q.includes("rate") ||
-      q.includes("income") ||
-      q.includes("goal") ||
-      q.includes("कमाई") ||
-      q.includes("पैसे") ||
-      q.includes("रुपये") ||
-      q.includes("घंटे") ||
-      q.includes("इनकम")
+      q.includes("traffic") ||
+      q.includes("route") ||
+      q.includes("hebbal") ||
+      q.includes("silk board") ||
+      q.includes("ring road") ||
+      q.includes("ट्रैफिक") ||
+      q.includes("जाम") ||
+      q.includes("रास्ता") ||
+      q.includes("मार्ग")
     ) {
-      const textEn = `💰 **Shift Telemetry**: Your current pace is **₹${state.metrics.avgDriverHourlyRate}/hr** (₹2,070 earned today across 4.5 hours). You are pacing **+64% above the unassisted market baseline** (₹280/hr) thanks to predictive surge positioning.`;
-      const textHi = `💰 **शिफ्ट टेलीमेट्री**: आपकी वर्तमान कमाई दर **₹${state.metrics.avgDriverHourlyRate}/घंटा** है (आज 4.5 घंटे में कुल ₹2,070 अर्जित)। प्रेडिक्टिव सर्ज पोजिशनिंग के कारण आप बिना-असिस्टेड बेसलाइन (₹280/घंटा) से **+64% अधिक** कमा रहे हैं।`;
+      const textEn = `🚗 **Traffic Guidance**: Hebbal Flyover towards Kempegowda Airport is moving smoothly at 52 km/h. Outer Ring Road near Bellandur has moderate tech park rush. If heading to Chinnaswamy Stadium, take Queens Road to avoid MG Road bottleneck.`;
+      const textHi = `🚗 **लाइव ट्रैफिक व रूट गाइड**: हेब्बल फ्लाईओवर से एयरपोर्ट की ओर यातायात 52 किमी/घंटा की सामान्य गति से चल रहा है। बेलंदूर रिंग रोड पर टेक-पार्क का मध्यम ट्रैफिक है। चिन्नास्वामी स्टेडियम जाने के लिए क्वींस रोड का उपयोग करें ताकि एमजी रोड के जाम से बचा जा सके।`;
 
       return {
         id,
         sender: "ASSISTANT",
-        agentType: "EARNINGS",
+        agentType: "DISPATCH",
         text: isHindi ? textHi : textEn,
         timestamp,
         routingTrace: {
-          confidenceScore: 0.995,
-          tokensEvaluated: 110,
-          featuresQueried: ["driver_shift_elapsed_hours", "cumulative_fare_inr", "pacing_projection_model"],
-          latencyMs: 4.8,
+          confidenceScore: 0.975,
+          tokensEvaluated: 150,
+          featuresQueried: ["google_routes_live_speed", "bengaluru_traffic_junction_status"],
+          latencyMs: 6.9,
         },
       };
     }
 
-    // E. SYSTEM GUARD & MODEL HEALTH AGENT
+    // G. SYSTEM GUARD & MODEL HEALTH AGENT (Must use word boundary \bai\b)
     if (
       q.includes("drift") ||
       q.includes("stale") ||
       q.includes("health") ||
       q.includes("model") ||
-      q.includes("ai") ||
+      /\bai\b/i.test(q) ||
       q.includes("michelangelo") ||
       q.includes("algorithm") ||
       q.includes("herd") ||
@@ -337,78 +419,6 @@ Instructions:
       }
     }
 
-    // F. TOURIST PLACES & OUTSTATION INTELLIGENCE
-    if (
-      q.includes("tourist") ||
-      q.includes("taj") ||
-      q.includes("agra") ||
-      q.includes("goa") ||
-      q.includes("kedarnath") ||
-      q.includes("mysore") ||
-      q.includes("hampi") ||
-      q.includes("manali") ||
-      q.includes("varanasi") ||
-      q.includes("outstation") ||
-      q.includes("travel") ||
-      q.includes("पर्यटन") ||
-      q.includes("ताज") ||
-      q.includes("आगरा") ||
-      q.includes("गोवा") ||
-      q.includes("केदारनाथ") ||
-      q.includes("मैसूर") ||
-      q.includes("हम्पी") ||
-      q.includes("मनाली") ||
-      q.includes("काशी") ||
-      q.includes("घूमने")
-    ) {
-      const textEn = `🏛️ **Pan-India Tourist Intelligence**: 32+ premier heritage & travel destinations are active across India. For **Taj Mahal (Agra)**, typical Uber Outstation fare from Delhi NCR is ~₹2,800. For **Mysore Palace**, fare from Bengaluru via the Expressway is ~₹2,400. You can also click on any tourist badge or use the map search bar to fly directly to that site!`;
-      const textHi = `🏛️ **अखिल भारतीय पर्यटन व आउटस्टेशन**: देश के 32+ प्रमुख पर्यटन स्थल सक्रिय हैं। **ताज महल (आगरा)** के लिए दिल्ली से अनुमानित आउटस्टेशन किराया लगभग **₹2,800** है। **मैसूर पैलेस** के लिए बेंगलुरु एक्सप्रेसवे से **₹2,400** है। आप नक्शे में पर्यटन बैज पर क्लिक करके सीधे वहां नेविगेट कर सकते हैं!`;
-
-      return {
-        id,
-        sender: "ASSISTANT",
-        agentType: "EVENT_INTEL",
-        text: isHindi ? textHi : textEn,
-        timestamp,
-        routingTrace: {
-          confidenceScore: 0.988,
-          tokensEvaluated: 165,
-          featuresQueried: ["national_tourism_corridors", "uber_outstation_intercity_pricing", "expressway_toll_rates"],
-          latencyMs: 5.6,
-        },
-      };
-    }
-
-    // G. TRAFFIC & ROUTING QUESTIONS
-    if (
-      q.includes("traffic") ||
-      q.includes("route") ||
-      q.includes("hebbal") ||
-      q.includes("silk board") ||
-      q.includes("ring road") ||
-      q.includes("ट्रैफिक") ||
-      q.includes("जाम") ||
-      q.includes("रास्ता") ||
-      q.includes("मार्ग")
-    ) {
-      const textEn = `🚗 **Traffic Guidance**: Hebbal Flyover towards Kempegowda Airport is moving smoothly at 52 km/h. Outer Ring Road near Bellandur has moderate tech park rush. If heading to Chinnaswamy Stadium, take Queens Road to avoid MG Road bottleneck.`;
-      const textHi = `🚗 **लाइव ट्रैफिक व रूट गाइड**: हेब्बल फ्लाईओवर से एयरपोर्ट की ओर यातायात 52 किमी/घंटा की सामान्य गति से चल रहा है। बेलंदूर रिंग रोड पर टेक-पार्क का मध्यम ट्रैफिक है। चिन्नास्वामी स्टेडियम जाने के लिए क्वींस रोड का उपयोग करें ताकि एमजी रोड के जाम से बचा जा सके।`;
-
-      return {
-        id,
-        sender: "ASSISTANT",
-        agentType: "DISPATCH",
-        text: isHindi ? textHi : textEn,
-        timestamp,
-        routingTrace: {
-          confidenceScore: 0.975,
-          tokensEvaluated: 150,
-          featuresQueried: ["google_routes_live_speed", "bengaluru_traffic_junction_status"],
-          latencyMs: 6.9,
-        },
-      };
-    }
-
     // H. DEFAULT GENERAL INQUIRY
     const defaultEn = `👋 **Uber India Assistant**: Michelangelo is tracking fleet supply in real time across India. Demand is highest at **${state.zones.STADIUM?.name || "Downtown"}** (${state.zones.STADIUM?.surgeMultiplier || 1.8}x) and **${state.zones.AIRPORT?.name || "Airport"}** (${state.zones.AIRPORT?.surgeMultiplier || 1.6}x). What would you like to optimize?`;
     const defaultHi = `👋 **उबर भारत कॉपायलट**: माइकल एंजेलो लाइव मार्केट इंजन चालू है। वर्तमान में सबसे अधिक मांग **${state.zones.STADIUM?.name || "स्टेडियम"}** (${state.zones.STADIUM?.surgeMultiplier || 1.8}x) और **${state.zones.AIRPORT?.name || "एयरपोर्ट"}** (${state.zones.AIRPORT?.surgeMultiplier || 1.6}x) पर है। आप मुझसे सबसे ज्यादा कमाई वाले इलाके, ट्रैफिक या पर्यटन स्थलों के बारे में पूछ सकते हैं।`;
@@ -428,6 +438,6 @@ Instructions:
     };
   }
 }
+
 export const multiAgentDriverCopilot = new MultiAgentDriverCopilot();
 export const driverCopilot = multiAgentDriverCopilot;
-
