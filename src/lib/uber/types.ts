@@ -1,5 +1,7 @@
 export type ZoneId = "STADIUM" | "DOWNTOWN" | "AIRPORT" | "TECH_PARK" | "ENTERTAINMENT";
 
+export type VehicleType = "UBER_GO" | "UBER_PREMIER" | "UBER_AUTO" | "UBER_GREEN_EV";
+
 export interface CityZone {
   id: ZoneId;
   name: string;
@@ -8,9 +10,9 @@ export interface CityZone {
   radiusMeters: number;
   currentDemand: number;
   activeDrivers: number;
-  surgeMultiplier: number; // e.g. 1.0x to 3.5x
+  surgeMultiplier: number;
   predictedDemand15m: number;
-  deficitOrSurplus: number; // positive = deficit of drivers
+  deficitOrSurplus: number;
   status: "NORMAL" | "HIGH_SURGE" | "DEFICIT" | "BALANCED";
 }
 
@@ -19,6 +21,11 @@ export type DriverStatus = "IDLE" | "EN_ROUTE_SURGE" | "ON_TRIP";
 export interface Driver {
   id: string;
   name: string;
+  rating: number;
+  vehicleType: VehicleType;
+  vehicleModel: string;
+  licensePlate: string;
+  batteryOrFuelPercent: number;
   currentZone: ZoneId;
   targetZone?: ZoneId;
   status: DriverStatus;
@@ -27,10 +34,11 @@ export interface Driver {
   earningsToday: number;
   tripsCompleted: number;
   shiftHours: number;
+  routeCoordinates?: [number, number][]; // lat, lng waypoints
 }
 
 export interface ScenarioEvent {
-  type: "STADIUM_CONCERT_END" | "STALE_MODEL_DRIFT" | "AIRPORT_FLIGHT_WAVE" | "NORMAL";
+  type: "STADIUM_CONCERT_END" | "STALE_MODEL_DRIFT" | "AIRPORT_FLIGHT_WAVE" | "MONSOON_FLASH_FLOOD" | "NORMAL";
   title: string;
   description: string;
   affectedZone?: ZoneId;
@@ -38,12 +46,24 @@ export interface ScenarioEvent {
   timestamp: string;
 }
 
+export interface MichelangeloMicroservice {
+  name: string;
+  podCount: number;
+  status: "HEALTHY" | "DEGRADED" | "SELF_HEALING";
+  cpuPercent: number;
+  latencyP99Ms: number;
+  memoryMb: number;
+}
+
 export interface ModelHealth {
   status: "HEALTHY" | "DRIFT_DETECTED" | "FALLBACK_ENGAGED";
   latencyMs: number;
-  featureDriftScore: number; // 0.0 to 1.0
+  featureDriftScore: number; // 0.0 to 1.0 (Kolmogorov-Smirnov test)
   lastRecalibrated: string;
   activeRoutingAlgorithm: "MICHELANGELO_ML" | "REALTIME_HEURISTIC_FALLBACK";
+  featureIngestionRatePerSec: number;
+  activeFeatures: number;
+  services: MichelangeloMicroservice[];
 }
 
 export interface MarketplaceState {
@@ -55,10 +75,11 @@ export interface MarketplaceState {
   metrics: {
     cityAvgSurge: number;
     avgRiderWaitTimeMin: number;
-    avgDriverHourlyRate: number;
+    avgDriverHourlyRate: number; // in ₹ INR
     unfulfilledRequests: number;
     totalTripsActive: number;
     antiHerdDampingActive: boolean;
+    transitNetworkHealthPercent: number;
   };
 }
 
@@ -72,6 +93,12 @@ export interface AssistantMessage {
     suggestedZone: ZoneId;
     estimatedSurge: number;
     extraEarningsEstimate: string;
+  };
+  routingTrace?: {
+    confidenceScore: number;
+    tokensEvaluated: number;
+    featuresQueried: string[];
+    latencyMs: number;
   };
 }
 

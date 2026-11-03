@@ -100,6 +100,42 @@ export class UberMarketplaceEngine {
       featureDriftScore: 0.08,
       lastRecalibrated: new Date().toISOString(),
       activeRoutingAlgorithm: "MICHELANGELO_ML",
+      featureIngestionRatePerSec: 28450,
+      activeFeatures: 1240,
+      services: [
+        {
+          name: "dispatch-gateway-v2",
+          podCount: 8,
+          status: "HEALTHY",
+          cpuPercent: 34,
+          latencyP99Ms: 4.2,
+          memoryMb: 512,
+        },
+        {
+          name: "pricing-michelangelo-v4",
+          podCount: 12,
+          status: "HEALTHY",
+          cpuPercent: 48,
+          latencyP99Ms: 6.8,
+          memoryMb: 1024,
+        },
+        {
+          name: "ml-demand-forecaster",
+          podCount: 6,
+          status: "HEALTHY",
+          cpuPercent: 42,
+          latencyP99Ms: 8.5,
+          memoryMb: 768,
+        },
+        {
+          name: "mcp-agent-governor",
+          podCount: 4,
+          status: "HEALTHY",
+          cpuPercent: 22,
+          latencyP99Ms: 3.1,
+          memoryMb: 384,
+        },
+      ],
     };
 
     return {
@@ -115,38 +151,78 @@ export class UberMarketplaceEngine {
         unfulfilledRequests: 18,
         totalTripsActive: 42,
         antiHerdDampingActive: false,
+        transitNetworkHealthPercent: 98.4,
       },
     };
   }
 
   private seedDrivers(zones: Record<ZoneId, CityZone>): Driver[] {
-    const driverNames = [
-      "Ramesh K.", "Suresh M.", "Priya N.", "Amit S.", "Vikram R.",
-      "Arjun P.", "Ananya G.", "Deepak L.", "Kavita B.", "Rajesh O.",
-      "Manoj H.", "Kiran D.", "Sunil V.", "Pooja B.", "Tariq A.",
-      "Santosh F.", "Neha M.", "Ravi P.", "Gaurav K.", "Naveen S.",
-      "Mohan G.", "Rahul W.", "Swati C.", "Alok J.", "Harish Y."
+    const driverProfiles = [
+      { name: "Ramesh Kumar", type: "UBER_GO" as const, model: "Maruti Suzuki Dzire", plate: "KA 01 MJ 1042" },
+      { name: "Suresh Murthy", type: "UBER_PREMIER" as const, model: "Hyundai Verna", plate: "KA 03 AB 4091" },
+      { name: "Priya Nair", type: "UBER_GREEN_EV" as const, model: "Tata Nexon EV Max", plate: "KA 05 EV 8820" },
+      { name: "Amit Sharma", type: "UBER_AUTO" as const, model: "Bajaj RE 4S Auto", plate: "KA 04 AUTO 319" },
+      { name: "Vikram Rao", type: "UBER_PREMIER" as const, model: "Toyota Innova Crysta", plate: "KA 51 D 7712" },
+      { name: "Arjun Patil", type: "UBER_GO" as const, model: "Hyundai Aura CNG", plate: "KA 02 MH 2049" },
+      { name: "Ananya Gowda", type: "UBER_GREEN_EV" as const, model: "MG ZS EV", plate: "KA 05 EV 1904" },
+      { name: "Deepak Lingam", type: "UBER_AUTO" as const, model: "Piaggio Ape Auto", plate: "KA 04 AUTO 882" },
+      { name: "Kavita Bhat", type: "UBER_GO" as const, model: "Maruti WagonR", plate: "KA 03 ML 6541" },
+      { name: "Rajesh Oza", type: "UBER_PREMIER" as const, model: "Honda City V", plate: "KA 01 PK 9031" },
+      { name: "Manoj Hegde", type: "UBER_GREEN_EV" as const, model: "Mahindra XUV400 EV", plate: "KA 53 EV 4410" },
+      { name: "Kiran Das", type: "UBER_GO" as const, model: "Tata Tigor CNG", plate: "KA 02 NB 1209" },
+      { name: "Sunil Verma", type: "UBER_PREMIER" as const, model: "Skoda Slavia", plate: "KA 05 PQ 8110" },
+      { name: "Pooja Bellary", type: "UBER_AUTO" as const, model: "TVS King Deluxe Auto", plate: "KA 04 AUTO 551" },
+      { name: "Tariq Ahmed", type: "UBER_GO" as const, model: "Maruti Dzire Tour", plate: "KA 51 C 3302" },
+      { name: "Santosh F.", type: "UBER_GREEN_EV" as const, model: "Tata Tiago EV", plate: "KA 01 EV 9872" },
+      { name: "Neha Menon", type: "UBER_PREMIER" as const, model: "Hyundai Creta SX", plate: "KA 03 NE 4401" },
+      { name: "Ravi Prasad", type: "UBER_GO" as const, model: "Hyundai Grand i10 Nios", plate: "KA 05 RP 7761" },
+      { name: "Gaurav Kulkarni", type: "UBER_AUTO" as const, model: "Bajaj Compact 4S", plate: "KA 04 AUTO 910" },
+      { name: "Naveen Shetty", type: "UBER_PREMIER" as const, model: "Kia Carens Luxury", plate: "KA 01 NS 5521" },
+      { name: "Mohan Gowda", type: "UBER_GO" as const, model: "Maruti Suzuki Swift", plate: "KA 02 MG 8192" },
+      { name: "Rahul Wodeyar", type: "UBER_GREEN_EV" as const, model: "Tata Nexon EV Prime", plate: "KA 53 EV 7119" },
+      { name: "Swati Chandran", type: "UBER_PREMIER" as const, model: "MG Hector Plus", plate: "KA 03 SC 9931" },
+      { name: "Alok Joshi", type: "UBER_AUTO" as const, model: "Mahindra Alfa Auto", plate: "KA 04 AUTO 440" },
+      { name: "Harish Yadav", type: "UBER_GO" as const, model: "Honda Amaze VX", plate: "KA 51 HY 2004" }
     ];
 
     const zoneKeys: ZoneId[] = ["STADIUM", "DOWNTOWN", "AIRPORT", "TECH_PARK", "ENTERTAINMENT"];
 
-    return driverNames.map((name, i) => {
+    return driverProfiles.map((p, i) => {
       const zoneId = zoneKeys[i % zoneKeys.length];
       const baseZone = zones[zoneId];
       // Random geographic jitter within ~1km in Bengaluru
       const lat = baseZone.lat + (Math.random() - 0.5) * 0.018;
       const lng = baseZone.lng + (Math.random() - 0.5) * 0.018;
+      const status = (i % 3 === 0 ? "ON_TRIP" : i % 3 === 1 ? "IDLE" : "EN_ROUTE_SURGE");
+
+      // Generate realistic route waypoints if en route or on trip
+      const nextZoneId = zoneKeys[(i + 1) % zoneKeys.length];
+      const targetZone = zones[nextZoneId];
+      const routeCoordinates: [number, number][] | undefined = status !== "IDLE"
+        ? [
+            [lat, lng],
+            [(lat + targetZone.lat) / 2 + (Math.random() - 0.5) * 0.005, (lng + targetZone.lng) / 2 + (Math.random() - 0.5) * 0.005],
+            [targetZone.lat, targetZone.lng],
+          ]
+        : undefined;
 
       return {
         id: `DRV_${100 + i}`,
-        name,
+        name: p.name,
+        rating: Math.round((4.85 + Math.random() * 0.14) * 100) / 100,
+        vehicleType: p.type,
+        vehicleModel: p.model,
+        licensePlate: p.plate,
+        batteryOrFuelPercent: Math.round(52 + Math.random() * 45),
         currentZone: zoneId,
-        status: (i % 3 === 0 ? "ON_TRIP" : i % 3 === 1 ? "IDLE" : "EN_ROUTE_SURGE"),
+        targetZone: status === "EN_ROUTE_SURGE" ? nextZoneId : undefined,
+        status,
         lat,
         lng,
         earningsToday: Math.round(1850 + Math.random() * 950), // in ₹ INR
         tripsCompleted: Math.floor(6 + Math.random() * 8),
         shiftHours: 4.5,
+        routeCoordinates: routeCoordinates,
       };
     });
   }
@@ -236,11 +312,43 @@ export class UberMarketplaceEngine {
   }
 
   public triggerScenario(
-    type: "STADIUM_CONCERT_END" | "STALE_MODEL_DRIFT" | "AIRPORT_FLIGHT_WAVE" | "RESET"
+    type: "STADIUM_CONCERT_END" | "STALE_MODEL_DRIFT" | "AIRPORT_FLIGHT_WAVE" | "MONSOON_FLASH_FLOOD" | "RESET"
   ): MarketplaceState {
     if (type === "RESET") {
       this.state = this.getInitialState();
       return this.state;
+    }
+
+    if (type === "MONSOON_FLASH_FLOOD") {
+      this.state.activeScenario = {
+        type: "MONSOON_FLASH_FLOOD",
+        title: "Monsoon Flash Flood Alert: Outer Ring Road & Silk Board Junction Waterlogged",
+        description: "Severe tropical downpour across Bengaluru Tech Corridor. Bellandur underpass submerged. Dynamic flood re-routing engaged; EV fleet re-routed to elevated flyovers.",
+        affectedZone: "TECH_PARK",
+        active: true,
+        timestamp: new Date().toISOString(),
+      };
+
+      const techPark = this.state.zones.TECH_PARK;
+      techPark.currentDemand = 380;
+      techPark.predictedDemand15m = 450;
+      techPark.surgeMultiplier = 2.9;
+      techPark.status = "HIGH_SURGE";
+
+      const downtown = this.state.zones.DOWNTOWN;
+      downtown.currentDemand = 210;
+      downtown.surgeMultiplier = 2.2;
+      downtown.status = "HIGH_SURGE";
+
+      this.state.metrics.transitNetworkHealthPercent = 68.5;
+      this.state.metrics.antiHerdDampingActive = true;
+
+      // Update services telemetry to indicate heavy dynamic recalibration
+      if (this.state.modelHealth.services) {
+        this.state.modelHealth.services[0].cpuPercent = 78;
+        this.state.modelHealth.services[1].cpuPercent = 86;
+        this.state.modelHealth.services[2].latencyP99Ms = 12.4;
+      }
     }
 
     if (type === "STADIUM_CONCERT_END") {
@@ -282,6 +390,7 @@ export class UberMarketplaceEngine {
       };
 
       this.state.modelHealth = {
+        ...this.state.modelHealth,
         status: "FALLBACK_ENGAGED",
         latencyMs: 14.8,
         featureDriftScore: 0.78,

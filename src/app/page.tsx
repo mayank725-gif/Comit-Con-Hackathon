@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import UberNavbar, { UberTab } from "@/components/uber/UberNavbar";
 import DriverAssistantChat from "@/components/uber/DriverAssistantChat";
 import UberBenchmarkView from "@/components/uber/UberBenchmarkView";
+import MichelangeloTelemetryView from "@/components/uber/MichelangeloTelemetryView";
 import {
   MarketplaceState,
   ZoneId,
@@ -21,7 +22,7 @@ const RealLeafletMap = dynamic(
       <div className="w-full h-[540px] rounded-3xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center space-y-2">
         <div className="h-6 w-6 rounded-full border-2 border-white border-t-transparent animate-spin" />
         <span className="text-xs font-mono text-zinc-400">
-          Loading San Francisco Real-Time Fleet Map...
+          Loading Bengaluru Real-Time Fleet Map (India)...
         </span>
       </div>
     ),
@@ -41,8 +42,14 @@ export default function Home() {
       id: "INIT_1",
       sender: "ASSISTANT",
       agentType: "DISPATCH",
-      text: "👋 Welcome, Driver Ramesh! Michelangelo Market Engine is online. M. Chinnaswamy Stadium and MG Road CBD are currently your highest-earning sectors. How can I guide your shift?",
+      text: "👋 Welcome, Driver Ramesh! Michelangelo Market Engine is online across Bengaluru. M. Chinnaswamy Stadium and MG Road CBD are currently your highest-earning sectors. How can I guide your shift?",
       timestamp: "2026-11-03T23:00:00.000Z",
+      routingTrace: {
+        confidenceScore: 0.985,
+        tokensEvaluated: 130,
+        featuresQueried: ["bengaluru_hex_demand_surge", "driver_shift_pacing", "route_congestion_index"],
+        latencyMs: 5.4,
+      },
     },
   ]);
 
@@ -85,7 +92,7 @@ export default function Home() {
   };
 
   const handleTriggerScenario = async (
-    scenario: "STADIUM_CONCERT_END" | "STALE_MODEL_DRIFT" | "AIRPORT_FLIGHT_WAVE" | "RESET"
+    scenario: "STADIUM_CONCERT_END" | "STALE_MODEL_DRIFT" | "AIRPORT_FLIGHT_WAVE" | "MONSOON_FLASH_FLOOD" | "RESET"
   ) => {
     setIsProcessing(true);
     try {
@@ -107,12 +114,41 @@ export default function Home() {
               id: `SCEN_${Date.now()}`,
               sender: "ASSISTANT",
               agentType: "EVENT_INTEL",
-              text: "🚨 **URGENT SURGE ALERT**: Coldplay Concert has ended at Chase Center / Oracle Park. 65,000 attendees exiting! Surge multiplier increased to 3.5x. Forecaster recommends immediate repositioning.",
+              text: "🚨 **IPL MATCH SURGE ALERT**: IPL T20 match has concluded at M. Chinnaswamy Stadium. 40,000 spectators exiting along MG Road & Cubbon Park! Surge multiplier surged to 3.5x. Forecaster recommends immediate repositioning.",
               timestamp: new Date().toISOString(),
               actionableRecommendation: {
                 suggestedZone: "STADIUM",
                 estimatedSurge: 3.5,
-                extraEarningsEstimate: "+$24 - $32 / trip",
+                extraEarningsEstimate: "+₹350 - ₹550 / trip",
+              },
+              routingTrace: {
+                confidenceScore: 0.994,
+                tokensEvaluated: 182,
+                featuresQueried: ["stadium_exit_inflow", "bengaluru_metro_density", "anti_herd_rate"],
+                latencyMs: 6.1,
+              },
+            },
+          ]);
+        } else if (scenario === "MONSOON_FLASH_FLOOD") {
+          setSelectedZone("TECH_PARK");
+          setChatMessages((prev) => [
+            ...prev,
+            {
+              id: `SCEN_${Date.now()}`,
+              sender: "ASSISTANT",
+              agentType: "SYSTEM_GUARD",
+              text: "🌧️ **MONSOON FLASH FLOOD**: Severe waterlogging detected along Outer Ring Road (Bellandur) and Silk Board Junction. Speed limits reduced; EV fleet routed via elevated corridors. Bellandur surge raised to 2.9x.",
+              timestamp: new Date().toISOString(),
+              actionableRecommendation: {
+                suggestedZone: "TECH_PARK",
+                estimatedSurge: 2.9,
+                extraEarningsEstimate: "+₹280 wet weather bonus",
+              },
+              routingTrace: {
+                confidenceScore: 0.972,
+                tokensEvaluated: 164,
+                featuresQueried: ["bellandur_waterlog_sensor", "ev_battery_efficiency_temp", "flyover_routing_matrix"],
+                latencyMs: 7.2,
               },
             },
           ]);
@@ -125,6 +161,12 @@ export default function Home() {
               agentType: "SYSTEM_GUARD",
               text: "⚠️ **SELF-HEALING EVENT**: Predictive feature drift detected (78% deviation). Michelangelo engaged Real-Time Heuristic Fallback with zero driver disruption.",
               timestamp: new Date().toISOString(),
+              routingTrace: {
+                confidenceScore: 0.892,
+                tokensEvaluated: 195,
+                featuresQueried: ["ks_test_drift_p_value", "realtime_heuristic_fallback_matrix"],
+                latencyMs: 14.8,
+              },
             },
           ]);
         }
@@ -170,7 +212,7 @@ export default function Home() {
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center space-y-3 font-sans">
         <div className="h-8 w-8 rounded-full border-2 border-white border-t-transparent animate-spin" />
         <span className="text-xs font-mono text-zinc-400">
-          Initializing Uber Michelangelo Marketplace Engine...
+          Initializing Uber Michelangelo Marketplace Engine (Bengaluru Metro)...
         </span>
       </div>
     );
@@ -244,7 +286,7 @@ export default function Home() {
               <span className="text-2xl font-black text-cyan-400">
                 {state.metrics.antiHerdDampingActive ? "Engaged" : "Nominal"}
               </span>
-              <span className="text-xs font-bold text-cyan-400">Safe</span>
+              <span className="text-xs font-bold text-cyan-400">Active</span>
             </div>
             <span className="text-[10px] text-zinc-500 block font-mono">
               Prevents downtown fleet starvation
@@ -317,7 +359,16 @@ export default function Home() {
           </div>
         )}
 
-        {/* TAB 2: BENCHMARK RESULTS (RUBRIC 20 PTS) */}
+        {/* TAB 2: MICHELANGELO ML & FEATURE STORE OBSERVABILITY */}
+        {activeTab === "telemetry" && (
+          <MichelangeloTelemetryView
+            state={state}
+            onTriggerScenario={handleTriggerScenario}
+            isProcessing={isProcessing}
+          />
+        )}
+
+        {/* TAB 3: BENCHMARK RESULTS (RUBRIC 20 PTS) */}
         {activeTab === "benchmark" && <UberBenchmarkView stats={UBER_BENCHMARK_DATA} />}
       </main>
     </div>
