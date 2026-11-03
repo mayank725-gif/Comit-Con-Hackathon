@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import UberNavbar, { UberTab } from "@/components/uber/UberNavbar";
+import UberNavbar, { UberTab, PortalMode } from "@/components/uber/UberNavbar";
+import CustomerPortalView from "@/components/uber/CustomerPortalView";
 import DriverAssistantChat from "@/components/uber/DriverAssistantChat";
 import UberBenchmarkView from "@/components/uber/UberBenchmarkView";
 import MichelangeloTelemetryView from "@/components/uber/MichelangeloTelemetryView";
@@ -38,6 +39,7 @@ const RealLeafletMap = dynamic(
 );
 
 export default function Home() {
+  const [portalMode, setPortalMode] = useState<PortalMode>("CUSTOMER");
   const [activeTab, setActiveTab] = useState<UberTab>("map");
   const [state, setState] = useState<MarketplaceState | null>(null);
   const [selectedZone, setSelectedZone] = useState<ZoneId | null>("STADIUM");
@@ -189,6 +191,8 @@ export default function Home() {
   // Uber 2.0 Ride Request Handlers (Two-Sided Marketplace)
   const handleRequestRide = (request: RideRequest) => {
     setIncomingRideRequest(request);
+    // Switch to Driver Partner view so the incoming dispatch alert chimes and can be accepted
+    setPortalMode("DRIVER");
   };
 
   const handleSimulateDispatch = () => {
@@ -394,8 +398,10 @@ export default function Home() {
   const focusedZone = selectedZone ? state.zones[selectedZone] : null;
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
       <UberNavbar
+        portalMode={portalMode}
+        onPortalModeChange={setPortalMode}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         modelHealth={state.modelHealth}
@@ -404,177 +410,190 @@ export default function Home() {
         currentUser={currentUser}
         currentProfile={currentProfile}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
-        onOpenRiderBooking={() => setIsRiderBookingOpen(true)}
       />
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-        {/* TAB 1: REAL DRIVER MAP & TWO-SIDED COPILOT */}
-        {activeTab === "map" && (
-          <div className="space-y-4">
-            {/* Sleek Compact Driver HUD (Takes minimal vertical space) */}
-            <DriverSectorSpotlight
-              user={currentUser}
-              profile={currentProfile}
-              sectorTelemetry={sectorTelemetry}
-              onFlyToMySector={handleFlyToMySector}
-              onOpenTerritoryModal={() => setIsAuthModalOpen(true)}
-              onSimulateDispatch={handleSimulateDispatch}
-            />
+        {/* CUSTOMER RIDE BOOKING PORTAL */}
+        {portalMode === "CUSTOMER" && (
+          <CustomerPortalView
+            state={state}
+            onBookRide={handleRequestRide}
+            onSwitchToDriver={() => setPortalMode("DRIVER")}
+          />
+        )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-              {/* Left 7 Cols: Clean Leaflet Map + Active Trip Navigation Bar */}
-              <div className="lg:col-span-7 space-y-3">
-                <RealLeafletMap
-                  state={state}
-                  selectedZone={selectedZone}
-                  onSelectZone={setSelectedZone}
-                  flyToCoords={mapFlyToCoords}
+        {/* DRIVER PARTNER PORTAL */}
+        {portalMode === "DRIVER" && (
+          <>
+            {/* TAB 1: REAL DRIVER MAP & TWO-SIDED COPILOT */}
+            {activeTab === "map" && (
+              <div className="space-y-4">
+                {/* Sleek Compact Driver HUD (Takes minimal vertical space) */}
+                <DriverSectorSpotlight
+                  user={currentUser}
+                  profile={currentProfile}
+                  sectorTelemetry={sectorTelemetry}
+                  onFlyToMySector={handleFlyToMySector}
+                  onOpenTerritoryModal={() => setIsAuthModalOpen(true)}
+                  onSimulateDispatch={handleSimulateDispatch}
                 />
 
-                {/* Active Trip Navigation HUD (When Ride is In-Progress) */}
-                {activeTrip && (
-                  <ActiveTripHUD
-                    trip={activeTrip}
-                    onCompleteTrip={handleCompleteTrip}
-                  />
-                )}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                  {/* Left 7 Cols: Clean Leaflet Map + Active Trip Navigation Bar */}
+                  <div className="lg:col-span-7 space-y-3">
+                    <RealLeafletMap
+                      state={state}
+                      selectedZone={selectedZone}
+                      onSelectZone={setSelectedZone}
+                      flyToCoords={mapFlyToCoords}
+                    />
 
-                {/* Selected Hotspot Card (Clean, Simple Drawer) */}
-                {focusedZone && !activeTrip && (
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 p-4 shadow-lg backdrop-blur-md">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">
-                          📍 SELECTED HOTSPOT
-                        </span>
-                        <h4 className="text-sm font-bold text-white mt-0.5">{focusedZone.name}</h4>
-                      </div>
+                    {/* Active Trip Navigation HUD (When Ride is In-Progress) */}
+                    {activeTrip && (
+                      <ActiveTripHUD
+                        trip={activeTrip}
+                        onCompleteTrip={handleCompleteTrip}
+                      />
+                    )}
 
-                      <div className="text-right">
-                        <span className="text-xs px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/40">
-                          ⚡ {focusedZone.surgeMultiplier}x Surge
-                        </span>
-                      </div>
-                    </div>
+                    {/* Selected Hotspot Card (Clean, Simple Drawer) */}
+                    {focusedZone && !activeTrip && (
+                      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 p-4 shadow-lg backdrop-blur-md">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                              📍 SELECTED HOTSPOT
+                            </span>
+                            <h4 className="text-sm font-bold text-white mt-0.5">{focusedZone.name}</h4>
+                          </div>
 
-                    <div className="grid grid-cols-3 gap-2 pt-3 mt-2 border-t border-zinc-800 text-xs">
-                      <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-2 text-center">
-                        <span className="text-[10px] text-zinc-400 block">Riders Looking</span>
-                        <span className="text-sm font-bold text-white">{focusedZone.currentDemand}</span>
+                          <div className="text-right">
+                            <span className="text-xs px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/40">
+                              ⚡ {focusedZone.surgeMultiplier}x Surge
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 pt-3 mt-2 border-t border-zinc-800 text-xs">
+                          <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-2 text-center">
+                            <span className="text-[10px] text-zinc-400 block">Riders Looking</span>
+                            <span className="text-sm font-bold text-white">{focusedZone.currentDemand}</span>
+                          </div>
+                          <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-2 text-center">
+                            <span className="text-[10px] text-zinc-400 block">Available Cabs</span>
+                            <span className="text-sm font-bold text-emerald-400">{focusedZone.activeDrivers}</span>
+                          </div>
+                          <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-2 text-center">
+                            <span className="text-[10px] text-rose-300 block">Pickup Chance</span>
+                            <span className="text-sm font-bold text-rose-400">Instant</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-2 text-center">
-                        <span className="text-[10px] text-zinc-400 block">Available Cabs</span>
-                        <span className="text-sm font-bold text-emerald-400">{focusedZone.activeDrivers}</span>
-                      </div>
-                      <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-2 text-center">
-                        <span className="text-[10px] text-rose-300 block">Pickup Chance</span>
-                        <span className="text-sm font-bold text-rose-400">Instant</span>
-                      </div>
-                    </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Right 5 Cols: Driver Copilot Assistant */}
-              <div className="lg:col-span-5 space-y-3">
+                  {/* Right 5 Cols: Driver Copilot Assistant */}
+                  <div className="lg:col-span-5 space-y-3">
+                    <DriverAssistantChat
+                      messages={chatMessages}
+                      onSendMessage={handleSendMessage}
+                      isLoading={isChatLoading}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: DEDICATED FULL-SCREEN VOICE COPILOT */}
+            {activeTab === "copilot" && (
+              <div className="max-w-3xl mx-auto space-y-4">
                 <DriverAssistantChat
                   messages={chatMessages}
                   onSendMessage={handleSendMessage}
                   isLoading={isChatLoading}
                 />
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* TAB 2: DEDICATED FULL-SCREEN VOICE COPILOT */}
-        {activeTab === "copilot" && (
-          <div className="max-w-3xl mx-auto space-y-4">
-            <DriverAssistantChat
-              messages={chatMessages}
-              onSendMessage={handleSendMessage}
-              isLoading={isChatLoading}
-            />
-          </div>
-        )}
+            {/* TAB 3: SHIFT EARNINGS & BENCHMARKS */}
+            {activeTab === "benchmark" && (
+              <div className="space-y-6">
+                {/* 4 Big KPI Metric Cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
+                    <span className="text-[11px] text-zinc-400 font-medium block">
+                      💰 Driver Hourly Earnings
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-black text-emerald-400">
+                        ₹{state.metrics.avgDriverHourlyRate}/hr
+                      </span>
+                      <span className="text-xs font-bold text-emerald-400">+64% Boost</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 block">
+                      vs ₹280/hr normal driving without AI
+                    </span>
+                  </div>
 
-        {/* TAB 3: SHIFT EARNINGS & BENCHMARKS */}
-        {activeTab === "benchmark" && (
-          <div className="space-y-6">
-            {/* 4 Big KPI Metric Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
-                <span className="text-[11px] text-zinc-400 font-medium block">
-                  💰 Driver Hourly Earnings
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black text-emerald-400">
-                    ₹{state.metrics.avgDriverHourlyRate}/hr
-                  </span>
-                  <span className="text-xs font-bold text-emerald-400">+64% Boost</span>
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
+                    <span className="text-[11px] text-zinc-400 font-medium block">
+                      🚕 Active Fleet Online
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-black text-white">
+                        {state.drivers.length} Cabs Online
+                      </span>
+                      <span className="text-xs font-bold text-emerald-400">6 Metros</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 block truncate">
+                      Delhi &bull; Mumbai &bull; Bengaluru &bull; Hyd &bull; Chennai &bull; Kol
+                    </span>
+                  </div>
+
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
+                    <span className="text-[11px] text-zinc-400 font-medium block">
+                      ⚡ High-Demand Peak Surge
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-black text-amber-400">
+                        {state.metrics.cityAvgSurge}x
+                      </span>
+                      <span className="text-xs font-bold text-amber-300">Average</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 block truncate">
+                      Peak: {state.zones.MUMBAI_BKC?.surgeMultiplier || 1.6}x at Mumbai BKC
+                    </span>
+                  </div>
+
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
+                    <span className="text-[11px] text-zinc-400 font-medium block">
+                      🚦 City Traffic Condition
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-black text-emerald-400">
+                        {state.metrics.transitNetworkHealthPercent}%
+                      </span>
+                      <span className="text-xs font-bold text-emerald-300">Clear Flow</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 block truncate">
+                      Smart bypass routes avoid traffic jams
+                    </span>
+                  </div>
                 </div>
-                <span className="text-[10px] text-zinc-400 block">
-                  vs ₹280/hr normal driving without AI
-                </span>
+
+                <UberBenchmarkView stats={UBER_BENCHMARK_DATA} />
               </div>
+            )}
 
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
-                <span className="text-[11px] text-zinc-400 font-medium block">
-                  🚕 Active Fleet Online
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black text-white">
-                    {state.drivers.length} Cabs Online
-                  </span>
-                  <span className="text-xs font-bold text-cyan-400">6 Metros</span>
-                </div>
-                <span className="text-[10px] text-zinc-400 block truncate">
-                  Delhi &bull; Mumbai &bull; Bengaluru &bull; Hyd &bull; Chennai &bull; Kol
-                </span>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
-                <span className="text-[11px] text-zinc-400 font-medium block">
-                  ⚡ High-Demand Peak Surge
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black text-amber-400">
-                    {state.metrics.cityAvgSurge}x
-                  </span>
-                  <span className="text-xs font-bold text-amber-300">Average</span>
-                </div>
-                <span className="text-[10px] text-zinc-400 block truncate">
-                  Peak: {state.zones.MUMBAI_BKC?.surgeMultiplier || 1.6}x at Mumbai BKC
-                </span>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
-                <span className="text-[11px] text-zinc-400 font-medium block">
-                  🚦 City Traffic Condition
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black text-cyan-400">
-                    {state.metrics.transitNetworkHealthPercent}%
-                  </span>
-                  <span className="text-xs font-bold text-cyan-300">Clear Flow</span>
-                </div>
-                <span className="text-[10px] text-zinc-400 block truncate">
-                  Smart bypass routes avoid traffic jams
-                </span>
-              </div>
-            </div>
-
-            <UberBenchmarkView stats={UBER_BENCHMARK_DATA} />
-          </div>
-        )}
-
-        {/* TAB 4: MICHELANGELO ML & FEATURE STORE OBSERVABILITY */}
-        {activeTab === "telemetry" && (
-          <MichelangeloTelemetryView
-            state={state}
-            onTriggerScenario={handleTriggerScenario}
-            isProcessing={isProcessing}
-          />
+            {/* TAB 4: MICHELANGELO ML & FEATURE STORE OBSERVABILITY */}
+            {activeTab === "telemetry" && (
+              <MichelangeloTelemetryView
+                state={state}
+                onTriggerScenario={handleTriggerScenario}
+                isProcessing={isProcessing}
+              />
+            )}
+          </>
         )}
       </main>
 

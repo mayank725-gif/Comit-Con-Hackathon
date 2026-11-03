@@ -56,28 +56,28 @@ export default function IncomingRideDispatchModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-md rounded-3xl border-2 border-cyan-400 bg-zinc-950 p-6 shadow-2xl shadow-cyan-500/20 space-y-5 animate-scaleUp">
+      <div className="relative w-full max-w-md rounded-3xl border-2 border-emerald-400 bg-zinc-950 p-6 shadow-2xl shadow-emerald-500/20 space-y-5 animate-scaleUp">
         {/* Top Header with Live Countdown Ring */}
         <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
           <div className="flex items-center gap-2">
             <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
             </span>
-            <span className="font-mono text-xs font-bold text-cyan-400 tracking-wider">
+            <span className="font-mono text-xs font-bold text-emerald-400 tracking-wider">
               NEW RIDE DISPATCH
             </span>
           </div>
 
           {/* 15-Sec Countdown Timer */}
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-700 text-xs font-mono font-bold text-white">
-            <Clock className="h-3.5 w-3.5 text-cyan-400 animate-spin" />
+            <Clock className="h-3.5 w-3.5 text-emerald-400 animate-spin" />
             <span>{timeLeft}s to accept</span>
           </div>
         </div>
 
         {/* Big Earnings & Surge Hero */}
-        <div className="text-center rounded-2xl bg-gradient-to-b from-cyan-950/40 via-zinc-900 to-zinc-900 border border-cyan-500/30 p-4 space-y-1">
+        <div className="text-center rounded-2xl bg-gradient-to-b from-zinc-900 via-zinc-900 to-zinc-950 border border-zinc-800 p-4 space-y-1">
           <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
             Guaranteed Shift Fare
           </span>
@@ -98,7 +98,7 @@ export default function IncomingRideDispatchModal({
           {/* Rider */}
           <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-white font-bold text-xs">
                 {request.riderName.charAt(0)}
               </div>
               <div>
@@ -149,7 +149,7 @@ export default function IncomingRideDispatchModal({
           <button
             type="button"
             onClick={() => onAccept(request)}
-            className="py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs transition-all shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2 animate-pulse"
+            className="py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 animate-pulse"
           >
             <CheckCircle2 className="h-4 w-4" />
             <span>ACCEPT RIDE</span>
@@ -157,9 +157,9 @@ export default function IncomingRideDispatchModal({
         </div>
 
         {/* Countdown Bar */}
-        <div className="w-full bg-zinc-800 h-1 rounded-full overflow-hidden">
+        <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
           <div
-            className="bg-cyan-400 h-full transition-all duration-1000 ease-linear"
+            className="bg-emerald-400 h-full transition-all duration-1000 ease-linear"
             style={{ width: `${progressPercent}%` }}
           />
         </div>

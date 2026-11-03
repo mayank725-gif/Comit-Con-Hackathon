@@ -45,7 +45,7 @@ export default function DriverSectorSpotlight({
     return (
       <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 p-3 sm:p-4 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-white shrink-0">
             <Car className="h-5 w-5" />
           </div>
           <div>
@@ -91,10 +91,10 @@ export default function DriverSectorSpotlight({
             <img
               src={user.avatar}
               alt={profile.driverName}
-              className="w-10 h-10 rounded-xl object-cover border border-cyan-400/60 shadow-md"
+              className="w-10 h-10 rounded-xl object-cover border border-zinc-600 shadow-md"
             />
           ) : (
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center font-bold text-cyan-300 text-sm">
+            <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-white text-sm">
               {profile.driverName.charAt(0)}
             </div>
           )}
@@ -135,7 +135,7 @@ export default function DriverSectorSpotlight({
 
           <button
             onClick={() => onFlyToMySector(profile.assignedCoordinates || [12.9788, 77.5980])}
-            className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold transition-all flex items-center gap-1.5 shadow-md"
+            className="px-3 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-bold transition-all flex items-center gap-1.5 shadow-md"
           >
             <Navigation className="h-3.5 w-3.5" />
             <span>Go to My Area</span>
@@ -175,7 +175,7 @@ export default function DriverSectorSpotlight({
         <div className="border-t border-zinc-800/80 bg-zinc-950 p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 animate-fadeIn text-xs">
           <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-2.5">
             <span className="text-[10px] text-zinc-400 block">Waiting Riders</span>
-            <span className="text-base font-bold text-cyan-300">+{sectorTelemetry.deficitCount} Extra Riders</span>
+            <span className="text-base font-bold text-emerald-400">+{sectorTelemetry.deficitCount} Extra Riders</span>
             <span className="text-[10px] text-zinc-500 block">High demand pickup zone</span>
           </div>
 

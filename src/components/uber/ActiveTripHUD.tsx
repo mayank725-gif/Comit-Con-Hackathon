@@ -60,7 +60,7 @@ export default function ActiveTripHUD({
         {/* Live Running Meter & Speed */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-xs font-mono text-zinc-300">
-            <Gauge className="h-3.5 w-3.5 text-cyan-400" />
+            <Gauge className="h-3.5 w-3.5 text-zinc-300" />
             <span>{speedKmh} km/h</span>
           </div>
 
@@ -74,7 +74,7 @@ export default function ActiveTripHUD({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         {/* Rider Profile */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 border border-indigo-400 flex items-center justify-center font-bold text-white text-sm shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-white text-sm shrink-0">
             {trip.riderName.charAt(0)}
           </div>
           <div>
@@ -95,7 +95,7 @@ export default function ActiveTripHUD({
             onClick={() => setHasCalledRider(true)}
             className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 text-xs font-medium flex items-center gap-1 transition-colors"
           >
-            <Phone className="h-3.5 w-3.5 text-cyan-400" />
+            <Phone className="h-3.5 w-3.5 text-emerald-400" />
             <span>{hasCalledRider ? "Calling..." : "Call Rider"}</span>
           </button>
 

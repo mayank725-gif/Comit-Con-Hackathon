@@ -26,7 +26,7 @@ export default function UberBenchmarkView({ stats }: UberBenchmarkViewProps) {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="rounded-3xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-zinc-900 to-zinc-900 p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+      <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-emerald-500/15 border border-emerald-500/40 px-3 py-1 text-xs font-bold text-emerald-400 flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -53,7 +53,7 @@ export default function UberBenchmarkView({ stats }: UberBenchmarkViewProps) {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">⏱️</span>
+            <span className="p-1.5 rounded-lg bg-zinc-800 text-zinc-300">⏱️</span>
             <span className="text-zinc-200">
               <strong>28 minutes saved</strong> between passenger pickups
             </span>
@@ -103,7 +103,7 @@ export default function UberBenchmarkView({ stats }: UberBenchmarkViewProps) {
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 space-y-3 shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-400 font-medium">Wait Time Between Rides</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
               -67% LESS WAIT
             </span>
           </div>
@@ -122,7 +122,7 @@ export default function UberBenchmarkView({ stats }: UberBenchmarkViewProps) {
             </div>
           </div>
           <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden flex">
-            <div className="h-full bg-indigo-500 w-[24%] rounded-full" />
+            <div className="h-full bg-emerald-500 w-[24%] rounded-full" />
           </div>
           <span className="text-[11px] text-zinc-300 font-medium block">
             Zero time wasted wandering looking for rides
@@ -163,16 +163,16 @@ export default function UberBenchmarkView({ stats }: UberBenchmarkViewProps) {
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 space-y-3 shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-400 font-medium">Rain &amp; Traffic Rerouting</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300">
               FASTEST BYPASS
             </span>
           </div>
           <div className="flex items-baseline justify-between">
             <div>
-              <span className="text-2xl font-black text-cyan-400">
+              <span className="text-2xl font-black text-white">
                 3.2 sec
               </span>
-              <span className="text-[10px] text-cyan-300 block font-bold">AUTOMATIC RE-ROUTE</span>
+              <span className="text-[10px] text-zinc-400 block font-bold">AUTOMATIC RE-ROUTE</span>
             </div>
             <div className="text-right">
               <span className="text-lg font-bold text-zinc-500">45+ min</span>
@@ -180,9 +180,9 @@ export default function UberBenchmarkView({ stats }: UberBenchmarkViewProps) {
             </div>
           </div>
           <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden flex">
-            <div className="h-full bg-cyan-400 w-full rounded-full" />
+            <div className="h-full bg-white w-full rounded-full" />
           </div>
-          <span className="text-[11px] text-cyan-300 font-medium block">
+          <span className="text-[11px] text-zinc-400 font-medium block">
             Elevated flyover bypass saves you time
           </span>
         </div>
@@ -213,8 +213,8 @@ export default function UberBenchmarkView({ stats }: UberBenchmarkViewProps) {
 
           {/* Card 2 */}
           <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-cyan-400">
-              <span className="p-1 rounded-md bg-cyan-500/20">🌧️</span>
+            <div className="flex items-center gap-2 text-xs font-bold text-white">
+              <span className="p-1 rounded-md bg-zinc-800">🌧️</span>
               <span>2. Sudden Monsoon Flash Flooding</span>
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed">
@@ -242,7 +242,7 @@ export default function UberBenchmarkView({ stats }: UberBenchmarkViewProps) {
           className="w-full flex items-center justify-between text-left text-xs font-mono text-zinc-400 hover:text-white transition-colors"
         >
           <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-indigo-400" />
+            <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span className="font-bold text-zinc-300">
               Technical Evaluation &amp; Benchmark Rubric Specifications (20/20 Points)
             </span>
@@ -263,7 +263,7 @@ export default function UberBenchmarkView({ stats }: UberBenchmarkViewProps) {
               </div>
               <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800">
                 <span className="text-[10px] text-zinc-500 block">P99 LATENCY</span>
-                <span className="text-sm font-bold text-cyan-400">8.4 ms</span>
+                <span className="text-sm font-bold text-white">8.4 ms</span>
               </div>
               <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800">
                 <span className="text-[10px] text-zinc-500 block">SCORECARD</span>

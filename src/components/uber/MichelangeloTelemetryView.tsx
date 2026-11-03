@@ -51,7 +51,7 @@ export default function MichelangeloTelemetryView({
     <div className="space-y-6">
       {/* Top Hero Banner */}
       <div className="rounded-3xl border border-zinc-800 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1.5">
@@ -104,13 +104,13 @@ export default function MichelangeloTelemetryView({
         {/* Metric 1: Match Speed */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4 space-y-2 backdrop-blur-md shadow-md">
           <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
               ⚡ Instant Dispatch Speed
             </span>
-            <Activity className="h-4 w-4 text-cyan-400" />
+            <Activity className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl font-black text-cyan-400">
+            <span className="text-3xl font-black text-white">
               {state.modelHealth.latencyMs}
             </span>
             <span className="text-xs font-bold text-zinc-300">milliseconds</span>
@@ -142,7 +142,7 @@ export default function MichelangeloTelemetryView({
         {/* Metric 3: Route Reliability */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4 space-y-2 backdrop-blur-md shadow-md">
           <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
               🛡️ Route Reliability
             </span>
             <ShieldCheck className={`h-4 w-4 ${isHighDrift ? "text-amber-400 animate-pulse" : "text-emerald-400"}`} />
@@ -189,14 +189,14 @@ export default function MichelangeloTelemetryView({
           <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Activity className="h-4 w-4 text-cyan-400" />
+                <Activity className="h-4 w-4 text-emerald-400" />
                 Live Real-Time Decision Factors
               </h3>
               <p className="text-[11px] text-zinc-400 mt-0.5">
                 Signals the AI continuously checks to recommend the highest fares and fastest routes.
               </p>
             </div>
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
               Live Stream
             </span>
           </div>
@@ -244,14 +244,14 @@ export default function MichelangeloTelemetryView({
                   <span>🌧️</span>
                   <span>Weather &amp; Road Waterlogging Sensor</span>
                 </span>
-                <span className="font-black text-cyan-400">
+                <span className="font-black text-white">
                   {isHighDrift ? "Heavy Rain Detected" : "Clear Conditions"}
                 </span>
               </div>
               <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${
-                    isHighDrift ? "bg-cyan-400 w-[85%]" : "bg-cyan-500 w-[15%]"
+                    isHighDrift ? "bg-amber-400 w-[85%]" : "bg-emerald-500 w-[15%]"
                   }`}
                 />
               </div>
@@ -303,26 +303,26 @@ export default function MichelangeloTelemetryView({
 
             <div className="p-3 rounded-2xl border border-zinc-800 bg-zinc-950 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-cyan-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
                 <div>
                   <span className="text-xs font-bold text-white block">Driver Territory Database</span>
                   <span className="text-[10px] text-zinc-400">Self-hosted local persistence</span>
                 </div>
               </div>
-              <span className="text-[10px] font-bold text-cyan-400 px-2 py-0.5 rounded-full bg-cyan-500/15">
+              <span className="text-[10px] font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/15">
                 Self-Hosted
               </span>
             </div>
 
             <div className="p-3 rounded-2xl border border-zinc-800 bg-zinc-950 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-indigo-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
                 <div>
                   <span className="text-xs font-bold text-white block">32 Tourist Destinations Hub</span>
                   <span className="text-[10px] text-zinc-400">Outstation pricing matrix</span>
                 </div>
               </div>
-              <span className="text-[10px] font-bold text-indigo-400 px-2 py-0.5 rounded-full bg-indigo-500/15">
+              <span className="text-[10px] font-bold text-amber-400 px-2 py-0.5 rounded-full bg-amber-500/15">
                 Synced
               </span>
             </div>

@@ -157,7 +157,7 @@ export default function RiderBookingModal({
             <div>
               <h2 className="text-base font-black text-white flex items-center gap-1.5">
                 <span>Book a Ride</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
                   Uber 2.0
                 </span>
               </h2>
@@ -187,7 +187,7 @@ export default function RiderBookingModal({
                 const found = POPULAR_PICKUPS.find((p) => p.name === e.target.value);
                 if (found) setPickup(found);
               }}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white"
             >
               {POPULAR_PICKUPS.map((p) => (
                 <option key={p.name} value={p.name}>
@@ -208,7 +208,7 @@ export default function RiderBookingModal({
               value={dropoffQuery}
               onChange={(e) => setDropoffQuery(e.target.value)}
               placeholder="Search destination (e.g. Airport, Taj Mahal, Goa, BKC)..."
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400 placeholder-zinc-500"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white placeholder-zinc-500"
             />
 
             {/* Destination Dropdown Matches */}
@@ -235,7 +235,7 @@ export default function RiderBookingModal({
                         {place.city}, {place.state} &bull; {place.category}
                       </span>
                     </div>
-                    <span className="text-[10px] text-cyan-400 font-mono">Select</span>
+                    <span className="text-[10px] text-emerald-400 font-mono">Select</span>
                   </button>
                 ))}
               </div>
@@ -269,7 +269,7 @@ export default function RiderBookingModal({
                   onClick={() => setSelectedVehicle(tier.type)}
                   className={`p-3 rounded-2xl border text-left transition-all ${
                     isSelected
-                      ? "border-cyan-400 bg-cyan-950/40 shadow-lg ring-1 ring-cyan-400/50"
+                      ? "border-white bg-zinc-900 shadow-lg ring-1 ring-white/50"
                       : "border-zinc-800 bg-zinc-900/60 hover:bg-zinc-900 hover:border-zinc-700"
                   }`}
                 >

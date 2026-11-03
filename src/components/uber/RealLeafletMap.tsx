@@ -549,10 +549,10 @@ export default function RealLeafletMap({
       metros.forEach((m) => {
         const metroHtml = `
           <div class="cursor-pointer select-none transition-transform hover:scale-110 -translate-x-1/2 -translate-y-1/2">
-            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-zinc-950/95 border border-indigo-500/60 shadow-2xl backdrop-blur-md">
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-zinc-950/95 border border-zinc-700 shadow-2xl backdrop-blur-md">
               <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
               <span class="text-xs font-black text-white">${m.name}</span>
-              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold">${m.count} cars</span>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-200 font-bold">${m.count} cars</span>
               <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400">${m.surge}</span>
             </div>
           </div>
@@ -595,7 +595,7 @@ export default function RealLeafletMap({
           <div class="cursor-pointer select-none transition-transform hover:scale-110 -translate-x-1/2 -translate-y-1/2">
             <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border ${
               isSelected
-                ? "border-indigo-400 bg-indigo-950/95 ring-2 ring-indigo-400/50"
+                ? "border-white bg-zinc-900 ring-2 ring-white/50"
                 : isSevereSurge
                 ? "border-rose-500/80 bg-rose-950/95 animate-pulse"
                 : isHighSurge
@@ -655,9 +655,9 @@ export default function RealLeafletMap({
             </div>
             <div class="text-[10px] ${
               driver.status === "ON_TRIP"
-                ? "text-violet-400 font-semibold"
+                ? "text-amber-400 font-semibold"
                 : driver.status === "EN_ROUTE_SURGE"
-                ? "text-cyan-400 font-semibold"
+                ? "text-emerald-300 font-semibold"
                 : "text-emerald-400"
             }">
               ${driver.status === "ON_TRIP" ? `Trip to ${driver.currentTripDestinationName || "CBD"}` : driver.status}
@@ -779,7 +779,7 @@ export default function RealLeafletMap({
                 className={`px-3 py-1.5 rounded-xl transition-all shrink-0 flex items-center gap-1.5 font-bold text-xs ${
                   isVoiceListening
                     ? "bg-rose-500 text-white animate-pulse ring-2 ring-rose-400 shadow-lg shadow-rose-500/50"
-                    : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30"
+                    : "bg-white hover:bg-zinc-200 text-black shadow-md font-bold"
                 }`}
               >
                 <Mic className={`h-3.5 w-3.5 ${isVoiceListening ? "animate-bounce" : ""}`} />
@@ -823,7 +823,7 @@ export default function RealLeafletMap({
 
             {/* Live Voice Assistant Feedback Pill */}
             {voiceFeedbackText && (
-              <div className="absolute top-full left-0 right-0 mt-1.5 flex items-center gap-2 p-2.5 rounded-xl border border-indigo-500/60 bg-indigo-950/95 backdrop-blur-xl shadow-2xl text-xs text-indigo-200 animate-fadeIn z-30">
+              <div className="absolute top-full left-0 right-0 mt-1.5 flex items-center gap-2 p-2.5 rounded-xl border border-zinc-700 bg-zinc-900/98 backdrop-blur-xl shadow-2xl text-xs text-zinc-200 animate-fadeIn z-30">
                 <Sparkles className="h-4 w-4 text-amber-400 shrink-0 animate-spin" />
                 <span className="font-medium text-[11px] leading-snug">{voiceFeedbackText}</span>
               </div>
@@ -897,7 +897,7 @@ export default function RealLeafletMap({
               onClick={() => handleFlyTo(hub.lat, hub.lng, hub.zoom, hub.id)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 shrink-0 backdrop-blur-md shadow-md ${
                 activeMetroId === hub.id
-                  ? "bg-indigo-600 text-white font-bold ring-1 ring-indigo-400"
+                  ? "bg-white text-black font-extrabold ring-1 ring-white/50"
                   : "bg-zinc-950/90 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-900"
               }`}
             >
@@ -1039,10 +1039,10 @@ export default function RealLeafletMap({
           FLOATING DRIVER CARD
          ========================================================================= */}
       {selectedDriver && !selectedTouristPlace && (
-        <div className="absolute bottom-4 right-4 z-20 w-84 rounded-2xl border border-indigo-500/50 bg-zinc-950/95 backdrop-blur-xl p-4 shadow-2xl space-y-3">
+        <div className="absolute bottom-4 right-4 z-20 w-84 rounded-2xl border border-zinc-700 bg-zinc-950/98 backdrop-blur-xl p-4 shadow-2xl space-y-3">
           <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
             <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center font-bold text-white text-xs shadow-md">
+              <div className="h-9 w-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-white text-xs shadow-md">
                 {selectedDriver.name[0]}
               </div>
               <div>
@@ -1069,7 +1069,7 @@ export default function RealLeafletMap({
           <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/80 p-2 space-y-0.5">
               <span className="text-zinc-500 flex items-center gap-1">
-                <Gauge className="h-3 w-3 text-cyan-400" />
+                <Gauge className="h-3 w-3 text-zinc-300" />
                 <span>{voiceLang === "hi" ? "लाइव स्पीड" : "Live GPS Speed"}</span>
               </span>
               <span className="text-white text-sm font-black block">
@@ -1108,9 +1108,9 @@ export default function RealLeafletMap({
               <span
                 className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
                   selectedDriver.status === "ON_TRIP"
-                    ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                    ? "bg-zinc-800 text-zinc-200 border border-zinc-700"
                     : selectedDriver.status === "EN_ROUTE_SURGE"
-                    ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                     : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                 }`}
               >

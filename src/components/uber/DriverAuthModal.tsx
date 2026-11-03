@@ -150,13 +150,13 @@ export default function DriverAuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-lg rounded-3xl border border-cyan-500/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-lg rounded-3xl border border-zinc-700 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto">
         {/* Header with Close */}
         <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 font-mono text-[10px] font-bold flex items-center gap-1">
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[10px] font-bold flex items-center gap-1">
                 <Database className="h-3 w-3" />
                 GOOGLE AUTHENTICATION &bull; CUSTOM DATABASE
               </span>
@@ -182,8 +182,8 @@ export default function DriverAuthModal({
         {/* STEP 1: REAL GOOGLE SIGN-IN */}
         {step === "LOGIN" && (
           <div className="space-y-5">
-            <div className="rounded-2xl border-2 border-indigo-500/50 bg-gradient-to-r from-indigo-950/40 via-zinc-900 to-zinc-900 p-6 space-y-4 shadow-xl text-center">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-500/40 mx-auto flex items-center justify-center text-indigo-400">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/90 p-6 space-y-4 shadow-xl text-center">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 mx-auto flex items-center justify-center text-white">
                 <Lock className="h-6 w-6" />
               </div>
 
@@ -201,7 +201,7 @@ export default function DriverAuthModal({
                 type="button"
                 onClick={handleRealGoogleLogin}
                 disabled={isLoading}
-                className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-100 text-black font-extrabold text-sm flex items-center justify-center gap-3 shadow-lg hover:shadow-white/20 transition-all disabled:opacity-50"
+                className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-sm flex items-center justify-center gap-3 shadow-lg transition-all disabled:opacity-50"
               >
                 {/* Official Google 4-Color SVG Icon */}
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -243,8 +243,8 @@ export default function DriverAuthModal({
         {/* STEP 2: WORK AREA & OPERATING TERRITORY CONFIGURATION */}
         {step === "TERRITORY" && (
           <div className="space-y-4">
-            <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-200 flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-cyan-400 shrink-0" />
+            <div className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-400 shrink-0" />
               <span>
                 Operating sector and vehicle details are saved directly into your custom driver database.
               </span>
@@ -253,7 +253,7 @@ export default function DriverAuthModal({
             {/* City Selection */}
             <div>
               <label className="text-xs font-bold text-white block mb-1.5 flex items-center gap-1.5">
-                <Building2 className="h-3.5 w-3.5 text-cyan-400" />
+                <Building2 className="h-3.5 w-3.5 text-zinc-400" />
                 <span>Primary Metro City</span>
               </label>
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
@@ -269,7 +269,7 @@ export default function DriverAuthModal({
                       }}
                       className={`p-2 rounded-xl text-xs font-bold border transition-all ${
                         city === c
-                          ? "bg-cyan-500 text-black border-cyan-400 shadow-md font-extrabold"
+                          ? "bg-white text-black border-white shadow-md font-extrabold"
                           : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700"
                       }`}
                     >
@@ -289,7 +289,7 @@ export default function DriverAuthModal({
               <select
                 value={primaryZone}
                 onChange={(e) => setPrimaryZone(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white"
               >
                 {(METRO_ZONES[city] || []).map((z) => (
                   <option key={z.id} value={z.id}>
@@ -303,7 +303,7 @@ export default function DriverAuthModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-bold text-white block mb-1 flex items-center gap-1">
-                  <Car className="h-3.5 w-3.5 text-cyan-400" />
+                  <Car className="h-3.5 w-3.5 text-zinc-400" />
                   Vehicle Model
                 </label>
                 <input
@@ -311,7 +311,7 @@ export default function DriverAuthModal({
                   value={vehicleModel}
                   onChange={(e) => setVehicleModel(e.target.value)}
                   placeholder="e.g. Maruti Dzire VXI"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white"
                 />
               </div>
               <div>
@@ -323,7 +323,7 @@ export default function DriverAuthModal({
                   value={licensePlate}
                   onChange={(e) => setLicensePlate(e.target.value)}
                   placeholder="KA 01 UB 8088"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white font-mono uppercase focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white font-mono uppercase focus:outline-none focus:border-white"
                 />
               </div>
             </div>
@@ -341,7 +341,7 @@ export default function DriverAuthModal({
                 min={1000}
                 max={15000}
                 step={500}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white font-mono"
               />
             </div>
 
@@ -359,7 +359,7 @@ export default function DriverAuthModal({
                 type="button"
                 onClick={handleSaveTerritory}
                 disabled={isLoading}
-                className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs shadow-md transition-all flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs shadow-md transition-all flex items-center gap-2"
               >
                 <CheckCircle2 className="h-4 w-4" />
                 <span>Save Work Area &amp; Go Online</span>
