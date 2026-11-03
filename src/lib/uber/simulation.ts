@@ -5,6 +5,7 @@ import {
   MarketplaceState,
   ScenarioEvent,
   ModelHealth,
+  SurgeHandlingRequest,
 } from "./types";
 
 export class UberMarketplaceEngine {
@@ -309,7 +310,73 @@ export class UberMarketplaceEngine {
         antiHerdDampingActive: false,
         transitNetworkHealthPercent: 98.4,
       },
+      recentSurgeRequests: this.generateSurgeRequestsBatch("M. Chinnaswamy Stadium, MG Road", 1.8, 8),
     };
+  }
+
+  public generateSurgeRequestsBatch(locationName: string, surgeMultiplier: number, count: number = 20): SurgeHandlingRequest[] {
+    const indianNames = [
+      "Rahul Verma", "Ananya Sharma", "Rohan Mehta", "Priya Kulkarni",
+      "Vikram Patel", "Sneha Rao", "Arjun Nair", "Kavita Reddy",
+      "Aditya Das", "Pooja Malhotra", "Kunal Singhania", "Neha Iyer",
+      "Suresh Raman", "Deepak Gupta", "Meera Joshi", "Aman Kapoor",
+      "Tanvi Sen", "Gaurav Bansal", "Ritu Chaudhary", "Sameer Deshmukh"
+    ];
+
+    const destinations = [
+      "Kempegowda International Airport (BLR T2)",
+      "Indiranagar 100ft Road Metro",
+      "Koramangala 5th Block Club Area",
+      "Electronic City Phase 1 Toll Plaza",
+      "Whitefield ITPL Main Gate",
+      "MG Road Trinity Metro Station",
+      "Bandra Kurla Complex (BKC), Mumbai",
+      "Indira Gandhi International Airport (DEL T3)",
+      "DLF Cyber Hub Phase 2, Gurugram",
+      "HITEC City Cyber Towers, Hyderabad",
+      "OMR Tidal Park, Chennai",
+      "Sector V Salt Lake, Kolkata",
+    ];
+
+    const gates = [
+      "Gate A (North Arterial Link)",
+      "Gate B (Metro Skywalk Plaza)",
+      "Gate C (South Express Flyover)",
+    ];
+
+    const vehicleClasses = ["Uber Go", "Uber Premier", "Uber Auto", "Uber Green EV"];
+
+    const now = Date.now();
+    return Array.from({ length: count }, (_, idx) => {
+      const riderName = indianNames[idx % indianNames.length];
+      const dropoffLocation = destinations[idx % destinations.length];
+      const gate = gates[idx % gates.length];
+      const vehicleClass = vehicleClasses[idx % vehicleClasses.length];
+      const baseFare = Math.floor(Math.random() * 250) + 180;
+      const surgeBonus = Math.round(baseFare * (surgeMultiplier - 1));
+      const totalFare = baseFare + surgeBonus;
+      const wave = idx < 6 ? 1 : idx < 12 ? 2 : idx < 16 ? 3 : 4;
+      const status: SurgeHandlingRequest["waveStatus"] =
+        wave === 1 ? "DISPATCHED" : wave === 2 ? "BUFFER_QUEUED" : "EN_ROUTE";
+
+      return {
+        id: `SRG-${(1000 + idx).toString()}-${now.toString().slice(-4)}`,
+        timestamp: new Date(now - (count - idx) * 450).toLocaleTimeString("en-US", { hour12: false }),
+        riderName,
+        pickupLocation: locationName || "M. Chinnaswamy Stadium, MG Road",
+        dropoffLocation,
+        vehicleClass,
+        surgeMultiplier: +surgeMultiplier.toFixed(1),
+        baseFareInr: baseFare,
+        surgeBonusInr: surgeBonus,
+        totalFareInr: totalFare,
+        dispersalGate: gate,
+        waveNumber: wave,
+        waveStatus: status,
+        antiHerdEngaged: true,
+        latencyMs: +(1.2 + Math.random() * 2.8).toFixed(1),
+      };
+    });
   }
 
   private seedDrivers(zones: Record<ZoneId, CityZone>): Driver[] {
@@ -513,6 +580,16 @@ export class UberMarketplaceEngine {
       }
     }
 
+    // 5. Occasionally stream in a live incoming surge request to keep the stream fresh
+    if (this.state.recentSurgeRequests && this.state.recentSurgeRequests.length > 0 && Math.random() < 0.4) {
+      const topSurge = this.generateSurgeRequestsBatch(
+        this.state.zones.STADIUM?.name || "M. Chinnaswamy Stadium, MG Road",
+        this.state.zones.STADIUM?.surgeMultiplier || 1.8,
+        1
+      )[0];
+      this.state.recentSurgeRequests = [topSurge, ...this.state.recentSurgeRequests.slice(0, 19)];
+    }
+
     return this.state;
   }
 
@@ -686,6 +763,8 @@ export class UberMarketplaceEngine {
     ];
 
     const processingDurationMs = +(Date.now() - startTime + Math.random() * 2 + 2.1).toFixed(1);
+    const surgeRequestsBatch = this.generateSurgeRequestsBatch(locationName, calculatedSurge, 20);
+    this.state.recentSurgeRequests = surgeRequestsBatch;
 
     return {
       success: true,
@@ -700,6 +779,7 @@ export class UberMarketplaceEngine {
       processingLatencyMs: processingDurationMs,
       dispersalGates,
       staggeredWaves,
+      recentSurgeRequests: surgeRequestsBatch,
       aiTackleExplanation: {
         strategy: "Michelangelo Multi-Arterial Anti-Herd Volatility Balancer",
         point1: "Surge auto-capped at 3.8x to incentivize surrounding drivers while protecting consumer affordability.",

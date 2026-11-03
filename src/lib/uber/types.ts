@@ -110,6 +110,25 @@ export interface MarketplaceState {
     antiHerdDampingActive: boolean;
     transitNetworkHealthPercent: number;
   };
+  recentSurgeRequests?: SurgeHandlingRequest[];
+}
+
+export interface SurgeHandlingRequest {
+  id: string;
+  timestamp: string;
+  riderName: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  vehicleClass: string;
+  surgeMultiplier: number;
+  baseFareInr: number;
+  surgeBonusInr: number;
+  totalFareInr: number;
+  dispersalGate: string;
+  waveNumber: number;
+  waveStatus: "DISPATCHED" | "BUFFER_QUEUED" | "EN_ROUTE" | "BALANCED";
+  antiHerdEngaged: boolean;
+  latencyMs: number;
 }
 
 export interface RideRequest {
