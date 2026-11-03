@@ -43,7 +43,44 @@ export default function DriverSectorSpotlight({
   onFlyToMySector,
   onOpenTerritoryModal,
 }: DriverSectorSpotlightProps) {
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <div className="rounded-3xl border border-zinc-800 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+            <Car className="h-6 w-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold">
+                DRIVER PARTNER PORTAL
+              </span>
+              <span className="text-[11px] text-zinc-400">Firebase &amp; Firestore Connected</span>
+            </div>
+            <h3 className="text-base font-bold text-white mt-0.5">
+              Sign in with your Google account to access your live sector &amp; shift dashboard
+            </h3>
+            <p className="text-xs text-zinc-400">
+              Personalized surge tracking, road congestion bypass, and AI voice copilot.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={onOpenTerritoryModal}
+          className="shrink-0 px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-100 text-black font-extrabold text-xs shadow-md transition-all flex items-center gap-2"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          <span>Driver Sign-in</span>
+        </button>
+      </div>
+    );
+  }
 
   const currentEarnings = profile.currentEarnings || 2070;
   const target = profile.dailyEarningsTarget || 3000;

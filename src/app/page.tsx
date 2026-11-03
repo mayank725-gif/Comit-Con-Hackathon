@@ -52,7 +52,7 @@ export default function Home() {
       id: "INIT_1",
       sender: "ASSISTANT",
       agentType: "DISPATCH",
-      text: "👋 नमस्ते रमेश जी! माइकल एंजेलो एआई मार्केट इंजन भारत के 6 प्रमुख महानगरों व 32 पर्यटन स्थलों पर सक्रिय है। चिन्नास्वामी स्टेडियम और एमजी रोड में सर्वाधिक कमाई के अवसर हैं। आप माइक बटन दबाकर हिंदी में बोल सकते हैं!\n\nWelcome Driver Ramesh! Michelangelo ML is live across India. How can I assist your route today?",
+      text: "👋 नमस्ते! उबर ड्राइवर स्मार्ट मार्केट इंजन भारत के 6 प्रमुख महानगरों व 32 पर्यटन स्थलों पर सक्रिय है। चिन्नास्वामी स्टेडियम और एमजी रोड में सर्वाधिक कमाई के अवसर हैं। आप माइक बटन दबाकर हिंदी में बोल सकते हैं!\n\nWelcome Driver Partner! Uber Smart Dispatch is live across India. How can I assist your route today?",
       timestamp: "2026-11-03T23:00:00.000Z",
       routingTrace: {
         confidenceScore: 0.985,

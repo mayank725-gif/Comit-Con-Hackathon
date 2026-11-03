@@ -10,17 +10,12 @@ export async function GET(req: Request) {
     const token = tokenFromQuery || (cookieMatch ? cookieMatch[1] : null);
 
     if (!token) {
-      // Default to Ramesh Gowda seed profile if unauthenticated
-      const seedUser = await driverDb.findUserById("USR_SEED_RAMESH");
-      const seedProfile = await driverDb.getProfile("USR_SEED_RAMESH");
-      const telemetry = seedProfile ? driverDb.getSectorTelemetry(seedProfile.city, seedProfile.primaryZone) : null;
-
       return NextResponse.json({
         success: true,
         authenticated: false,
-        user: seedUser,
-        profile: seedProfile,
-        sectorTelemetry: telemetry,
+        user: null,
+        profile: null,
+        sectorTelemetry: null,
       });
     }
 
