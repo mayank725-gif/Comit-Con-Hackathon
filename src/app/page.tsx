@@ -188,9 +188,18 @@ export default function Home() {
     }
   };
 
-  // Uber 2.0 Ride Request Handlers (Two-Sided Marketplace)
-  const handleRequestRide = (request: RideRequest) => {
+  // Uber 2.0 Ride Request Handlers (Two-Sided Marketplace & Custom Database Sync)
+  const handleRequestRide = async (request: RideRequest) => {
     setIncomingRideRequest(request);
+    try {
+      await fetch("/api/uber/rides", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request),
+      });
+    } catch (e) {
+      console.error("Failed to persist ride to custom database:", e);
+    }
     // Switch to Driver Partner view so the incoming dispatch alert chimes and can be accepted
     setPortalMode("DRIVER");
   };

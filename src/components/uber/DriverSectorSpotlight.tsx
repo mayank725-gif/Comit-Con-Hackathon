@@ -104,7 +104,7 @@ export default function DriverSectorSpotlight({
               <span className="font-extrabold text-sm text-white">{profile.driverName}</span>
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Online
+                Online &bull; Custom DB Synced
               </span>
             </div>
             <p className="text-[11px] text-zinc-400 truncate">

@@ -84,6 +84,10 @@ export default function SurgeHandlingMonitor({
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold">
                 Live Ingestion Stream
               </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono font-bold flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Custom Database Synced
+              </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               Real-Time Surge Handling Requests

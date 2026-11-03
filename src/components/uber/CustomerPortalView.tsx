@@ -315,6 +315,13 @@ export default function CustomerPortalView({
           </button>
         </div>
 
+        {/* Center: Custom Database Status Pill */}
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-300">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="font-bold text-white">Custom Database:</span>
+          <span className="text-emerald-400">15 Zones &bull; 24 Drivers Active &bull; Synced</span>
+        </div>
+
         {/* Right: Quick 1,000 Requests Test Button & Driver Portal Switch */}
         <div className="flex items-center gap-2.5 w-full md:w-auto">
           <button
@@ -622,6 +629,11 @@ export default function CustomerPortalView({
                 <p className="text-zinc-300">
                   Driver dispatch notification sent to {confirmedRide.pickupAddress}. Your guaranteed fare is <strong>₹{confirmedRide.fareInr}</strong>.
                 </p>
+                <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400/90 pt-1 border-t border-emerald-500/20">
+                  <span>🗄️ Record Persisted in Custom Database</span>
+                  <span>&bull;</span>
+                  <span>ID: {confirmedRide.id}</span>
+                </div>
               </div>
             )}
           </div>

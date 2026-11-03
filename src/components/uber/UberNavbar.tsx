@@ -79,8 +79,8 @@ export default function UberNavbar({
             </div>
             <p className="text-[11px] text-zinc-400 hidden sm:block">
               {portalMode === "CUSTOMER"
-                ? "Customer Ride Booking & Dispatch • 32 Tourist Destinations"
-                : "Real-time Google Traffic • Smart Dispatch • 6 Metros"}
+                ? "Customer Ride Booking & Dispatch • Custom DB Persistent Storage"
+                : "Real-time Google Traffic • Custom DB Persistence • 6 Metros"}
             </p>
           </div>
         </div>

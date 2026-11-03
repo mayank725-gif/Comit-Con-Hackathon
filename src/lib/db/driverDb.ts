@@ -1,5 +1,13 @@
 import fs from "fs";
 import path from "path";
+import {
+  CityZone,
+  Driver,
+  RideRequest,
+  SurgeHandlingRequest,
+  ZoneId,
+  VehicleType,
+} from "@/lib/uber/types";
 
 export interface DriverUser {
   id: string;
@@ -56,11 +64,24 @@ interface DatabaseSchema {
   profiles: Record<string, DriverWorkProfile>;
   sessions: Record<string, DriverSession>;
   trips: DriverTripLog[];
+  zones: Record<string, CityZone>;
+  drivers: Driver[];
+  rides: RideRequest[];
+  surgeRequests: SurgeHandlingRequest[];
+  marketplaceMetrics: {
+    cityAvgSurge: number;
+    avgRiderWaitTimeMin: number;
+    avgDriverHourlyRate: number;
+    unfulfilledRequests: number;
+    totalTripsActive: number;
+    antiHerdDampingActive: boolean;
+    transitNetworkHealthPercent: number;
+  };
 }
 
 /**
  * Enterprise Custom Embedded Document Database Engine
- * Zero external cloud dependencies - 100% self-contained
+ * 100% Custom Self-Hosted Local Persistence - Zero External Cloud Dependency
  */
 class CustomDriverDatabase {
   private inMemoryDb: DatabaseSchema;
@@ -68,16 +89,19 @@ class CustomDriverDatabase {
   private isPersisting: boolean = false;
 
   constructor() {
-    // Primary storage file location
     const storageDir = process.env.DATA_DIR || path.join(process.cwd(), ".data");
     this.dbFilePath = path.join(storageDir, "uber_driver_database.json");
 
-    // Initialize database (empty users & profiles - authenticated via Firebase)
     this.inMemoryDb = {
       users: {},
       profiles: {},
       sessions: {},
       trips: [],
+      zones: this.getDefaultZones(),
+      drivers: this.getDefaultDrivers(),
+      rides: [],
+      surgeRequests: this.getDefaultSurgeRequests(),
+      marketplaceMetrics: this.getDefaultMetrics(),
     };
 
     this.loadFromDisk();
@@ -88,14 +112,22 @@ class CustomDriverDatabase {
       if (fs.existsSync(this.dbFilePath)) {
         const raw = fs.readFileSync(this.dbFilePath, "utf-8");
         const parsed = JSON.parse(raw);
-        if (parsed.users && parsed.profiles) {
+        if (parsed) {
           this.inMemoryDb = {
-            users: { ...this.inMemoryDb.users, ...parsed.users },
-            profiles: { ...this.inMemoryDb.profiles, ...parsed.profiles },
-            sessions: { ...this.inMemoryDb.sessions, ...parsed.sessions },
+            users: { ...this.inMemoryDb.users, ...(parsed.users || {}) },
+            profiles: { ...this.inMemoryDb.profiles, ...(parsed.profiles || {}) },
+            sessions: { ...this.inMemoryDb.sessions, ...(parsed.sessions || {}) },
             trips: parsed.trips || [],
+            zones: parsed.zones && Object.keys(parsed.zones).length > 0 ? parsed.zones : this.getDefaultZones(),
+            drivers: parsed.drivers && parsed.drivers.length > 0 ? parsed.drivers : this.getDefaultDrivers(),
+            rides: parsed.rides || [],
+            surgeRequests: parsed.surgeRequests && parsed.surgeRequests.length > 0 ? parsed.surgeRequests : this.getDefaultSurgeRequests(),
+            marketplaceMetrics: parsed.marketplaceMetrics || this.getDefaultMetrics(),
           };
         }
+      } else {
+        // Create initial database file immediately
+        this.persistToDisk();
       }
     } catch (e) {
       console.warn("CustomDriverDatabase: Non-fatal load warning, using memory state:", e);
@@ -112,14 +144,131 @@ class CustomDriverDatabase {
       }
       fs.writeFileSync(this.dbFilePath, JSON.stringify(this.inMemoryDb, null, 2), "utf-8");
     } catch (e) {
-      // In serverless read-only contexts, in-memory state persists per invocation
       console.warn("CustomDriverDatabase: Disk persist note:", e);
     } finally {
       this.isPersisting = false;
     }
   }
 
-  // --- USER OPERATIONS ---
+  // =========================================================================
+  // MARKETPLACE ZONES OPERATIONS
+  // =========================================================================
+  public getZones(): Record<string, CityZone> {
+    return this.inMemoryDb.zones || this.getDefaultZones();
+  }
+
+  public getZone(id: string): CityZone | null {
+    return this.inMemoryDb.zones?.[id] || null;
+  }
+
+  public saveZones(zones: Record<string, CityZone>) {
+    this.inMemoryDb.zones = { ...zones };
+    this.persistToDisk();
+  }
+
+  public updateZone(id: string, updates: Partial<CityZone>) {
+    if (this.inMemoryDb.zones?.[id]) {
+      this.inMemoryDb.zones[id] = { ...this.inMemoryDb.zones[id], ...updates };
+      this.persistToDisk();
+    }
+  }
+
+  // =========================================================================
+  // FLEET DRIVER OPERATIONS
+  // =========================================================================
+  public getDrivers(): Driver[] {
+    return this.inMemoryDb.drivers || this.getDefaultDrivers();
+  }
+
+  public getDriver(id: string): Driver | null {
+    return this.inMemoryDb.drivers?.find((d) => d.id === id) || null;
+  }
+
+  public saveDrivers(drivers: Driver[]) {
+    this.inMemoryDb.drivers = [...drivers];
+    this.persistToDisk();
+  }
+
+  public updateDriver(id: string, updates: Partial<Driver>) {
+    const idx = (this.inMemoryDb.drivers || []).findIndex((d) => d.id === id);
+    if (idx !== -1) {
+      this.inMemoryDb.drivers[idx] = { ...this.inMemoryDb.drivers[idx], ...updates };
+      this.persistToDisk();
+    }
+  }
+
+  // =========================================================================
+  // RIDES & BOOKINGS OPERATIONS
+  // =========================================================================
+  public getRides(): RideRequest[] {
+    return this.inMemoryDb.rides || [];
+  }
+
+  public createRideRequest(ride: RideRequest): RideRequest {
+    if (!this.inMemoryDb.rides) this.inMemoryDb.rides = [];
+    this.inMemoryDb.rides = [ride, ...this.inMemoryDb.rides].slice(0, 50);
+    this.persistToDisk();
+    return ride;
+  }
+
+  public updateRideStatus(rideId: string, status: RideRequest["status"]): RideRequest | null {
+    if (!this.inMemoryDb.rides) return null;
+    const found = this.inMemoryDb.rides.find((r) => r.id === rideId);
+    if (found) {
+      found.status = status;
+      this.persistToDisk();
+      return found;
+    }
+    return null;
+  }
+
+  // =========================================================================
+  // SURGE REQUESTS OPERATIONS
+  // =========================================================================
+  public getSurgeRequests(limit: number = 20): SurgeHandlingRequest[] {
+    return (this.inMemoryDb.surgeRequests || []).slice(0, limit);
+  }
+
+  public saveSurgeRequests(requests: SurgeHandlingRequest[]) {
+    if (!this.inMemoryDb.surgeRequests) this.inMemoryDb.surgeRequests = [];
+    this.inMemoryDb.surgeRequests = [...requests, ...this.inMemoryDb.surgeRequests].slice(0, 100);
+    this.persistToDisk();
+  }
+
+  // =========================================================================
+  // MARKETPLACE METRICS OPERATIONS
+  // =========================================================================
+  public getMarketplaceMetrics() {
+    return this.inMemoryDb.marketplaceMetrics || this.getDefaultMetrics();
+  }
+
+  public saveMarketplaceMetrics(metrics: any) {
+    this.inMemoryDb.marketplaceMetrics = { ...metrics };
+    this.persistToDisk();
+  }
+
+  // =========================================================================
+  // DATABASE HEALTH & TELEMETRY
+  // =========================================================================
+  public getDatabaseStats() {
+    return {
+      engine: "Enterprise Custom Embedded JSON Document Database",
+      storageType: "Local Persistent File Storage",
+      filePath: this.dbFilePath,
+      totalRegisteredUsers: Object.keys(this.inMemoryDb.users || {}).length,
+      totalDriverProfiles: Object.keys(this.inMemoryDb.profiles || {}).length,
+      totalActiveDrivers: (this.inMemoryDb.drivers || []).length,
+      totalMetroZones: Object.keys(this.inMemoryDb.zones || {}).length,
+      totalRidesBooked: (this.inMemoryDb.rides || []).length,
+      totalSurgeLogged: (this.inMemoryDb.surgeRequests || []).length,
+      totalTripsCompleted: (this.inMemoryDb.trips || []).length,
+      lastSyncedAt: new Date().toISOString(),
+    };
+  }
+
+  // =========================================================================
+  // USER & DRIVER AUTH OPERATIONS
+  // =========================================================================
   public async findUserByGoogleId(googleId: string): Promise<DriverUser | null> {
     for (const u of Object.values(this.inMemoryDb.users)) {
       if (u.googleId === googleId) return u;
@@ -243,7 +392,6 @@ class CustomDriverDatabase {
   public async createSession(userId: string): Promise<DriverSession> {
     const token = `tok_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
     const createdAt = new Date().toISOString();
-    // 30 days validity
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
     const session: DriverSession = {
@@ -273,19 +421,8 @@ class CustomDriverDatabase {
     await this.persistToDisk();
   }
 
-  // --- SECTOR SPECIFIC STATS ---
   public getSectorTelemetry(city: string, zoneId: string) {
-    const sectorStats: Record<string, {
-      name: string;
-      demandRiders: number;
-      surgeMultiplier: number;
-      activeDriversCount: number;
-      deficitCount: number;
-      avgFareInr: number;
-      corridorSpeedKmh: number;
-      trafficStatus: string;
-      recommendedFlyover: string;
-    }> = {
+    const sectorStats: Record<string, any> = {
       STADIUM: {
         name: "M. Chinnaswamy Stadium & MG Road CBD",
         demandRiders: 280,
@@ -330,28 +467,6 @@ class CustomDriverDatabase {
         trafficStatus: "High evening rush along Barakhamba & Lodhi",
         recommendedFlyover: "Bhisham Pitamah Marg corridor",
       },
-      DELHI_CYBER: {
-        name: "DLF Cyber City & Golf Course Road (Gurgaon)",
-        demandRiders: 210,
-        surgeMultiplier: 2.9,
-        activeDriversCount: 28,
-        deficitCount: 35,
-        avgFareInr: 650,
-        corridorSpeedKmh: 42,
-        trafficStatus: "Peak corporate shift exits",
-        recommendedFlyover: "NH-48 elevated highway ramp",
-      },
-      DELHI_AIRPORT: {
-        name: "Indira Gandhi International Airport (DEL T3)",
-        demandRiders: 180,
-        surgeMultiplier: 2.4,
-        activeDriversCount: 38,
-        deficitCount: 22,
-        avgFareInr: 980,
-        corridorSpeedKmh: 55,
-        trafficStatus: "Steady terminal egress bank",
-        recommendedFlyover: "Aerocity tunnel connector",
-      },
       MUMBAI_BKC: {
         name: "Bandra Kurla Complex & Jio Convention (BKC)",
         demandRiders: 310,
@@ -362,17 +477,6 @@ class CustomDriverDatabase {
         corridorSpeedKmh: 24,
         trafficStatus: "Heavy corporate junction congestion",
         recommendedFlyover: "BKC-Chunabhatti elevated connector",
-      },
-      MUMBAI_AIRPORT: {
-        name: "Chhatrapati Shivaji Maharaj Airport (BOM T2)",
-        demandRiders: 175,
-        surgeMultiplier: 2.5,
-        activeDriversCount: 36,
-        deficitCount: 24,
-        avgFareInr: 850,
-        corridorSpeedKmh: 45,
-        trafficStatus: "Western Express flow active",
-        recommendedFlyover: "Sahar elevated airport link",
       },
     };
 
@@ -388,7 +492,332 @@ class CustomDriverDatabase {
       recommendedFlyover: "Standard arterial road",
     };
   }
+
+  // =========================================================================
+  // DEFAULT ENTERPRISE DATASETS (PRE-LOADED INTO DATABASE FILE)
+  // =========================================================================
+  private getDefaultZones(): Record<string, CityZone> {
+    return {
+      STADIUM: {
+        id: "STADIUM",
+        name: "M. Chinnaswamy Stadium (Bengaluru)",
+        city: "Bengaluru",
+        lat: 12.9788,
+        lng: 77.5996,
+        radiusMeters: 1800,
+        currentDemand: 280,
+        activeDrivers: 24,
+        surgeMultiplier: 3.5,
+        predictedDemand15m: 350,
+        deficitOrSurplus: 90,
+        status: "HIGH_SURGE",
+      },
+      DOWNTOWN: {
+        id: "DOWNTOWN",
+        name: "MG Road & Brigade Road (Bengaluru)",
+        city: "Bengaluru",
+        lat: 12.9756,
+        lng: 77.6097,
+        radiusMeters: 1500,
+        currentDemand: 160,
+        activeDrivers: 20,
+        surgeMultiplier: 1.4,
+        predictedDemand15m: 175,
+        deficitOrSurplus: 40,
+        status: "BALANCED",
+      },
+      AIRPORT: {
+        id: "AIRPORT",
+        name: "Kempegowda Int'l Airport BLR T2 (Bengaluru)",
+        city: "Bengaluru",
+        lat: 13.1986,
+        lng: 77.7066,
+        radiusMeters: 4500,
+        currentDemand: 190,
+        activeDrivers: 40,
+        surgeMultiplier: 1.8,
+        predictedDemand15m: 210,
+        deficitOrSurplus: 50,
+        status: "HIGH_SURGE",
+      },
+      TECH_PARK: {
+        id: "TECH_PARK",
+        name: "Bellandur & Outer Ring Road (Bengaluru)",
+        city: "Bengaluru",
+        lat: 12.9279,
+        lng: 77.6834,
+        radiusMeters: 2800,
+        currentDemand: 220,
+        activeDrivers: 28,
+        surgeMultiplier: 1.6,
+        predictedDemand15m: 240,
+        deficitOrSurplus: 65,
+        status: "DEFICIT",
+      },
+      ENTERTAINMENT: {
+        id: "ENTERTAINMENT",
+        name: "Koramangala 5th Block (Bengaluru)",
+        city: "Bengaluru",
+        lat: 12.9352,
+        lng: 77.6245,
+        radiusMeters: 1600,
+        currentDemand: 130,
+        activeDrivers: 18,
+        surgeMultiplier: 1.3,
+        predictedDemand15m: 140,
+        deficitOrSurplus: 30,
+        status: "BALANCED",
+      },
+      DELHI_CENTRAL: {
+        id: "DELHI_CENTRAL",
+        name: "Connaught Place & JLN Stadium (Delhi)",
+        city: "Delhi NCR",
+        lat: 28.5828,
+        lng: 77.2344,
+        radiusMeters: 2500,
+        currentDemand: 240,
+        activeDrivers: 26,
+        surgeMultiplier: 3.2,
+        predictedDemand15m: 290,
+        deficitOrSurplus: 85,
+        status: "HIGH_SURGE",
+      },
+      DELHI_AIRPORT: {
+        id: "DELHI_AIRPORT",
+        name: "Indira Gandhi Int'l Airport DEL T3 (Delhi)",
+        city: "Delhi NCR",
+        lat: 28.5562,
+        lng: 77.1000,
+        radiusMeters: 4000,
+        currentDemand: 210,
+        activeDrivers: 38,
+        surgeMultiplier: 2.1,
+        predictedDemand15m: 230,
+        deficitOrSurplus: 60,
+        status: "DEFICIT",
+      },
+      DELHI_GURGAON: {
+        id: "DELHI_GURGAON",
+        name: "DLF Cyber Hub & Cyber City (Gurugram)",
+        city: "Delhi NCR",
+        lat: 28.4950,
+        lng: 77.0895,
+        radiusMeters: 2800,
+        currentDemand: 180,
+        activeDrivers: 22,
+        surgeMultiplier: 2.5,
+        predictedDemand15m: 220,
+        deficitOrSurplus: 70,
+        status: "HIGH_SURGE",
+      },
+      MUMBAI_BKC: {
+        id: "MUMBAI_BKC",
+        name: "Bandra Kurla Complex & Jio World (Mumbai)",
+        city: "Mumbai",
+        lat: 19.0657,
+        lng: 72.8680,
+        radiusMeters: 2500,
+        currentDemand: 310,
+        activeDrivers: 32,
+        surgeMultiplier: 3.6,
+        predictedDemand15m: 360,
+        deficitOrSurplus: 110,
+        status: "HIGH_SURGE",
+      },
+      MUMBAI_AIRPORT: {
+        id: "MUMBAI_AIRPORT",
+        name: "Chhatrapati Shivaji Maharaj BOM T2 (Mumbai)",
+        city: "Mumbai",
+        lat: 19.0896,
+        lng: 72.8656,
+        radiusMeters: 3500,
+        currentDemand: 195,
+        activeDrivers: 34,
+        surgeMultiplier: 2.2,
+        predictedDemand15m: 220,
+        deficitOrSurplus: 55,
+        status: "DEFICIT",
+      },
+      MUMBAI_SOUTH: {
+        id: "MUMBAI_SOUTH",
+        name: "Nariman Point & Marine Drive (Mumbai)",
+        city: "Mumbai",
+        lat: 18.9220,
+        lng: 72.8347,
+        radiusMeters: 2200,
+        currentDemand: 140,
+        activeDrivers: 18,
+        surgeMultiplier: 1.5,
+        predictedDemand15m: 155,
+        deficitOrSurplus: 35,
+        status: "BALANCED",
+      },
+      HYDERABAD_HITEC: {
+        id: "HYDERABAD_HITEC",
+        name: "HITEC City & Madhapur (Hyderabad)",
+        city: "Hyderabad",
+        lat: 17.4474,
+        lng: 78.3762,
+        radiusMeters: 2500,
+        currentDemand: 170,
+        activeDrivers: 22,
+        surgeMultiplier: 1.8,
+        predictedDemand15m: 190,
+        deficitOrSurplus: 50,
+        status: "DEFICIT",
+      },
+      HYDERABAD_AIRPORT: {
+        id: "HYDERABAD_AIRPORT",
+        name: "Rajiv Gandhi Int'l Airport HYD (Hyderabad)",
+        city: "Hyderabad",
+        lat: 17.2403,
+        lng: 78.4294,
+        radiusMeters: 2400,
+        currentDemand: 80,
+        activeDrivers: 10,
+        surgeMultiplier: 1.1,
+        predictedDemand15m: 95,
+        deficitOrSurplus: 70,
+        status: "NORMAL",
+      },
+      CHENNAI_OMR: {
+        id: "CHENNAI_OMR",
+        name: "OMR IT Corridor & Tidel Park (Chennai)",
+        city: "Chennai",
+        lat: 12.9724,
+        lng: 80.2508,
+        radiusMeters: 2200,
+        currentDemand: 90,
+        activeDrivers: 10,
+        surgeMultiplier: 1.1,
+        predictedDemand15m: 105,
+        deficitOrSurplus: 78,
+        status: "NORMAL",
+      },
+      KOLKATA_SALTLAKE: {
+        id: "KOLKATA_SALTLAKE",
+        name: "Sector V & New Town IT Hub (Kolkata)",
+        city: "Kolkata",
+        lat: 22.5804,
+        lng: 88.4378,
+        radiusMeters: 2200,
+        currentDemand: 85,
+        activeDrivers: 10,
+        surgeMultiplier: 1.2,
+        predictedDemand15m: 100,
+        deficitOrSurplus: 72,
+        status: "NORMAL",
+      },
+    };
+  }
+
+  private getDefaultDrivers(): Driver[] {
+    const rawDriverCatalog = [
+      { name: "Ramesh Kumar", city: "Bengaluru", zone: "STADIUM" as ZoneId, type: "UBER_GO" as const, model: "Maruti Dzire", plate: "KA 01 MJ 1042" },
+      { name: "Suresh Murthy", city: "Bengaluru", zone: "DOWNTOWN" as ZoneId, type: "UBER_PREMIER" as const, model: "Hyundai Verna", plate: "KA 03 AB 4091" },
+      { name: "Priya Nair", city: "Bengaluru", zone: "TECH_PARK" as ZoneId, type: "UBER_GREEN_EV" as const, model: "Tata Nexon EV", plate: "KA 05 EV 8820" },
+      { name: "Amit Sharma", city: "Bengaluru", zone: "ENTERTAINMENT" as ZoneId, type: "UBER_AUTO" as const, model: "Bajaj RE Auto", plate: "KA 04 AUTO 319" },
+      { name: "Vikram Rao", city: "Bengaluru", zone: "AIRPORT" as ZoneId, type: "UBER_PREMIER" as const, model: "Toyota Innova Crysta", plate: "KA 51 D 7712" },
+      { name: "Arjun Patil", city: "Bengaluru", zone: "STADIUM" as ZoneId, type: "UBER_GO" as const, model: "Hyundai Aura", plate: "KA 02 MH 2049" },
+      { name: "Ananya Gowda", city: "Bengaluru", zone: "TECH_PARK" as ZoneId, type: "UBER_GREEN_EV" as const, model: "MG ZS EV", plate: "KA 05 EV 1904" },
+      { name: "Deepak Lingam", city: "Bengaluru", zone: "DOWNTOWN" as ZoneId, type: "UBER_AUTO" as const, model: "Piaggio Ape Auto", plate: "KA 04 AUTO 882" },
+      { name: "Rajesh Khanna", city: "Delhi NCR", zone: "DELHI_CENTRAL" as ZoneId, type: "UBER_PREMIER" as const, model: "Honda City", plate: "DL 01 AB 8841" },
+      { name: "Kunal Mehra", city: "Delhi NCR", zone: "DELHI_GURGAON" as ZoneId, type: "UBER_GO" as const, model: "Maruti WagonR", plate: "HR 26 DQ 4920" },
+      { name: "Neha Chawla", city: "Delhi NCR", zone: "DELHI_AIRPORT" as ZoneId, type: "UBER_PREMIER" as const, model: "Skoda Slavia", plate: "DL 03 CA 9012" },
+      { name: "Sunil Yadav", city: "Delhi NCR", zone: "DELHI_CENTRAL" as ZoneId, type: "UBER_AUTO" as const, model: "TVS King Auto", plate: "DL 1R 7724" },
+      { name: "Gaurav Malhotra", city: "Delhi NCR", zone: "DELHI_GURGAON" as ZoneId, type: "UBER_GREEN_EV" as const, model: "BYD Atto 3", plate: "HR 26 EV 3301" },
+      { name: "Sachin Kadam", city: "Mumbai", zone: "MUMBAI_BKC" as ZoneId, type: "UBER_PREMIER" as const, model: "Hyundai Creta", plate: "MH 01 UB 4402" },
+      { name: "Pooja Sawant", city: "Mumbai", zone: "MUMBAI_SOUTH" as ZoneId, type: "UBER_GO" as const, model: "Maruti Baleno", plate: "MH 02 BG 7182" },
+      { name: "Mohan Parab", city: "Mumbai", zone: "MUMBAI_AIRPORT" as ZoneId, type: "UBER_PREMIER" as const, model: "Toyota Hycross", plate: "MH 03 CC 9920" },
+      { name: "Santosh Shinde", city: "Mumbai", zone: "MUMBAI_BKC" as ZoneId, type: "UBER_AUTO" as const, model: "Bajaj Maxima", plate: "MH 02 AUTO 102" },
+      { name: "Mahesh Deshmukh", city: "Mumbai", zone: "MUMBAI_SOUTH" as ZoneId, type: "UBER_GREEN_EV" as const, model: "Tata Tigor EV", plate: "MH 01 EV 6649" },
+      { name: "Karthik Reddy", city: "Hyderabad", zone: "HYDERABAD_HITEC" as ZoneId, type: "UBER_GO" as const, model: "Maruti Dzire", plate: "TS 09 UA 1144" },
+      { name: "Venkat Rao", city: "Hyderabad", zone: "HYDERABAD_AIRPORT" as ZoneId, type: "UBER_PREMIER" as const, model: "Kia Carens", plate: "TS 08 BC 8890" },
+      { name: "Swathi Pillai", city: "Chennai", zone: "CHENNAI_OMR" as ZoneId, type: "UBER_GREEN_EV" as const, model: "Tata Nexon EV", plate: "TN 07 EV 4401" },
+      { name: "Muthu Raman", city: "Chennai", zone: "CHENNAI_OMR" as ZoneId, type: "UBER_AUTO" as const, model: "Bajaj RE", plate: "TN 09 AUTO 551" },
+      { name: "Subrata Roy", city: "Kolkata", zone: "KOLKATA_SALTLAKE" as ZoneId, type: "UBER_GO" as const, model: "Hyundai Grand i10", plate: "WB 02 AB 3302" },
+      { name: "Debashis Sen", city: "Kolkata", zone: "KOLKATA_SALTLAKE" as ZoneId, type: "UBER_PREMIER" as const, model: "Honda Elevate", plate: "WB 06 D 8812" },
+    ];
+
+    const zones = this.getDefaultZones();
+    return rawDriverCatalog.map((spec, i) => {
+      const z = zones[spec.zone];
+      const offsetLat = (Math.random() - 0.5) * 0.015;
+      const offsetLng = (Math.random() - 0.5) * 0.015;
+      return {
+        id: `DRV_${spec.city.toUpperCase().slice(0, 3)}_${(i + 1).toString().padStart(3, "0")}`,
+        name: spec.name,
+        city: spec.city,
+        rating: +(4.85 + Math.random() * 0.14).toFixed(2),
+        vehicleType: spec.type,
+        vehicleModel: spec.model,
+        licensePlate: spec.plate,
+        batteryOrFuelPercent: Math.floor(Math.random() * 40) + 60,
+        currentZone: spec.zone,
+        status: i % 4 === 0 ? "ON_TRIP" : i % 5 === 0 ? "EN_ROUTE_SURGE" : "IDLE",
+        lat: z ? +(z.lat + offsetLat).toFixed(6) : 12.9788,
+        lng: z ? +(z.lng + offsetLng).toFixed(6) : 77.5996,
+        heading: Math.floor(Math.random() * 360),
+        speedKmh: Math.floor(Math.random() * 25) + 15,
+        earningsToday: Math.floor(Math.random() * 1500) + 1200,
+        tripsCompleted: Math.floor(Math.random() * 6) + 4,
+        shiftHours: +(3 + Math.random() * 4).toFixed(1),
+      };
+    });
+  }
+
+  private getDefaultSurgeRequests(): SurgeHandlingRequest[] {
+    const indianNames = [
+      "Rahul Verma", "Ananya Sharma", "Rohan Mehta", "Priya Kulkarni",
+      "Vikram Patel", "Sneha Rao", "Arjun Nair", "Kavita Reddy",
+      "Aditya Das", "Pooja Malhotra", "Kunal Singhania", "Neha Iyer"
+    ];
+    const destinations = [
+      "Kempegowda International Airport (BLR T2)",
+      "Indiranagar 100ft Road Metro",
+      "Koramangala 5th Block Club Area",
+      "DLF Cyber Hub Phase 2, Gurugram",
+      "Bandra Kurla Complex (BKC), Mumbai",
+      "HITEC City Cyber Towers, Hyderabad",
+    ];
+    const gates = ["Gate A (North Arterial Link)", "Gate B (Metro Skywalk Plaza)", "Gate C (South Express Flyover)"];
+    const now = Date.now();
+
+    return indianNames.map((name, i) => {
+      const baseFare = 380 + i * 25;
+      const surgeBonus = Math.round(baseFare * 1.8);
+      return {
+        id: `SRG-${(1000 + i).toString()}-${now.toString().slice(-4)}`,
+        timestamp: new Date(now - (12 - i) * 60000).toLocaleTimeString("en-US", { hour12: false }),
+        riderName: name,
+        pickupLocation: "M. Chinnaswamy Stadium, MG Road",
+        dropoffLocation: destinations[i % destinations.length],
+        vehicleClass: i % 2 === 0 ? "Uber Go" : "Uber Premier",
+        surgeMultiplier: 2.8,
+        baseFareInr: baseFare,
+        surgeBonusInr: surgeBonus,
+        totalFareInr: baseFare + surgeBonus,
+        dispersalGate: gates[i % gates.length],
+        waveNumber: i < 4 ? 1 : i < 8 ? 2 : 3,
+        waveStatus: i < 4 ? "DISPATCHED" : "BUFFER_QUEUED",
+        antiHerdEngaged: true,
+        latencyMs: +(1.4 + Math.random() * 2.2).toFixed(1),
+      };
+    });
+  }
+
+  private getDefaultMetrics() {
+    return {
+      cityAvgSurge: 1.28,
+      avgRiderWaitTimeMin: 6.8,
+      avgDriverHourlyRate: 485,
+      unfulfilledRequests: 42,
+      totalTripsActive: 48,
+      antiHerdDampingActive: false,
+      transitNetworkHealthPercent: 98.4,
+    };
+  }
 }
 
-// Singleton database instance
+// Singleton custom database instance
 export const driverDb = new CustomDriverDatabase();
