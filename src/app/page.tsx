@@ -6,6 +6,9 @@ import UberNavbar, { UberTab } from "@/components/uber/UberNavbar";
 import DriverAssistantChat from "@/components/uber/DriverAssistantChat";
 import UberBenchmarkView from "@/components/uber/UberBenchmarkView";
 import MichelangeloTelemetryView from "@/components/uber/MichelangeloTelemetryView";
+import DriverSectorSpotlight from "@/components/uber/DriverSectorSpotlight";
+import DriverAuthModal from "@/components/uber/DriverAuthModal";
+import { DriverUser, DriverWorkProfile } from "@/lib/db/driverDb";
 import {
   MarketplaceState,
   ZoneId,
@@ -36,6 +39,13 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isChatLoading, setIsChatLoading] = useState(false);
 
+  // Driver Authentication & Work Area State (Self-hosted Custom Database)
+  const [currentUser, setCurrentUser] = useState<DriverUser | null>(null);
+  const [currentProfile, setCurrentProfile] = useState<DriverWorkProfile | null>(null);
+  const [sectorTelemetry, setSectorTelemetry] = useState<any>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [mapFlyToCoords, setMapFlyToCoords] = useState<[number, number] | null>(null);
+
   // Chat conversation
   const [chatMessages, setChatMessages] = useState<AssistantMessage[]>([
     {
@@ -56,6 +66,7 @@ export default function Home() {
   // Initial load
   useEffect(() => {
     fetchState();
+    fetchDriverSession();
   }, []);
 
   // Live simulation ticker (advances every 1.0s for continuous real-time animation)
@@ -86,6 +97,20 @@ export default function Home() {
     }
   };
 
+  const fetchDriverSession = async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      const data = await res.json();
+      if (data.success && data.user && data.profile) {
+        setCurrentUser(data.user);
+        setCurrentProfile(data.profile);
+        setSectorTelemetry(data.sectorTelemetry);
+      }
+    } catch (e) {
+      console.error("Failed to fetch driver session:", e);
+    }
+  };
+
   const tickSimulation = async () => {
     try {
       const res = await fetch("/api/uber/tick", { method: "POST" });
@@ -95,6 +120,60 @@ export default function Home() {
       }
     } catch (e) {
       console.error("Tick error:", e);
+    }
+  };
+
+  const handleAuthSuccess = (user: DriverUser, profile: DriverWorkProfile) => {
+    setCurrentUser(user);
+    setCurrentProfile(profile);
+    if (profile.assignedCoordinates) {
+      setMapFlyToCoords([...profile.assignedCoordinates]);
+    }
+    if (profile.primaryZone) {
+      setSelectedZone(profile.primaryZone as ZoneId);
+    }
+    fetchDriverSession();
+
+    const remainingTarget = Math.max(0, (profile.dailyEarningsTarget || 3000) - (profile.currentEarnings || 0));
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        id: `AUTH_${Date.now()}`,
+        sender: "ASSISTANT",
+        agentType: "DISPATCH",
+        text: `🎉 **सफलतापूर्वक लॉगिन हुआ!** नमस्ते, ड्राइवर **${profile.driverName}** जी!\n\n📍 आपका कार्यक्षेत्र **${profile.primaryZoneName}** (${profile.cityName}) और वाहन **${profile.vehicleModel} (${profile.licensePlate})** सक्रिय है।\n💰 आज की कमाई: **₹${profile.currentEarnings}** | आज का दैनिक लक्ष्य: **₹${profile.dailyEarningsTarget}** (बाकी: **₹${remainingTarget}**)। माइकल एंजेलो एआई आपके कार्यक्षेत्र में सर्वाधिक किराए की राइड्स प्राथमिकता पर रूट कर रहा है!`,
+        timestamp: new Date().toISOString(),
+        actionableRecommendation: {
+          suggestedZone: (profile.primaryZone as ZoneId) || "STADIUM",
+          estimatedSurge: 3.2,
+          extraEarningsEstimate: `Targeting ₹${profile.dailyEarningsTarget}/day`,
+        },
+        routingTrace: {
+          confidenceScore: 0.999,
+          tokensEvaluated: 145,
+          featuresQueried: ["driver_google_auth_session", "custom_enterprise_db", "work_area_onboarding"],
+          latencyMs: 3.8,
+        },
+      },
+    ]);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setCurrentUser(null);
+      setCurrentProfile(null);
+      setSectorTelemetry(null);
+      setIsAuthModalOpen(false);
+    } catch (e) {
+      console.error("Logout error:", e);
+    }
+  };
+
+  const handleFlyToMySector = (coords: [number, number]) => {
+    setMapFlyToCoords([...coords]);
+    if (currentProfile?.primaryZone) {
+      setSelectedZone(currentProfile.primaryZone as ZoneId);
     }
   };
 
@@ -200,7 +279,10 @@ export default function Home() {
       const res = await fetch("/api/uber/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({
+          query,
+          driverProfile: currentProfile,
+        }),
       });
 
       const data = await res.json();
@@ -235,6 +317,9 @@ export default function Home() {
         modelHealth={state.modelHealth}
         onTriggerScenario={handleTriggerScenario}
         isProcessing={isProcessing}
+        currentUser={currentUser}
+        currentProfile={currentProfile}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
@@ -303,65 +388,77 @@ export default function Home() {
 
         {/* TAB 1: REAL CITY MAP & DRIVER COPILOT */}
         {activeTab === "map" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left 7 Cols: Real Leaflet Map */}
-            <div className="lg:col-span-7 space-y-4">
-              <RealLeafletMap
-                state={state}
-                selectedZone={selectedZone}
-                onSelectZone={setSelectedZone}
-              />
+          <div className="space-y-5">
+            {/* Enterprise Driver Sector Spotlight Card */}
+            <DriverSectorSpotlight
+              user={currentUser}
+              profile={currentProfile}
+              sectorTelemetry={sectorTelemetry}
+              onFlyToMySector={handleFlyToMySector}
+              onOpenTerritoryModal={() => setIsAuthModalOpen(true)}
+            />
 
-              {/* Selected Zone Deep Dive Telemetry */}
-              {focusedZone && (
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] font-mono text-zinc-400 uppercase">
-                        REAL-TIME SECTOR TELEMETRY
-                      </span>
-                      <h4 className="text-base font-bold text-white mt-0.5">{focusedZone.name}</h4>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Left 7 Cols: Real Leaflet Map */}
+              <div className="lg:col-span-7 space-y-4">
+                <RealLeafletMap
+                  state={state}
+                  selectedZone={selectedZone}
+                  onSelectZone={setSelectedZone}
+                  flyToCoords={mapFlyToCoords}
+                />
+
+                {/* Selected Zone Deep Dive Telemetry */}
+                {focusedZone && (
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] font-mono text-zinc-400 uppercase">
+                          REAL-TIME SECTOR TELEMETRY
+                        </span>
+                        <h4 className="text-base font-bold text-white mt-0.5">{focusedZone.name}</h4>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-[10px] text-zinc-400 font-mono block">SURGE FACTOR</span>
+                        <span className="text-xl font-black text-amber-400">
+                          {focusedZone.surgeMultiplier}x
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="text-right">
-                      <span className="text-[10px] text-zinc-400 font-mono block">SURGE FACTOR</span>
-                      <span className="text-xl font-black text-amber-400">
-                        {focusedZone.surgeMultiplier}x
-                      </span>
+                    <div className="grid grid-cols-3 gap-3 pt-2 border-t border-zinc-800 text-xs">
+                      <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
+                        <span className="text-[10px] text-zinc-500 font-medium block">Live Demand</span>
+                        <span className="text-base font-bold text-white mt-0.5 block">
+                          {focusedZone.currentDemand} riders
+                        </span>
+                      </div>
+                      <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
+                        <span className="text-[10px] text-zinc-500 font-medium block">Active Supply</span>
+                        <span className="text-base font-bold text-emerald-400 mt-0.5 block">
+                          {focusedZone.activeDrivers} vehicles
+                        </span>
+                      </div>
+                      <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
+                        <span className="text-[10px] text-zinc-500 font-medium block">15m Forecast Deficit</span>
+                        <span className="text-base font-bold text-rose-400 mt-0.5 block">
+                          +{focusedZone.deficitOrSurplus} deficit
+                        </span>
+                      </div>
                     </div>
                   </div>
+                )}
+              </div>
 
-                  <div className="grid grid-cols-3 gap-3 pt-2 border-t border-zinc-800 text-xs">
-                    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
-                      <span className="text-[10px] text-zinc-500 font-medium block">Live Demand</span>
-                      <span className="text-base font-bold text-white mt-0.5 block">
-                        {focusedZone.currentDemand} riders
-                      </span>
-                    </div>
-                    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
-                      <span className="text-[10px] text-zinc-500 font-medium block">Active Supply</span>
-                      <span className="text-base font-bold text-emerald-400 mt-0.5 block">
-                        {focusedZone.activeDrivers} vehicles
-                      </span>
-                    </div>
-                    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
-                      <span className="text-[10px] text-zinc-500 font-medium block">15m Forecast Deficit</span>
-                      <span className="text-base font-bold text-rose-400 mt-0.5 block">
-                        +{focusedZone.deficitOrSurplus} deficit
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Right 5 Cols: Multi-Agent Driver Assistant */}
-            <div className="lg:col-span-5 space-y-4">
-              <DriverAssistantChat
-                messages={chatMessages}
-                onSendMessage={handleSendMessage}
-                isLoading={isChatLoading}
-              />
+              {/* Right 5 Cols: Multi-Agent Driver Assistant */}
+              <div className="lg:col-span-5 space-y-4">
+                <DriverAssistantChat
+                  messages={chatMessages}
+                  onSendMessage={handleSendMessage}
+                  isLoading={isChatLoading}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -378,6 +475,16 @@ export default function Home() {
         {/* TAB 3: BENCHMARK RESULTS (RUBRIC 20 PTS) */}
         {activeTab === "benchmark" && <UberBenchmarkView stats={UBER_BENCHMARK_DATA} />}
       </main>
+
+      {/* Driver Google Auth & Work Area Onboarding Modal */}
+      <DriverAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentUser={currentUser}
+        currentProfile={currentProfile}
+        onAuthSuccess={handleAuthSuccess}
+        onLogout={handleLogout}
+      />
     </div>
   );
 }

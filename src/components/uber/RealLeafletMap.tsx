@@ -33,6 +33,7 @@ interface RealLeafletMapProps {
   selectedZone: ZoneId | null;
   onSelectZone: (zone: ZoneId) => void;
   onSelectDriverForCopilot?: (driver: Driver) => void;
+  flyToCoords?: [number, number] | null;
 }
 
 type MapTileStyle = "google_traffic" | "google_satellite" | "uber_midnight";
@@ -79,6 +80,7 @@ export default function RealLeafletMap({
   selectedZone,
   onSelectZone,
   onSelectDriverForCopilot,
+  flyToCoords,
 }: RealLeafletMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -709,6 +711,13 @@ export default function RealLeafletMap({
       mapInstanceRef.current.flyTo([lat, lng], zoom, { duration: 1.5 });
     }
   };
+
+  // Fly to driver's assigned sector when requested
+  useEffect(() => {
+    if (flyToCoords && mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo(flyToCoords, 13, { duration: 1.5 });
+    }
+  }, [flyToCoords]);
 
   const handleSelectTouristPlace = (place: TouristPlace) => {
     setSelectedTouristPlace(place);

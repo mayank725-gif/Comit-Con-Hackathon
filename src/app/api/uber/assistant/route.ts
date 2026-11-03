@@ -5,7 +5,7 @@ import { driverCopilot } from "@/lib/uber/agent";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { query } = body;
+    const { query, driverProfile } = body;
 
     if (!query) {
       return NextResponse.json({ success: false, error: "query is required" }, { status: 400 });
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     const engine = getUberEngine();
     const state = engine.getState();
-    const answer = await driverCopilot.answerDriverQuery(query, state);
+    const answer = await driverCopilot.answerDriverQuery(query, state, driverProfile);
 
     return NextResponse.json({
       success: true,

@@ -24,6 +24,10 @@ interface DriverAssistantChatProps {
 
 const PRESET_QUERIES_HI = [
   {
+    label: "🎯 मेरा कार्यक्षेत्र व आज का लक्ष्य",
+    query: "मेरे कार्यक्षेत्र और आज के लक्ष्य की क्या स्थिति है?",
+  },
+  {
     label: "📍 सबसे ज्यादा कमाई वाला इलाका",
     query: "अभी सबसे ज्यादा कमाई वाली राइड कहाँ मिलेगी?",
   },
@@ -42,6 +46,10 @@ const PRESET_QUERIES_HI = [
 ];
 
 const PRESET_QUERIES_EN = [
+  {
+    label: "🎯 My Work Area & Target",
+    query: "What is my assigned work area status and shift target?",
+  },
   {
     label: "📍 Best Repositioning Zone",
     query: "Where should I go to get high-fare rides right now?",

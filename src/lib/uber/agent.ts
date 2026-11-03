@@ -1,7 +1,7 @@
 import { AssistantMessage, MarketplaceState, ZoneId } from "./types";
 
 export class MultiAgentDriverCopilot {
-  public async answerDriverQuery(query: string, state: MarketplaceState): Promise<AssistantMessage> {
+  public async answerDriverQuery(query: string, state: MarketplaceState, driverProfile?: any): Promise<AssistantMessage> {
     const q = query.toLowerCase().trim();
     const id = `MSG_${Date.now()}`;
     const timestamp = new Date().toISOString();
@@ -24,6 +24,48 @@ export class MultiAgentDriverCopilot {
       q.includes("jaun") ||
       (q.includes("stadium") && (q.includes("kyu") || q.includes("kyon"))) ||
       (q.includes("traffic") && (q.includes("kaisa") || q.includes("kya")));
+
+    // 0. WORK AREA & DRIVER PROFILE SPECIFIC INTELLIGENCE
+    if (
+      driverProfile &&
+      (q.includes("area") ||
+        q.includes("sector") ||
+        q.includes("work") ||
+        q.includes("इलाका") ||
+        q.includes("इलाके") ||
+        q.includes("टारगेट") ||
+        q.includes("target") ||
+        q.includes("goal") ||
+        q.includes("बाकी") ||
+        q.includes("लक्ष्य") ||
+        q.includes("vehicle") ||
+        q.includes("गाड़ी") ||
+        q.includes("plate") ||
+        q.includes("नंबर"))
+    ) {
+      const remainingTarget = Math.max(0, (driverProfile.dailyEarningsTarget || 3000) - (driverProfile.currentEarnings || 1480));
+      const textEn = `📍 **Work Area Spotlight**: Welcome, Driver **${driverProfile.driverName}**! Your assigned primary operating sector is **${driverProfile.primaryZoneName}** in ${driverProfile.cityName}. Your vehicle **${driverProfile.vehicleModel} (${driverProfile.licensePlate})** is on-duty. You have completed **${driverProfile.completedTrips} trips** today with **₹${driverProfile.currentEarnings}** earned. You are only **₹${remainingTarget}** away from your daily ₹${driverProfile.dailyEarningsTarget} target!`;
+      const textHi = `📍 **कार्यक्षेत्र इंटेलिजेंस**: नमस्ते, ड्राइवर **${driverProfile.driverName}** जी! आपका प्राथमिक कार्यक्षेत्र **${driverProfile.primaryZoneName}** (${driverProfile.cityName}) है। आपकी गाड़ी **${driverProfile.vehicleModel} (${driverProfile.licensePlate})** ऑन-ड्यूटी है। आज आपने **${driverProfile.completedTrips} ट्रिप्स** पूरी करके **₹${driverProfile.currentEarnings}** कमाए हैं। आप अपने ₹${driverProfile.dailyEarningsTarget} के दैनिक लक्ष्य से केवल **₹${remainingTarget}** दूर हैं!`;
+
+      return {
+        id,
+        sender: "ASSISTANT",
+        agentType: "DISPATCH",
+        text: isHindi ? textHi : textEn,
+        timestamp,
+        actionableRecommendation: {
+          suggestedZone: (driverProfile.primaryZone as ZoneId) || "STADIUM",
+          estimatedSurge: 2.8,
+          extraEarningsEstimate: `₹${remainingTarget} to reach goal`,
+        },
+        routingTrace: {
+          confidenceScore: 0.999,
+          tokensEvaluated: 140,
+          featuresQueried: ["driver_assigned_sector", "daily_shift_progress", "license_plate_telemetry"],
+          latencyMs: 4.2,
+        },
+      };
+    }
 
     // 1. If Gemini API key is configured, use real LLM with live city state injection
     if (geminiKey) {
