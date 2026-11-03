@@ -233,8 +233,9 @@ export class UberMarketplaceEngine {
 
   public tick(): MarketplaceState {
     this.state.step += 1;
+    const zoneKeys: ZoneId[] = ["STADIUM", "DOWNTOWN", "AIRPORT", "TECH_PARK", "ENTERTAINMENT"];
 
-    // 1. Move vehicles on real Indian city coordinates
+    // 1. Move vehicles on real Indian city coordinates with continuous dispatch lifecycle
     this.state.drivers.forEach((driver) => {
       if (driver.targetZone) {
         const target = this.state.zones[driver.targetZone];
@@ -242,18 +243,66 @@ export class UberMarketplaceEngine {
         const dLng = target.lng - driver.lng;
         const dist = Math.sqrt(dLat * dLat + dLng * dLng);
 
-        if (dist > 0.004) {
-          driver.lat += (dLat / dist) * 0.0035;
-          driver.lng += (dLng / dist) * 0.0035;
+        // Calculate vehicle heading (0 to 360 deg) for realistic car rotation
+        const angleDeg = (Math.atan2(dLng, dLat) * 180) / Math.PI;
+        driver.heading = Math.round((angleDeg + 360) % 360);
+
+        // Speed in km/h (slower in flood scenario)
+        const isFlood = this.state.activeScenario.type === "MONSOON_FLASH_FLOOD";
+        driver.speedKmh = isFlood ? Math.round(18 + Math.random() * 12) : Math.round(38 + Math.random() * 24);
+
+        const step = isFlood ? 0.0012 : 0.0022;
+
+        if (dist > 0.003) {
+          driver.lat += (dLat / dist) * step;
+          driver.lng += (dLng / dist) * step;
+
+          // Update active route line
+          driver.routeCoordinates = [
+            [driver.lat, driver.lng],
+            [(driver.lat + target.lat) / 2 + 0.001, (driver.lng + target.lng) / 2 - 0.001],
+            [target.lat, target.lng],
+          ];
         } else {
+          // Trip Completed! Payout fare & complete cycle
+          const fare = Math.round((280 + Math.random() * 260) * target.surgeMultiplier);
+          driver.earningsToday += fare;
+          driver.tripsCompleted += 1;
           driver.currentZone = driver.targetZone;
           driver.targetZone = undefined;
           driver.status = "IDLE";
+          driver.speedKmh = 0;
+          driver.currentTripDestinationName = undefined;
+          driver.routeCoordinates = undefined;
         }
       } else {
-        // Subtle realistic street drift
-        driver.lat += (Math.random() - 0.5) * 0.001;
-        driver.lng += (Math.random() - 0.5) * 0.001;
+        // Idle driver behavior: slight street cruise & chance to pick up next trip
+        driver.speedKmh = Math.round(14 + Math.random() * 10);
+        driver.lat += (Math.random() - 0.5) * 0.0006;
+        driver.lng += (Math.random() - 0.5) * 0.0006;
+        driver.heading = Math.round(((driver.heading || 90) + (Math.random() - 0.5) * 30 + 360) % 360);
+
+        // 35% chance per tick to receive an active dispatch or repositioning command
+        if (Math.random() < 0.35) {
+          const eligibleTargets = zoneKeys.filter((z) => z !== driver.currentZone);
+          // Prefer zones with higher surge or deficit
+          let chosen = eligibleTargets[Math.floor(Math.random() * eligibleTargets.length)];
+          if (this.state.zones.STADIUM.surgeMultiplier >= 2.0 && Math.random() < 0.6) {
+            chosen = "STADIUM";
+          } else if (this.state.zones.TECH_PARK.surgeMultiplier >= 2.0 && Math.random() < 0.5) {
+            chosen = "TECH_PARK";
+          }
+
+          const targetZoneObj = this.state.zones[chosen];
+          driver.targetZone = chosen;
+          driver.status = Math.random() > 0.4 ? "ON_TRIP" : "EN_ROUTE_SURGE";
+          driver.currentTripDestinationName = targetZoneObj.name.split(" ")[0];
+          driver.routeCoordinates = [
+            [driver.lat, driver.lng],
+            [(driver.lat + targetZoneObj.lat) / 2, (driver.lng + targetZoneObj.lng) / 2],
+            [targetZoneObj.lat, targetZoneObj.lng],
+          ];
+        }
       }
     });
 
@@ -266,9 +315,12 @@ export class UberMarketplaceEngine {
       ENTERTAINMENT: 0,
     };
 
+    let activeTripsCount = 0;
     this.state.drivers.forEach((d) => {
       counts[d.currentZone] += 1;
+      if (d.status === "ON_TRIP") activeTripsCount++;
     });
+    this.state.metrics.totalTripsActive = activeTripsCount;
 
     // 3. Recalculate Dynamic Surge and Predicted Demand
     let totalSurge = 0;
@@ -294,6 +346,10 @@ export class UberMarketplaceEngine {
 
     this.state.metrics.cityAvgSurge = Math.round((totalSurge / zoneCount) * 10) / 10;
     this.state.metrics.avgRiderWaitTimeMin = Math.round((totalWait / zoneCount) * 10) / 10;
+
+    // Update hourly rate based on live driver earnings
+    const totalDriverEarnings = this.state.drivers.reduce((acc, d) => acc + d.earningsToday, 0);
+    this.state.metrics.avgDriverHourlyRate = Math.round(totalDriverEarnings / (this.state.drivers.length * 4.5));
 
     // 4. Auto-recover from Stale Model Drift if active
     if (this.state.modelHealth.status === "FALLBACK_ENGAGED") {

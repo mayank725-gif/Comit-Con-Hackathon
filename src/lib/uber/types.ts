@@ -31,6 +31,9 @@ export interface Driver {
   status: DriverStatus;
   lat: number;
   lng: number;
+  heading?: number; // 0-360 degrees rotation angle
+  speedKmh?: number; // live GPS velocity
+  currentTripDestinationName?: string;
   earningsToday: number;
   tripsCompleted: number;
   shiftHours: number;

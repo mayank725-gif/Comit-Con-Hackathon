@@ -58,11 +58,18 @@ export default function Home() {
     fetchState();
   }, []);
 
-  // Live simulation ticker (advances every 2.5s for dynamic animation)
+  // Live simulation ticker (advances every 1.0s for continuous real-time animation)
   useEffect(() => {
-    const timer = setInterval(() => {
-      tickSimulation();
-    }, 2500);
+    let isTicking = false;
+    const timer = setInterval(async () => {
+      if (isTicking) return;
+      isTicking = true;
+      try {
+        await tickSimulation();
+      } finally {
+        isTicking = false;
+      }
+    }, 1000);
 
     return () => clearInterval(timer);
   }, []);
