@@ -14,6 +14,10 @@ import {
   CheckCircle2,
   Terminal,
   Radio,
+  Sparkles,
+  MapPin,
+  Clock,
+  Compass,
 } from "lucide-react";
 
 interface MichelangeloTelemetryViewProps {
@@ -46,331 +50,281 @@ export default function MichelangeloTelemetryView({
   return (
     <div className="space-y-6">
       {/* Top Hero Banner */}
-      <div className="rounded-3xl border border-zinc-800 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 p-6 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="rounded-3xl border border-zinc-800 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
-                MICHELANGELO CORE ML ENGINE ACTIVE
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+                <Sparkles className="h-3 w-3" />
+                UBER SMART DISPATCH ENGINE ONLINE
               </span>
             </div>
-            <h2 className="text-2xl font-black text-white tracking-tight">
-              Real-Time Feature Store &amp; ML Observability Platform
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              How Uber&apos;s AI Brain Matches Rides in Real Time
             </h2>
-            <p className="text-xs text-zinc-400 max-w-2xl leading-relaxed">
-              Uber's Michelangelo ML platform orchestrates sub-10ms spatio-temporal predictions across Bengaluru using Apache Kafka, H3 hexagonal indexing, and automated Kolmogorov-Smirnov drift self-healing.
+            <p className="text-xs sm:text-sm text-zinc-300 max-w-2xl leading-relaxed">
+              Every second, Uber analyzes live Google traffic speeds, passenger request surges, and weather conditions across 6 Indian metros to find the closest drivers and fastest shortcut routes.
             </p>
           </div>
 
-          {/* Quick Actions */}
+          {/* User-Friendly Simulation Actions */}
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => onTriggerScenario("STALE_MODEL_DRIFT")}
               disabled={isProcessing || isHighDrift}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 transition-all disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/25 transition-all disabled:opacity-50 shadow-sm"
             >
               <AlertTriangle className="h-3.5 w-3.5" />
-              <span>Simulate Feature Drift</span>
+              <span>Test Sudden Traffic Shock</span>
             </button>
 
             <button
               onClick={handleRetrain}
               disabled={retrainingStatus === "RETRAINING" || isProcessing}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white hover:bg-zinc-100 text-black shadow-md transition-all disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${retrainingStatus === "RETRAINING" ? "animate-spin" : ""}`} />
               <span>
                 {retrainingStatus === "RETRAINING"
-                  ? "Recalibrating Weights..."
+                  ? "Re-Calibrating Routes..."
                   : retrainingStatus === "RECALIBRATED"
-                  ? "✓ Model Calibrated"
-                  : "Auto-Retrain Model"}
+                  ? "✓ System Calibrated"
+                  : "Auto-Calibrate System"}
               </span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* 4 Core Metrics Cards */}
+      {/* 4 Core Pillars of the AI Engine */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1 */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-2 backdrop-blur-md">
+        {/* Metric 1: Match Speed */}
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4 space-y-2 backdrop-blur-md shadow-md">
           <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Kafka Event Ingestion</span>
-            <Radio className="h-4 w-4 text-emerald-400" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-white">
-              {(state.modelHealth.featureIngestionRatePerSec || 28450).toLocaleString()}
+            <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
+              ⚡ Instant Dispatch Speed
             </span>
-            <span className="text-xs font-mono text-zinc-400">events/sec</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-mono">
-            <CheckCircle2 className="h-3 w-3" />
-            <span>0 Kafka topic lag &bull; 64 partitions</span>
-          </div>
-        </div>
-
-        {/* Metric 2 */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-2 backdrop-blur-md">
-          <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Inference Latency P99</span>
             <Activity className="h-4 w-4 text-cyan-400" />
           </div>
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-1.5">
             <span className="text-3xl font-black text-cyan-400">
               {state.modelHealth.latencyMs}
             </span>
-            <span className="text-xs font-mono text-zinc-400">ms</span>
+            <span className="text-xs font-bold text-zinc-300">milliseconds</span>
           </div>
-          <div className="text-[10px] text-zinc-400 font-mono">
-            SLA: &lt; 15.0ms target (99.8% compliance)
-          </div>
+          <p className="text-[11px] text-zinc-400 leading-snug">
+            Rider requests are paired with the optimal driver in under 10ms.
+          </p>
         </div>
 
-        {/* Metric 3 */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-2 backdrop-blur-md">
+        {/* Metric 2: Live Data Points */}
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4 space-y-2 backdrop-blur-md shadow-md">
           <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">KS Drift Statistic</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              📡 Live Road Signals
+            </span>
+            <Radio className="h-4 w-4 text-emerald-400" />
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-3xl font-black text-white">
+              {(state.modelHealth.featureIngestionRatePerSec || 28450).toLocaleString()}
+            </span>
+            <span className="text-xs font-bold text-zinc-300">updates/sec</span>
+          </div>
+          <p className="text-[11px] text-zinc-400 leading-snug">
+            Real-time speeds, GPS coordinates, and incoming passenger rides.
+          </p>
+        </div>
+
+        {/* Metric 3: Route Reliability */}
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4 space-y-2 backdrop-blur-md shadow-md">
+          <div className="flex items-center justify-between text-zinc-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400">
+              🛡️ Route Reliability
+            </span>
             <ShieldCheck className={`h-4 w-4 ${isHighDrift ? "text-amber-400 animate-pulse" : "text-emerald-400"}`} />
           </div>
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-1.5">
             <span className={`text-3xl font-black ${isHighDrift ? "text-amber-400" : "text-emerald-400"}`}>
-              {driftScore.toFixed(2)}
+              {isHighDrift ? "Recalibrating" : "99.8%"}
             </span>
-            <span className="text-xs font-mono text-zinc-400">
-              {isHighDrift ? "/ 1.0 (DRIFT!)" : "/ 1.0 (NOMINAL)"}
+            <span className="text-xs font-bold text-zinc-300">
+              {isHighDrift ? "Weather Alert" : "Optimal"}
             </span>
           </div>
-          <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                isHighDrift ? "bg-amber-500" : "bg-emerald-500"
-              }`}
-              style={{ width: `${Math.min(100, driftScore * 100)}%` }}
-            />
-          </div>
+          <p className="text-[11px] text-zinc-400 leading-snug">
+            {isHighDrift
+              ? "Traffic deviation detected &mdash; elevated bypass routing active."
+              : "Road predictions match live conditions seamlessly."}
+          </p>
         </div>
 
-        {/* Metric 4 */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-2 backdrop-blur-md">
+        {/* Metric 4: Hyperlocal Sectors */}
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4 space-y-2 backdrop-blur-md shadow-md">
           <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Active Feature Store</span>
-            <Layers className="h-4 w-4 text-indigo-400" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
+              🗺️ Hyperlocal Sectors
+            </span>
+            <Layers className="h-4 w-4 text-amber-400" />
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-indigo-400">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-3xl font-black text-amber-400">
               {(state.modelHealth.activeFeatures || 1240).toLocaleString()}
             </span>
-            <span className="text-xs font-mono text-zinc-400">features</span>
+            <span className="text-xs font-bold text-zinc-300">micro-zones</span>
           </div>
-          <div className="text-[10px] text-zinc-400 font-mono">
-            H3 Uber Spatial Resolution 8, 9, 10
-          </div>
+          <p className="text-[11px] text-zinc-400 leading-snug">
+            High-precision hexagon sectors tracking street-by-street demand.
+          </p>
         </div>
       </div>
 
-      {/* Deep-Dive Grid: Feature Drift Comparison & Kubernetes Microservices */}
+      {/* Real-Time Live Signals Visualizer */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left 7 Cols: Feature Drift Kolmogorov-Smirnov Distribution */}
-        <div className="lg:col-span-7 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-6 space-y-5">
+        {/* Left 7 Cols: Real-Time Signal Distribution */}
+        <div className="lg:col-span-7 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-6 space-y-5 shadow-lg">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Activity className="h-4 w-4 text-indigo-400" />
-                Kolmogorov-Smirnov (KS) Feature Distribution Monitor
+                <Activity className="h-4 w-4 text-cyan-400" />
+                Live Real-Time Decision Factors
               </h3>
               <p className="text-[11px] text-zinc-400 mt-0.5">
-                Compares real-time streaming feature values against baseline model training distributions.
+                Signals the AI continuously checks to recommend the highest fares and fastest routes.
               </p>
             </div>
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-indigo-500/10 border border-indigo-500/30 text-indigo-300">
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
               Live Stream
             </span>
           </div>
 
-          {/* Feature Distribution Bars */}
+          {/* 3 User-Friendly Signal Bars */}
           <div className="space-y-4">
-            {/* Feature 1 */}
-            <div className="space-y-1.5">
+            {/* Signal 1 */}
+            <div className="space-y-1.5 bg-zinc-950/60 p-3 rounded-2xl border border-zinc-800/60">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-mono font-semibold text-zinc-300">hex_demand_surge_ratio</span>
-                <span className="font-mono text-zinc-400">KS Divergence: <span className="text-emerald-400 font-bold">0.06 (Normal)</span></span>
+                <span className="font-bold text-white flex items-center gap-1.5">
+                  <span>👥</span>
+                  <span>Passenger Request Surge Ratio</span>
+                </span>
+                <span className="font-black text-amber-400">2.4x Peak Surge</span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                <div>
-                  <span className="text-zinc-500 block mb-0.5">Training Baseline</span>
-                  <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-zinc-500 rounded-full" style={{ width: "45%" }} />
-                  </div>
-                </div>
-                <div>
-                  <span className="text-indigo-400 block mb-0.5">Production Ingestion</span>
-                  <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: "48%" }} />
-                  </div>
-                </div>
+              <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-amber-400 to-rose-400 w-[78%] rounded-full" />
               </div>
+              <p className="text-[10px] text-zinc-400">
+                Surges around Chinnaswamy Stadium, BKC Mumbai, and DLF Cyber City.
+              </p>
             </div>
 
-            {/* Feature 2 */}
-            <div className="space-y-1.5">
+            {/* Signal 2 */}
+            <div className="space-y-1.5 bg-zinc-950/60 p-3 rounded-2xl border border-zinc-800/60">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-mono font-semibold text-zinc-300">rain_precipitation_mm_hr</span>
-                <span className="font-mono text-zinc-400">
-                  KS Divergence:{" "}
-                  <span className={`font-bold ${isHighDrift ? "text-amber-400" : "text-emerald-400"}`}>
-                    {isHighDrift ? "0.78 (CRITICAL)" : "0.09 (Normal)"}
-                  </span>
+                <span className="font-bold text-white flex items-center gap-1.5">
+                  <span>🎯</span>
+                  <span>Driver Target Pacing &amp; Income Balance</span>
+                </span>
+                <span className="font-black text-emerald-400">92% on Track</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
+                <div className="h-full bg-emerald-500 w-[92%] rounded-full" />
+              </div>
+              <p className="text-[10px] text-zinc-400">
+                Prioritizes drivers who are closest to achieving their daily shift goals.
+              </p>
+            </div>
+
+            {/* Signal 3 */}
+            <div className="space-y-1.5 bg-zinc-950/60 p-3 rounded-2xl border border-zinc-800/60">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-white flex items-center gap-1.5">
+                  <span>🌧️</span>
+                  <span>Weather &amp; Road Waterlogging Sensor</span>
+                </span>
+                <span className="font-black text-cyan-400">
+                  {isHighDrift ? "Heavy Rain Detected" : "Clear Conditions"}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                <div>
-                  <span className="text-zinc-500 block mb-0.5">Training Baseline (Dry)</span>
-                  <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-zinc-500 rounded-full" style={{ width: "15%" }} />
-                  </div>
-                </div>
-                <div>
-                  <span className="text-indigo-400 block mb-0.5">Production Ingestion (Ground Sensors)</span>
-                  <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-700 ${
-                        isHighDrift ? "bg-amber-500" : "bg-indigo-500"
-                      }`}
-                      style={{ width: isHighDrift ? "92%" : "18%" }}
-                    />
-                  </div>
-                </div>
+              <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    isHighDrift ? "bg-cyan-400 w-[85%]" : "bg-cyan-500 w-[15%]"
+                  }`}
+                />
               </div>
+              <p className="text-[10px] text-zinc-400">
+                Monitors Bellandur and Outer Ring Road sensors to trigger flyover bypasses.
+              </p>
             </div>
-
-            {/* Feature 3 */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-mono font-semibold text-zinc-300">driver_repositioning_eta_sec</span>
-                <span className="font-mono text-zinc-400">KS Divergence: <span className="text-emerald-400 font-bold">0.11 (Normal)</span></span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                <div>
-                  <span className="text-zinc-500 block mb-0.5">Training Baseline</span>
-                  <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-zinc-500 rounded-full" style={{ width: "60%" }} />
-                  </div>
-                </div>
-                <div>
-                  <span className="text-indigo-400 block mb-0.5">Production Ingestion</span>
-                  <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: "65%" }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-mono font-semibold text-zinc-300">anti_herd_damping_coefficient</span>
-                <span className="font-mono text-zinc-400">KS Divergence: <span className="text-emerald-400 font-bold">0.04 (Stable)</span></span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                <div>
-                  <span className="text-zinc-500 block mb-0.5">Training Baseline</span>
-                  <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-zinc-500 rounded-full" style={{ width: "80%" }} />
-                  </div>
-                </div>
-                <div>
-                  <span className="text-indigo-400 block mb-0.5">Production Ingestion</span>
-                  <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: "82%" }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Self-Healing Failover Status Box */}
-          <div className={`p-4 rounded-2xl border ${
-            isHighDrift
-              ? "border-amber-500/40 bg-amber-500/10 text-amber-200"
-              : "border-zinc-800 bg-zinc-950/60 text-zinc-300"
-          } space-y-2`}>
-            <div className="flex items-center gap-2">
-              <Zap className={`h-4 w-4 ${isHighDrift ? "text-amber-400 animate-bounce" : "text-emerald-400"}`} />
-              <span className="text-xs font-bold uppercase tracking-wider">
-                {isHighDrift ? "Automated Self-Healing Failover Active" : "Self-Healing Circuit Breaker: Armed & Standby"}
-              </span>
-            </div>
-            <p className="text-[11px] leading-relaxed">
-              {isHighDrift
-                ? "Feature drift score exceeded safe threshold (0.40). Michelangelo auto-routed dispatch decisions to the deterministic heuristic fallback engine. Zero driver downtime or surge collapse occurred."
-                : "Active routing algorithm is operating on deep gradient-boosted spatial trees. If ground telemetry deviates by >40%, the system automatically falls back to deterministic heuristics in < 2ms."}
-            </p>
           </div>
         </div>
 
-        {/* Right 5 Cols: Kubernetes Microservices Mesh */}
-        <div className="lg:col-span-5 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-            <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Server className="h-4 w-4 text-emerald-400" />
-                Kubernetes Mesh Telemetry
-              </h3>
-              <p className="text-[11px] text-zinc-400 mt-0.5">
-                Bengaluru region pod autoscaling &amp; memory allocations.
-              </p>
-            </div>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
-              4/4 Healthy
-            </span>
+        {/* Right 5 Cols: Microservices Health & Status */}
+        <div className="lg:col-span-5 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-6 space-y-4 shadow-lg">
+          <div className="border-b border-zinc-800 pb-3">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <Server className="h-4 w-4 text-emerald-400" />
+              System Services Status
+            </h3>
+            <p className="text-[11px] text-zinc-400 mt-0.5">
+              Live status of dispatch, traffic, and Google map streaming pipelines.
+            </p>
           </div>
 
-          <div className="space-y-3">
-            {(state.modelHealth.services || []).map((service, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-3.5 space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                    <span className="text-xs font-mono font-bold text-white">{service.name}</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-zinc-400">
-                    {service.podCount} Pods &bull; {service.memoryMb}MB
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-zinc-400 pt-1 border-t border-zinc-900">
-                  <div>
-                    <span>CPU Load: </span>
-                    <span className="text-white font-bold">{service.cpuPercent}%</span>
-                  </div>
-                  <div className="text-right">
-                    <span>P99: </span>
-                    <span className="text-cyan-400 font-bold">{service.latencyP99Ms}ms</span>
-                  </div>
+          <div className="space-y-2.5">
+            <div className="p-3 rounded-2xl border border-zinc-800 bg-zinc-950 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div>
+                  <span className="text-xs font-bold text-white block">Google Live Traffic Overlay</span>
+                  <span className="text-[10px] text-zinc-400">Road congestion streaming active</span>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Live Terminal Stream */}
-          <div className="rounded-2xl border border-zinc-800 bg-black/90 p-3.5 space-y-2 font-mono text-[10px]">
-            <div className="flex items-center gap-2 text-zinc-500 border-b border-zinc-900 pb-1.5">
-              <Terminal className="h-3 w-3 text-emerald-400" />
-              <span>MICHELANGELO-KERNEL.LOG</span>
+              <span className="text-[10px] font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/15">
+                Operational
+              </span>
             </div>
-            <div className="space-y-1 text-zinc-400 overflow-hidden">
-              <div className="text-emerald-400/90">&gt; [KAFKA] Ingesting 28,450 events/s across 64 topics.</div>
-              <div>&gt; [H3-HEX] 1,420 spatial cells updated in Bengaluru East (Bellandur).</div>
-              <div>&gt; [XAI] Anti-herd damping factor 0.82 applied to MG Road corridor.</div>
-              <div className="text-cyan-400">&gt; [MODEL] P99 inference latency nominal at {state.modelHealth.latencyMs}ms.</div>
+
+            <div className="p-3 rounded-2xl border border-zinc-800 bg-zinc-950 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                <div>
+                  <span className="text-xs font-bold text-white block">Hindi &amp; English Voice Engine</span>
+                  <span className="text-[10px] text-zinc-400">Multi-lingual speech synthesis</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/15">
+                Operational
+              </span>
+            </div>
+
+            <div className="p-3 rounded-2xl border border-zinc-800 bg-zinc-950 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-cyan-400" />
+                <div>
+                  <span className="text-xs font-bold text-white block">Driver Territory Database</span>
+                  <span className="text-[10px] text-zinc-400">Self-hosted local persistence</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold text-cyan-400 px-2 py-0.5 rounded-full bg-cyan-500/15">
+                Self-Hosted
+              </span>
+            </div>
+
+            <div className="p-3 rounded-2xl border border-zinc-800 bg-zinc-950 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-indigo-400" />
+                <div>
+                  <span className="text-xs font-bold text-white block">32 Tourist Destinations Hub</span>
+                  <span className="text-[10px] text-zinc-400">Outstation pricing matrix</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold text-indigo-400 px-2 py-0.5 rounded-full bg-indigo-500/15">
+                Synced
+              </span>
             </div>
           </div>
         </div>
