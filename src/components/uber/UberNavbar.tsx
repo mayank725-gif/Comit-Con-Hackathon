@@ -21,7 +21,7 @@ import {
   Flame,
 } from "lucide-react";
 
-export type UberTab = "map" | "benchmark" | "telemetry";
+export type UberTab = "map" | "copilot" | "benchmark" | "telemetry";
 
 interface UberNavbarProps {
   activeTab: UberTab;
@@ -94,6 +94,18 @@ export default function UberNavbar({
           >
             <Activity className="h-3.5 w-3.5" />
             <span>Driver Map</span>
+          </button>
+
+          <button
+            onClick={() => onTabChange("copilot")}
+            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-xl font-bold transition-all ${
+              activeTab === "copilot"
+                ? "bg-white text-black shadow-md"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            <Bot className="h-3.5 w-3.5" />
+            <span>Voice Copilot</span>
           </button>
 
           <button

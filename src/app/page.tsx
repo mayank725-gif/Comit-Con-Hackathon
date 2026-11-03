@@ -25,7 +25,7 @@ const RealLeafletMap = dynamic(
       <div className="w-full h-[580px] rounded-3xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center space-y-2">
         <div className="h-6 w-6 rounded-full border-2 border-white border-t-transparent animate-spin" />
         <span className="text-xs font-mono text-zinc-400">
-          Loading Pan-India Real-Time Marketplace Map (Google Live Traffic)...
+          Loading Live Map & Traffic...
         </span>
       </div>
     ),
@@ -52,8 +52,13 @@ export default function Home() {
       id: "INIT_1",
       sender: "ASSISTANT",
       agentType: "DISPATCH",
-      text: "👋 नमस्ते! उबर ड्राइवर स्मार्ट मार्केट इंजन भारत के 6 प्रमुख महानगरों व 32 पर्यटन स्थलों पर सक्रिय है। चिन्नास्वामी स्टेडियम और एमजी रोड में सर्वाधिक कमाई के अवसर हैं। आप माइक बटन दबाकर हिंदी में बोल सकते हैं!\n\nWelcome Driver Partner! Uber Smart Dispatch is live across India. How can I assist your route today?",
+      text: "👋 नमस्ते! उबर ड्राइवर स्मार्ट कॉपायलट सक्रिय है। चिन्नास्वामी स्टेडियम और एमजी रोड में अभी सबसे ज्यादा किराए की राइड्स मिल रही हैं। आप माइक दबाकर हिंदी या English में कुछ भी पूछ सकते हैं!",
       timestamp: "2026-11-03T23:00:00.000Z",
+      actionableRecommendation: {
+        suggestedZone: "STADIUM",
+        estimatedSurge: 3.5,
+        extraEarningsEstimate: "+₹350 - ₹550 / trip",
+      },
       routingTrace: {
         confidenceScore: 0.985,
         tokensEvaluated: 130,
@@ -148,12 +153,6 @@ export default function Home() {
           estimatedSurge: 3.2,
           extraEarningsEstimate: `Targeting ₹${profile.dailyEarningsTarget}/day`,
         },
-        routingTrace: {
-          confidenceScore: 0.999,
-          tokensEvaluated: 145,
-          featuresQueried: ["driver_google_auth_session", "custom_enterprise_db", "work_area_onboarding"],
-          latencyMs: 3.8,
-        },
       },
     ]);
   };
@@ -178,20 +177,19 @@ export default function Home() {
   };
 
   const handleTriggerScenario = async (
-    scenario: "STADIUM_CONCERT_END" | "STALE_MODEL_DRIFT" | "AIRPORT_FLIGHT_WAVE" | "MONSOON_FLASH_FLOOD" | "RESET"
+    type: "STADIUM_CONCERT_END" | "STALE_MODEL_DRIFT" | "AIRPORT_FLIGHT_WAVE" | "MONSOON_FLASH_FLOOD" | "RESET"
   ) => {
     setIsProcessing(true);
     try {
       const res = await fetch("/api/uber/scenario", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scenario }),
+        body: JSON.stringify({ scenario: type }),
       });
       const data = await res.json();
       if (data.success) {
         setState(data.state);
-
-        // Add contextual bot notification to chat
+        const scenario = data.scenarioApplied;
         if (scenario === "STADIUM_CONCERT_END") {
           setSelectedZone("STADIUM");
           setChatMessages((prev) => [
@@ -200,18 +198,12 @@ export default function Home() {
               id: `SCEN_${Date.now()}`,
               sender: "ASSISTANT",
               agentType: "EVENT_INTEL",
-              text: "🚨 **IPL MATCH SURGE ALERT**: IPL T20 match has concluded at M. Chinnaswamy Stadium. 40,000 spectators exiting along MG Road & Cubbon Park! Surge multiplier surged to 3.5x. Forecaster recommends immediate repositioning.",
+              text: "🚨 **IPL MATCH SURGE ALERT**: IPL match concluded at M. Chinnaswamy Stadium. 40,000 spectators exiting! Surge multiplier jumped to 3.5x. Recommended to reposition nearby.",
               timestamp: new Date().toISOString(),
               actionableRecommendation: {
                 suggestedZone: "STADIUM",
                 estimatedSurge: 3.5,
                 extraEarningsEstimate: "+₹350 - ₹550 / trip",
-              },
-              routingTrace: {
-                confidenceScore: 0.994,
-                tokensEvaluated: 182,
-                featuresQueried: ["stadium_exit_inflow", "bengaluru_metro_density", "anti_herd_rate"],
-                latencyMs: 6.1,
               },
             },
           ]);
@@ -223,35 +215,12 @@ export default function Home() {
               id: `SCEN_${Date.now()}`,
               sender: "ASSISTANT",
               agentType: "SYSTEM_GUARD",
-              text: "🌧️ **MONSOON FLASH FLOOD**: Severe waterlogging detected along Outer Ring Road (Bellandur) and Silk Board Junction. Speed limits reduced; EV fleet routed via elevated corridors. Bellandur surge raised to 2.9x.",
+              text: "🌧️ **MONSOON FLASH FLOOD**: Severe waterlogging detected along Outer Ring Road. Speeds reduced; vehicles routed via elevated corridors. Surge raised to 2.9x.",
               timestamp: new Date().toISOString(),
               actionableRecommendation: {
                 suggestedZone: "TECH_PARK",
                 estimatedSurge: 2.9,
                 extraEarningsEstimate: "+₹280 wet weather bonus",
-              },
-              routingTrace: {
-                confidenceScore: 0.972,
-                tokensEvaluated: 164,
-                featuresQueried: ["bellandur_waterlog_sensor", "ev_battery_efficiency_temp", "flyover_routing_matrix"],
-                latencyMs: 7.2,
-              },
-            },
-          ]);
-        } else if (scenario === "STALE_MODEL_DRIFT") {
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              id: `SCEN_${Date.now()}`,
-              sender: "ASSISTANT",
-              agentType: "SYSTEM_GUARD",
-              text: "⚠️ **SELF-HEALING EVENT**: Predictive feature drift detected (78% deviation). Michelangelo engaged Real-Time Heuristic Fallback with zero driver disruption.",
-              timestamp: new Date().toISOString(),
-              routingTrace: {
-                confidenceScore: 0.892,
-                tokensEvaluated: 195,
-                featuresQueried: ["ks_test_drift_p_value", "realtime_heuristic_fallback_matrix"],
-                latencyMs: 14.8,
               },
             },
           ]);
@@ -301,7 +270,7 @@ export default function Home() {
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center space-y-3 font-sans">
         <div className="h-8 w-8 rounded-full border-2 border-white border-t-transparent animate-spin" />
         <span className="text-xs font-mono text-zinc-400">
-          Initializing Uber Michelangelo Pan-India Marketplace Engine...
+          Starting Uber Driver Partner Pro...
         </span>
       </div>
     );
@@ -322,101 +291,11 @@ export default function Home() {
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
 
-      <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-        {/* Helpful Driver Quick Tip Banner */}
-        <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-zinc-900 to-zinc-950 p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-300 text-lg shrink-0 border border-indigo-500/40">
-              💡
-            </span>
-            <div className="text-xs">
-              <span className="font-bold text-white block">
-                Welcome to Uber Driver Partner Pro!
-              </span>
-              <span className="text-zinc-300">
-                Tap on any city or 32 tourist attractions on the map to find high-fare rides, or tap 🎙️ <strong>Voice</strong> to talk in Hindi or English.
-              </span>
-            </div>
-          </div>
-          <button
-            onClick={() => setIsAuthModalOpen(true)}
-            className="shrink-0 px-3 py-1.5 rounded-xl bg-white hover:bg-zinc-100 text-black font-bold text-xs shadow-md transition-all"
-          >
-            {currentUser ? "My Work Profile" : "Sign In with Google"}
-          </button>
-        </div>
-
-        {/* KPI Metric Strip (User-Friendly Driver Metrics) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Metric 1 */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
-            <span className="text-[11px] text-zinc-400 font-medium block">
-              💰 Driver Hourly Earnings
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-emerald-400">
-                ₹{state.metrics.avgDriverHourlyRate}/hr
-              </span>
-              <span className="text-xs font-bold text-emerald-400">+64% Boost</span>
-            </div>
-            <span className="text-[10px] text-zinc-400 block">
-              vs ₹280/hr normal driving without AI
-            </span>
-          </div>
-
-          {/* Metric 2 */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
-            <span className="text-[11px] text-zinc-400 font-medium block">
-              🚕 Active Fleet Online
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-white">
-                {state.drivers.length} Cabs Online
-              </span>
-              <span className="text-xs font-bold text-cyan-400">6 Metros</span>
-            </div>
-            <span className="text-[10px] text-zinc-400 block truncate">
-              Delhi &bull; Mumbai &bull; Bengaluru &bull; Hyd &bull; Chennai &bull; Kol
-            </span>
-          </div>
-
-          {/* Metric 3 */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
-            <span className="text-[11px] text-zinc-400 font-medium block">
-              ⚡ High-Demand Peak Surge
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-amber-400">
-                {state.metrics.cityAvgSurge}x
-              </span>
-              <span className="text-xs font-bold text-amber-300">Average</span>
-            </div>
-            <span className="text-[10px] text-zinc-400 block truncate">
-              Peak: {state.zones.MUMBAI_BKC?.surgeMultiplier || 1.6}x at Mumbai BKC
-            </span>
-          </div>
-
-          {/* Metric 4 */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
-            <span className="text-[11px] text-zinc-400 font-medium block">
-              🚦 City Traffic Condition
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-cyan-400">
-                {state.metrics.transitNetworkHealthPercent}%
-              </span>
-              <span className="text-xs font-bold text-cyan-300">Clear Flow</span>
-            </div>
-            <span className="text-[10px] text-zinc-400 block truncate">
-              Smart bypass routes avoid traffic jams
-            </span>
-          </div>
-        </div>
-
-        {/* TAB 1: REAL CITY MAP & DRIVER COPILOT */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+        {/* TAB 1: REAL DRIVER MAP & COPILOT */}
         {activeTab === "map" && (
-          <div className="space-y-5">
-            {/* Enterprise Driver Sector Spotlight Card */}
+          <div className="space-y-4">
+            {/* Sleek Compact Driver HUD (Takes minimal vertical space) */}
             <DriverSectorSpotlight
               user={currentUser}
               profile={currentProfile}
@@ -425,9 +304,9 @@ export default function Home() {
               onOpenTerritoryModal={() => setIsAuthModalOpen(true)}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Left 7 Cols: Real Leaflet Map */}
-              <div className="lg:col-span-7 space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+              {/* Left 7 Cols: Clean Leaflet Map */}
+              <div className="lg:col-span-7 space-y-3">
                 <RealLeafletMap
                   state={state}
                   selectedZone={selectedZone}
@@ -435,54 +314,44 @@ export default function Home() {
                   flyToCoords={mapFlyToCoords}
                 />
 
-                {/* Selected Zone Deep Dive Telemetry (User-Friendly Zone Insights) */}
+                {/* Selected Hotspot Card (Clean, Simple Drawer) */}
                 {focusedZone && (
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 space-y-3 shadow-lg">
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 p-4 shadow-lg backdrop-blur-md">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1">
-                          📍 SELECTED HOTSPOT DETAILS
+                        <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">
+                          📍 SELECTED HOTSPOT
                         </span>
-                        <h4 className="text-base font-bold text-white mt-0.5">{focusedZone.name}</h4>
+                        <h4 className="text-sm font-bold text-white mt-0.5">{focusedZone.name}</h4>
                       </div>
 
                       <div className="text-right">
-                        <span className="text-[10px] text-zinc-400 block font-medium">FARE SURGE</span>
-                        <span className="text-xl font-black text-amber-400">
-                          {focusedZone.surgeMultiplier}x Peak
+                        <span className="text-xs px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/40">
+                          ⚡ {focusedZone.surgeMultiplier}x Surge
                         </span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3 pt-2 border-t border-zinc-800 text-xs">
-                      <div className="rounded-xl border border-zinc-800/80 bg-zinc-950 p-3 space-y-0.5">
-                        <span className="text-[10px] text-zinc-400 font-medium block">Passengers Requesting</span>
-                        <span className="text-base font-bold text-white block">
-                          {focusedZone.currentDemand} riders
-                        </span>
-                        <span className="text-[10px] text-zinc-500 block">Looking for rides</span>
+                    <div className="grid grid-cols-3 gap-2 pt-3 mt-2 border-t border-zinc-800 text-xs">
+                      <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-2 text-center">
+                        <span className="text-[10px] text-zinc-400 block">Riders Looking</span>
+                        <span className="text-sm font-bold text-white">{focusedZone.currentDemand}</span>
                       </div>
-                      <div className="rounded-xl border border-zinc-800/80 bg-zinc-950 p-3 space-y-0.5">
-                        <span className="text-[10px] text-zinc-400 font-medium block">Cabs in this Area</span>
-                        <span className="text-base font-bold text-emerald-400 block">
-                          {focusedZone.activeDrivers} vehicles
-                        </span>
-                        <span className="text-[10px] text-zinc-500 block">Available drivers</span>
+                      <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-2 text-center">
+                        <span className="text-[10px] text-zinc-400 block">Available Cabs</span>
+                        <span className="text-sm font-bold text-emerald-400">{focusedZone.activeDrivers}</span>
                       </div>
-                      <div className="rounded-xl border border-zinc-800/80 bg-zinc-950 p-3 space-y-0.5">
-                        <span className="text-[10px] text-rose-300 font-medium block">Demand Opportunity</span>
-                        <span className="text-base font-bold text-rose-400 block">
-                          +{focusedZone.deficitOrSurplus} extra riders
-                        </span>
-                        <span className="text-[10px] text-emerald-400 font-bold block">Instant pickup chance!</span>
+                      <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-2 text-center">
+                        <span className="text-[10px] text-rose-300 block">Pickup Chance</span>
+                        <span className="text-sm font-bold text-rose-400">Instant</span>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Right 5 Cols: Multi-Agent Driver Assistant */}
-              <div className="lg:col-span-5 space-y-4">
+              {/* Right 5 Cols: Driver Copilot Assistant */}
+              <div className="lg:col-span-5 space-y-3">
                 <DriverAssistantChat
                   messages={chatMessages}
                   onSendMessage={handleSendMessage}
@@ -493,7 +362,88 @@ export default function Home() {
           </div>
         )}
 
-        {/* TAB 2: MICHELANGELO ML & FEATURE STORE OBSERVABILITY */}
+        {/* TAB 2: DEDICATED FULL-SCREEN VOICE COPILOT */}
+        {activeTab === "copilot" && (
+          <div className="max-w-3xl mx-auto space-y-4">
+            <DriverAssistantChat
+              messages={chatMessages}
+              onSendMessage={handleSendMessage}
+              isLoading={isChatLoading}
+            />
+          </div>
+        )}
+
+        {/* TAB 3: SHIFT EARNINGS & BENCHMARKS */}
+        {activeTab === "benchmark" && (
+          <div className="space-y-6">
+            {/* 4 Big KPI Metric Cards (Moved here to clean up the main map view) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
+                <span className="text-[11px] text-zinc-400 font-medium block">
+                  💰 Driver Hourly Earnings
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-emerald-400">
+                    ₹{state.metrics.avgDriverHourlyRate}/hr
+                  </span>
+                  <span className="text-xs font-bold text-emerald-400">+64% Boost</span>
+                </div>
+                <span className="text-[10px] text-zinc-400 block">
+                  vs ₹280/hr normal driving without AI
+                </span>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
+                <span className="text-[11px] text-zinc-400 font-medium block">
+                  🚕 Active Fleet Online
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-white">
+                    {state.drivers.length} Cabs Online
+                  </span>
+                  <span className="text-xs font-bold text-cyan-400">6 Metros</span>
+                </div>
+                <span className="text-[10px] text-zinc-400 block truncate">
+                  Delhi &bull; Mumbai &bull; Bengaluru &bull; Hyd &bull; Chennai &bull; Kol
+                </span>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
+                <span className="text-[11px] text-zinc-400 font-medium block">
+                  ⚡ High-Demand Peak Surge
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-amber-400">
+                    {state.metrics.cityAvgSurge}x
+                  </span>
+                  <span className="text-xs font-bold text-amber-300">Average</span>
+                </div>
+                <span className="text-[10px] text-zinc-400 block truncate">
+                  Peak: {state.zones.MUMBAI_BKC?.surgeMultiplier || 1.6}x at Mumbai BKC
+                </span>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
+                <span className="text-[11px] text-zinc-400 font-medium block">
+                  🚦 City Traffic Condition
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-cyan-400">
+                    {state.metrics.transitNetworkHealthPercent}%
+                  </span>
+                  <span className="text-xs font-bold text-cyan-300">Clear Flow</span>
+                </div>
+                <span className="text-[10px] text-zinc-400 block truncate">
+                  Smart bypass routes avoid traffic jams
+                </span>
+              </div>
+            </div>
+
+            <UberBenchmarkView stats={UBER_BENCHMARK_DATA} />
+          </div>
+        )}
+
+        {/* TAB 4: MICHELANGELO ML & FEATURE STORE OBSERVABILITY */}
         {activeTab === "telemetry" && (
           <MichelangeloTelemetryView
             state={state}
@@ -501,9 +451,6 @@ export default function Home() {
             isProcessing={isProcessing}
           />
         )}
-
-        {/* TAB 3: BENCHMARK RESULTS (RUBRIC 20 PTS) */}
-        {activeTab === "benchmark" && <UberBenchmarkView stats={UBER_BENCHMARK_DATA} />}
       </main>
 
       {/* Driver Google Auth & Work Area Onboarding Modal */}

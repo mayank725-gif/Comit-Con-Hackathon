@@ -24,47 +24,39 @@ interface DriverAssistantChatProps {
 
 const PRESET_QUERIES_HI = [
   {
-    label: "🎯 मेरा कार्यक्षेत्र व आज का लक्ष्य",
-    query: "मेरे कार्यक्षेत्र और आज के लक्ष्य की क्या स्थिति है?",
-  },
-  {
-    label: "📍 सबसे ज्यादा कमाई वाला इलाका",
+    label: "⚡ सबसे ज्यादा कमाई कहाँ?",
     query: "अभी सबसे ज्यादा कमाई वाली राइड कहाँ मिलेगी?",
   },
   {
-    label: "🏛️ प्रमुख पर्यटन स्थल किराया",
+    label: "🎯 मेरा आज का लक्ष्य",
+    query: "मेरे कार्यक्षेत्र और आज के लक्ष्य की क्या स्थिति है?",
+  },
+  {
+    label: "🏛️ पर्यटन स्थल किराया",
     query: "ताज महल, गोवा और मैसूर के लिए उबर आउटस्टेशन का किराया कितना है?",
   },
   {
-    label: "🏟️ स्टेडियम में भारी सर्ज क्यों?",
-    query: "चिन्नास्वामी स्टेडियम में इतना अधिक सर्ज क्यों है?",
-  },
-  {
-    label: "💰 आज की शिफ्ट कमाई व दर",
-    query: "मेरी आज की कुल कमाई और प्रति घंटे की रफ्तार क्या है?",
+    label: "🚦 ट्रैफिक जाम से बचाव",
+    query: "ट्रैफिक जाम से बचने के लिए सबसे तेज़ वैकल्पिक मार्ग कौन सा है?",
   },
 ];
 
 const PRESET_QUERIES_EN = [
   {
-    label: "🎯 My Work Area & Target",
-    query: "What is my assigned work area status and shift target?",
-  },
-  {
-    label: "📍 Best Repositioning Zone",
+    label: "⚡ Best Surge Hotspot",
     query: "Where should I go to get high-fare rides right now?",
   },
   {
+    label: "🎯 My Shift Target",
+    query: "What is my assigned work area status and shift target?",
+  },
+  {
     label: "🏛️ Tourist Outstation Fares",
-    query: "What are the Uber Outstation fares for major tourist destinations like Taj Mahal, Goa, or Mysore?",
+    query: "What are the Uber Outstation fares for major tourist destinations?",
   },
   {
-    label: "🏟️ Explain Stadium Surge",
-    query: "Why is the surge so high at M. Chinnaswamy Stadium?",
-  },
-  {
-    label: "💰 Shift Earnings & Pace",
-    query: "How are my earnings today and what is my hourly pace?",
+    label: "🚦 Avoid Traffic Jams",
+    query: "What is the best alternative fast route to avoid traffic jams?",
   },
 ];
 
