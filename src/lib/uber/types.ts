@@ -1,10 +1,35 @@
-export type ZoneId = "STADIUM" | "DOWNTOWN" | "AIRPORT" | "TECH_PARK" | "ENTERTAINMENT";
+export type MetroCity =
+  | "ALL_INDIA"
+  | "BENGALURU"
+  | "DELHI_NCR"
+  | "MUMBAI"
+  | "HYDERABAD"
+  | "CHENNAI"
+  | "KOLKATA";
+
+export type ZoneId =
+  | "STADIUM"
+  | "DOWNTOWN"
+  | "AIRPORT"
+  | "TECH_PARK"
+  | "ENTERTAINMENT"
+  | "DELHI_CENTRAL"
+  | "DELHI_AIRPORT"
+  | "DELHI_GURGAON"
+  | "MUMBAI_BKC"
+  | "MUMBAI_AIRPORT"
+  | "MUMBAI_SOUTH"
+  | "HYDERABAD_HITEC"
+  | "HYDERABAD_AIRPORT"
+  | "CHENNAI_OMR"
+  | "KOLKATA_SALTLAKE";
 
 export type VehicleType = "UBER_GO" | "UBER_PREMIER" | "UBER_AUTO" | "UBER_GREEN_EV";
 
 export interface CityZone {
   id: ZoneId;
   name: string;
+  city: string;
   lat: number;
   lng: number;
   radiusMeters: number;
@@ -21,6 +46,7 @@ export type DriverStatus = "IDLE" | "EN_ROUTE_SURGE" | "ON_TRIP";
 export interface Driver {
   id: string;
   name: string;
+  city?: string;
   rating: number;
   vehicleType: VehicleType;
   vehicleModel: string;

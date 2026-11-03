@@ -52,7 +52,7 @@ export default function UberNavbar({
               </span>
             </div>
             <p className="text-[11px] text-zinc-400 hidden sm:block">
-              Real-Time Dynamic Dispatch &amp; Multi-Agent Driver Copilot (Bengaluru, India)
+              Pan-India Real-Time Dynamic Dispatch &amp; Google Live Traffic Mesh
             </p>
           </div>
         </div>

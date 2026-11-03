@@ -19,10 +19,10 @@ const RealLeafletMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[540px] rounded-3xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center space-y-2">
+      <div className="w-full h-[580px] rounded-3xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center space-y-2">
         <div className="h-6 w-6 rounded-full border-2 border-white border-t-transparent animate-spin" />
         <span className="text-xs font-mono text-zinc-400">
-          Loading Bengaluru Real-Time Fleet Map (India)...
+          Loading Pan-India Real-Time Marketplace Map (Google Live Traffic)...
         </span>
       </div>
     ),
@@ -219,7 +219,7 @@ export default function Home() {
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center space-y-3 font-sans">
         <div className="h-8 w-8 rounded-full border-2 border-white border-t-transparent animate-spin" />
         <span className="text-xs font-mono text-zinc-400">
-          Initializing Uber Michelangelo Marketplace Engine (Bengaluru Metro)...
+          Initializing Uber Michelangelo Pan-India Marketplace Engine...
         </span>
       </div>
     );
@@ -257,22 +257,22 @@ export default function Home() {
 
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 space-y-1 backdrop-blur-sm">
             <span className="text-[10px] text-zinc-400 uppercase font-semibold block">
-              Average Rider Wait
+              Pan-India Active Fleet
             </span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-black text-white">
-                {state.metrics.avgRiderWaitTimeMin} min
+                {state.drivers.length} Vehicles
               </span>
-              <span className="text-xs font-bold text-emerald-400">-74%</span>
+              <span className="text-xs font-bold text-emerald-400">6 Metros</span>
             </div>
             <span className="text-[10px] text-zinc-500 block font-mono">
-              Sub-8 min dispatch target
+              BLR &bull; DEL &bull; BOM &bull; HYD &bull; MAA &bull; CCU
             </span>
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 space-y-1 backdrop-blur-sm">
             <span className="text-[10px] text-zinc-400 uppercase font-semibold block">
-              City Surge Multiplier
+              National Surge Multiplier
             </span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-black text-amber-400">
@@ -281,22 +281,22 @@ export default function Home() {
               <span className="text-xs font-bold text-zinc-400">Dynamic</span>
             </div>
             <span className="text-[10px] text-zinc-500 block font-mono">
-              Peak: {state.zones.STADIUM.surgeMultiplier}x at Stadium
+              Peak: {state.zones.MUMBAI_BKC?.surgeMultiplier || 1.6}x at Mumbai BKC
             </span>
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 space-y-1 backdrop-blur-sm">
             <span className="text-[10px] text-zinc-400 uppercase font-semibold block">
-              Anti-Herd Protection
+              Transit Network Health
             </span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-black text-cyan-400">
-                {state.metrics.antiHerdDampingActive ? "Engaged" : "Nominal"}
+                {state.metrics.transitNetworkHealthPercent}%
               </span>
-              <span className="text-xs font-bold text-cyan-400">Active</span>
+              <span className="text-xs font-bold text-cyan-400">Nominal</span>
             </div>
             <span className="text-[10px] text-zinc-500 block font-mono">
-              Prevents downtown fleet starvation
+              Anti-herd damping engaged
             </span>
           </div>
         </div>

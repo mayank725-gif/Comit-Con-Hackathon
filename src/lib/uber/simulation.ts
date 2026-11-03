@@ -15,11 +15,13 @@ export class UberMarketplaceEngine {
   }
 
   private getInitialState(): MarketplaceState {
-    // Real Coordinates for Bengaluru (India's Tech Capital)
+    // Pan-India Multi-Metro Zones (Tier-1 Indian Metropolitan Hubs)
     const zones: Record<ZoneId, CityZone> = {
+      // 1. Bengaluru Metro
       STADIUM: {
         id: "STADIUM",
-        name: "M. Chinnaswamy Stadium (Cricket & Arena)",
+        name: "M. Chinnaswamy Stadium (Bengaluru)",
+        city: "Bengaluru",
         lat: 12.9788,
         lng: 77.5996,
         radiusMeters: 1400,
@@ -32,12 +34,13 @@ export class UberMarketplaceEngine {
       },
       DOWNTOWN: {
         id: "DOWNTOWN",
-        name: "MG Road & Central Business District (CBD)",
+        name: "MG Road & CBD (Bengaluru)",
+        city: "Bengaluru",
         lat: 12.9756,
         lng: 77.6097,
         radiusMeters: 1600,
         currentDemand: 120,
-        activeDrivers: 34,
+        activeDrivers: 18,
         surgeMultiplier: 1.2,
         predictedDemand15m: 135,
         deficitOrSurplus: 101,
@@ -45,12 +48,13 @@ export class UberMarketplaceEngine {
       },
       AIRPORT: {
         id: "AIRPORT",
-        name: "Kempegowda International Airport (BLR Hub)",
+        name: "Kempegowda Intl Airport BLR (Bengaluru)",
+        city: "Bengaluru",
         lat: 13.1986,
         lng: 77.7066,
         radiusMeters: 2400,
         currentDemand: 85,
-        activeDrivers: 25,
+        activeDrivers: 12,
         surgeMultiplier: 1.1,
         predictedDemand15m: 100,
         deficitOrSurplus: 75,
@@ -58,12 +62,13 @@ export class UberMarketplaceEngine {
       },
       TECH_PARK: {
         id: "TECH_PARK",
-        name: "Outer Ring Road & Bellandur Tech Corridor",
+        name: "Outer Ring Road & Bellandur (Bengaluru)",
+        city: "Bengaluru",
         lat: 12.9260,
         lng: 77.6762,
         radiusMeters: 1800,
         currentDemand: 95,
-        activeDrivers: 28,
+        activeDrivers: 14,
         surgeMultiplier: 1.3,
         predictedDemand15m: 115,
         deficitOrSurplus: 87,
@@ -71,15 +76,166 @@ export class UberMarketplaceEngine {
       },
       ENTERTAINMENT: {
         id: "ENTERTAINMENT",
-        name: "Koramangala & Indiranagar Nightlife Hub",
+        name: "Koramangala & Indiranagar (Bengaluru)",
+        city: "Bengaluru",
         lat: 12.9352,
         lng: 77.6245,
         radiusMeters: 1500,
         currentDemand: 105,
-        activeDrivers: 30,
+        activeDrivers: 16,
         surgeMultiplier: 1.2,
         predictedDemand15m: 120,
         deficitOrSurplus: 90,
+        status: "NORMAL",
+      },
+
+      // 2. Delhi NCR Metro
+      DELHI_CENTRAL: {
+        id: "DELHI_CENTRAL",
+        name: "Connaught Place & Central Vista (Delhi NCR)",
+        city: "Delhi NCR",
+        lat: 28.6315,
+        lng: 77.2167,
+        radiusMeters: 2200,
+        currentDemand: 140,
+        activeDrivers: 18,
+        surgeMultiplier: 1.4,
+        predictedDemand15m: 165,
+        deficitOrSurplus: 120,
+        status: "NORMAL",
+      },
+      DELHI_AIRPORT: {
+        id: "DELHI_AIRPORT",
+        name: "Indira Gandhi Intl Airport T3 (DEL)",
+        city: "Delhi NCR",
+        lat: 28.5562,
+        lng: 77.1000,
+        radiusMeters: 2600,
+        currentDemand: 110,
+        activeDrivers: 14,
+        surgeMultiplier: 1.3,
+        predictedDemand15m: 130,
+        deficitOrSurplus: 95,
+        status: "NORMAL",
+      },
+      DELHI_GURGAON: {
+        id: "DELHI_GURGAON",
+        name: "DLF Cyber City & Golf Course Rd (Gurgaon)",
+        city: "Delhi NCR",
+        lat: 28.4950,
+        lng: 77.0895,
+        radiusMeters: 2000,
+        currentDemand: 130,
+        activeDrivers: 16,
+        surgeMultiplier: 1.5,
+        predictedDemand15m: 150,
+        deficitOrSurplus: 110,
+        status: "HIGH_SURGE",
+      },
+
+      // 3. Mumbai Metro
+      MUMBAI_BKC: {
+        id: "MUMBAI_BKC",
+        name: "Bandra Kurla Complex BKC (Mumbai)",
+        city: "Mumbai",
+        lat: 19.0657,
+        lng: 72.8687,
+        radiusMeters: 2000,
+        currentDemand: 160,
+        activeDrivers: 20,
+        surgeMultiplier: 1.6,
+        predictedDemand15m: 190,
+        deficitOrSurplus: 145,
+        status: "HIGH_SURGE",
+      },
+      MUMBAI_AIRPORT: {
+        id: "MUMBAI_AIRPORT",
+        name: "Chhatrapati Shivaji Intl Airport (BOM)",
+        city: "Mumbai",
+        lat: 19.0896,
+        lng: 72.8656,
+        radiusMeters: 2200,
+        currentDemand: 115,
+        activeDrivers: 14,
+        surgeMultiplier: 1.3,
+        predictedDemand15m: 140,
+        deficitOrSurplus: 100,
+        status: "NORMAL",
+      },
+      MUMBAI_SOUTH: {
+        id: "MUMBAI_SOUTH",
+        name: "Nariman Point & Marine Drive (Mumbai)",
+        city: "Mumbai",
+        lat: 18.9220,
+        lng: 72.8347,
+        radiusMeters: 1800,
+        currentDemand: 95,
+        activeDrivers: 12,
+        surgeMultiplier: 1.2,
+        predictedDemand15m: 110,
+        deficitOrSurplus: 80,
+        status: "NORMAL",
+      },
+
+      // 4. Hyderabad Metro
+      HYDERABAD_HITEC: {
+        id: "HYDERABAD_HITEC",
+        name: "HITEC City & Gachibowli (Hyderabad)",
+        city: "Hyderabad",
+        lat: 17.4435,
+        lng: 78.3772,
+        radiusMeters: 2000,
+        currentDemand: 100,
+        activeDrivers: 12,
+        surgeMultiplier: 1.2,
+        predictedDemand15m: 120,
+        deficitOrSurplus: 85,
+        status: "NORMAL",
+      },
+      HYDERABAD_AIRPORT: {
+        id: "HYDERABAD_AIRPORT",
+        name: "Rajiv Gandhi Intl Airport (HYD)",
+        city: "Hyderabad",
+        lat: 17.2403,
+        lng: 78.4294,
+        radiusMeters: 2400,
+        currentDemand: 80,
+        activeDrivers: 10,
+        surgeMultiplier: 1.1,
+        predictedDemand15m: 95,
+        deficitOrSurplus: 70,
+        status: "NORMAL",
+      },
+
+      // 5. Chennai Metro
+      CHENNAI_OMR: {
+        id: "CHENNAI_OMR",
+        name: "OMR IT Corridor & Tidel Park (Chennai)",
+        city: "Chennai",
+        lat: 12.9724,
+        lng: 80.2508,
+        radiusMeters: 2200,
+        currentDemand: 90,
+        activeDrivers: 10,
+        surgeMultiplier: 1.1,
+        predictedDemand15m: 105,
+        deficitOrSurplus: 78,
+        status: "NORMAL",
+      },
+
+      // 6. Kolkata Metro
+      KOLKATA_SALTLAKE: {
+        id: "KOLKATA_SALTLAKE",
+        name: "Sector V & New Town IT Hub (Kolkata)",
+        city: "Kolkata",
+        lat: 22.5804,
+        lng: 88.4378,
+        radiusMeters: 2200,
+        currentDemand: 85,
+        activeDrivers: 10,
+        surgeMultiplier: 1.2,
+        predictedDemand15m: 100,
+        deficitOrSurplus: 72,
         status: "NORMAL",
       },
     };
@@ -88,8 +244,8 @@ export class UberMarketplaceEngine {
 
     const activeScenario: ScenarioEvent = {
       type: "NORMAL",
-      title: "Nominal Marketplace Operations (Bengaluru Metro)",
-      description: "Equilibrium dispatch across all 5 municipal sectors. P99 model inference latency at 8.4ms.",
+      title: "Pan-India Real-Time Marketplace Operations (All Metros Active)",
+      description: "Equilibrium dispatch across Bengaluru, Delhi NCR, Mumbai, Hyderabad, Chennai, and Kolkata. P99 model inference latency at 8.4ms.",
       active: true,
       timestamp: new Date().toISOString(),
     };
@@ -100,40 +256,40 @@ export class UberMarketplaceEngine {
       featureDriftScore: 0.08,
       lastRecalibrated: new Date().toISOString(),
       activeRoutingAlgorithm: "MICHELANGELO_ML",
-      featureIngestionRatePerSec: 28450,
-      activeFeatures: 1240,
+      featureIngestionRatePerSec: 64200, // Pan-India ingestion throughput
+      activeFeatures: 2840,
       services: [
         {
-          name: "dispatch-gateway-v2",
-          podCount: 8,
+          name: "dispatch-gateway-pan-india",
+          podCount: 16,
           status: "HEALTHY",
-          cpuPercent: 34,
+          cpuPercent: 36,
           latencyP99Ms: 4.2,
-          memoryMb: 512,
-        },
-        {
-          name: "pricing-michelangelo-v4",
-          podCount: 12,
-          status: "HEALTHY",
-          cpuPercent: 48,
-          latencyP99Ms: 6.8,
           memoryMb: 1024,
         },
         {
-          name: "ml-demand-forecaster",
-          podCount: 6,
+          name: "pricing-michelangelo-v4",
+          podCount: 24,
           status: "HEALTHY",
-          cpuPercent: 42,
+          cpuPercent: 46,
+          latencyP99Ms: 6.8,
+          memoryMb: 2048,
+        },
+        {
+          name: "ml-demand-forecaster-india",
+          podCount: 12,
+          status: "HEALTHY",
+          cpuPercent: 41,
           latencyP99Ms: 8.5,
-          memoryMb: 768,
+          memoryMb: 1536,
         },
         {
           name: "mcp-agent-governor",
-          podCount: 4,
+          podCount: 8,
           status: "HEALTHY",
-          cpuPercent: 22,
+          cpuPercent: 24,
           latencyP99Ms: 3.1,
-          memoryMb: 384,
+          memoryMb: 512,
         },
       ],
     };
@@ -145,11 +301,11 @@ export class UberMarketplaceEngine {
       activeScenario,
       modelHealth,
       metrics: {
-        cityAvgSurge: 1.16,
-        avgRiderWaitTimeMin: 7.2,
-        avgDriverHourlyRate: 460, // ₹460/hr
-        unfulfilledRequests: 18,
-        totalTripsActive: 42,
+        cityAvgSurge: 1.28,
+        avgRiderWaitTimeMin: 6.8,
+        avgDriverHourlyRate: 485, // ₹485/hr
+        unfulfilledRequests: 42,
+        totalTripsActive: 48,
         antiHerdDampingActive: false,
         transitNetworkHealthPercent: 98.4,
       },
@@ -157,72 +313,74 @@ export class UberMarketplaceEngine {
   }
 
   private seedDrivers(zones: Record<ZoneId, CityZone>): Driver[] {
-    const driverProfiles = [
-      { name: "Ramesh Kumar", type: "UBER_GO" as const, model: "Maruti Suzuki Dzire", plate: "KA 01 MJ 1042" },
-      { name: "Suresh Murthy", type: "UBER_PREMIER" as const, model: "Hyundai Verna", plate: "KA 03 AB 4091" },
-      { name: "Priya Nair", type: "UBER_GREEN_EV" as const, model: "Tata Nexon EV Max", plate: "KA 05 EV 8820" },
-      { name: "Amit Sharma", type: "UBER_AUTO" as const, model: "Bajaj RE 4S Auto", plate: "KA 04 AUTO 319" },
-      { name: "Vikram Rao", type: "UBER_PREMIER" as const, model: "Toyota Innova Crysta", plate: "KA 51 D 7712" },
-      { name: "Arjun Patil", type: "UBER_GO" as const, model: "Hyundai Aura CNG", plate: "KA 02 MH 2049" },
-      { name: "Ananya Gowda", type: "UBER_GREEN_EV" as const, model: "MG ZS EV", plate: "KA 05 EV 1904" },
-      { name: "Deepak Lingam", type: "UBER_AUTO" as const, model: "Piaggio Ape Auto", plate: "KA 04 AUTO 882" },
-      { name: "Kavita Bhat", type: "UBER_GO" as const, model: "Maruti WagonR", plate: "KA 03 ML 6541" },
-      { name: "Rajesh Oza", type: "UBER_PREMIER" as const, model: "Honda City V", plate: "KA 01 PK 9031" },
-      { name: "Manoj Hegde", type: "UBER_GREEN_EV" as const, model: "Mahindra XUV400 EV", plate: "KA 53 EV 4410" },
-      { name: "Kiran Das", type: "UBER_GO" as const, model: "Tata Tigor CNG", plate: "KA 02 NB 1209" },
-      { name: "Sunil Verma", type: "UBER_PREMIER" as const, model: "Skoda Slavia", plate: "KA 05 PQ 8110" },
-      { name: "Pooja Bellary", type: "UBER_AUTO" as const, model: "TVS King Deluxe Auto", plate: "KA 04 AUTO 551" },
-      { name: "Tariq Ahmed", type: "UBER_GO" as const, model: "Maruti Dzire Tour", plate: "KA 51 C 3302" },
-      { name: "Santosh F.", type: "UBER_GREEN_EV" as const, model: "Tata Tiago EV", plate: "KA 01 EV 9872" },
-      { name: "Neha Menon", type: "UBER_PREMIER" as const, model: "Hyundai Creta SX", plate: "KA 03 NE 4401" },
-      { name: "Ravi Prasad", type: "UBER_GO" as const, model: "Hyundai Grand i10 Nios", plate: "KA 05 RP 7761" },
-      { name: "Gaurav Kulkarni", type: "UBER_AUTO" as const, model: "Bajaj Compact 4S", plate: "KA 04 AUTO 910" },
-      { name: "Naveen Shetty", type: "UBER_PREMIER" as const, model: "Kia Carens Luxury", plate: "KA 01 NS 5521" },
-      { name: "Mohan Gowda", type: "UBER_GO" as const, model: "Maruti Suzuki Swift", plate: "KA 02 MG 8192" },
-      { name: "Rahul Wodeyar", type: "UBER_GREEN_EV" as const, model: "Tata Nexon EV Prime", plate: "KA 53 EV 7119" },
-      { name: "Swati Chandran", type: "UBER_PREMIER" as const, model: "MG Hector Plus", plate: "KA 03 SC 9931" },
-      { name: "Alok Joshi", type: "UBER_AUTO" as const, model: "Mahindra Alfa Auto", plate: "KA 04 AUTO 440" },
-      { name: "Harish Yadav", type: "UBER_GO" as const, model: "Honda Amaze VX", plate: "KA 51 HY 2004" }
+    const rawDriverCatalog = [
+      // Bengaluru Drivers (KA)
+      { name: "Ramesh Kumar", city: "Bengaluru", zone: "STADIUM" as ZoneId, type: "UBER_GO" as const, model: "Maruti Dzire", plate: "KA 01 MJ 1042" },
+      { name: "Suresh Murthy", city: "Bengaluru", zone: "DOWNTOWN" as ZoneId, type: "UBER_PREMIER" as const, model: "Hyundai Verna", plate: "KA 03 AB 4091" },
+      { name: "Priya Nair", city: "Bengaluru", zone: "TECH_PARK" as ZoneId, type: "UBER_GREEN_EV" as const, model: "Tata Nexon EV", plate: "KA 05 EV 8820" },
+      { name: "Amit Sharma", city: "Bengaluru", zone: "ENTERTAINMENT" as ZoneId, type: "UBER_AUTO" as const, model: "Bajaj RE Auto", plate: "KA 04 AUTO 319" },
+      { name: "Vikram Rao", city: "Bengaluru", zone: "AIRPORT" as ZoneId, type: "UBER_PREMIER" as const, model: "Toyota Innova Crysta", plate: "KA 51 D 7712" },
+      { name: "Arjun Patil", city: "Bengaluru", zone: "STADIUM" as ZoneId, type: "UBER_GO" as const, model: "Hyundai Aura", plate: "KA 02 MH 2049" },
+      { name: "Ananya Gowda", city: "Bengaluru", zone: "TECH_PARK" as ZoneId, type: "UBER_GREEN_EV" as const, model: "MG ZS EV", plate: "KA 05 EV 1904" },
+      { name: "Deepak Lingam", city: "Bengaluru", zone: "DOWNTOWN" as ZoneId, type: "UBER_AUTO" as const, model: "Piaggio Ape Auto", plate: "KA 04 AUTO 882" },
+
+      // Delhi NCR Drivers (DL / HR)
+      { name: "Harpreet Singh", city: "Delhi NCR", zone: "DELHI_CENTRAL" as ZoneId, type: "UBER_PREMIER" as const, model: "Honda City", plate: "DL 01 CA 9981" },
+      { name: "Vikas Tyagi", city: "Delhi NCR", zone: "DELHI_GURGAON" as ZoneId, type: "UBER_GREEN_EV" as const, model: "Tata Nexon EV", plate: "HR 26 DQ 5520" },
+      { name: "Rohit Bansal", city: "Delhi NCR", zone: "DELHI_AIRPORT" as ZoneId, type: "UBER_PREMIER" as const, model: "Toyota Innova", plate: "DL 03 CB 4122" },
+      { name: "Mohd. Shakeel", city: "Delhi NCR", zone: "DELHI_CENTRAL" as ZoneId, type: "UBER_AUTO" as const, model: "Bajaj Compact Auto", plate: "DL 1R 8812" },
+      { name: "Gaurav Sehgal", city: "Delhi NCR", zone: "DELHI_GURGAON" as ZoneId, type: "UBER_GO" as const, model: "Maruti Dzire Tour", plate: "HR 55 AT 1902" },
+      { name: "Pooja Chawla", city: "Delhi NCR", zone: "DELHI_AIRPORT" as ZoneId, type: "UBER_GREEN_EV" as const, model: "MG ZS EV", plate: "DL 04 EV 6610" },
+
+      // Mumbai Drivers (MH)
+      { name: "Santosh Sawant", city: "Mumbai", zone: "MUMBAI_BKC" as ZoneId, type: "UBER_PREMIER" as const, model: "Hyundai Creta", plate: "MH 01 DK 8910" },
+      { name: "Sachin Kadam", city: "Mumbai", zone: "MUMBAI_AIRPORT" as ZoneId, type: "UBER_GO" as const, model: "Maruti WagonR", plate: "MH 02 CR 7721" },
+      { name: "Farhan Merchant", city: "Mumbai", zone: "MUMBAI_SOUTH" as ZoneId, type: "UBER_PREMIER" as const, model: "Skoda Slavia", plate: "MH 01 BM 1120" },
+      { name: "Dinesh Shinde", city: "Mumbai", zone: "MUMBAI_BKC" as ZoneId, type: "UBER_AUTO" as const, model: "Bajaj RE 4S Auto", plate: "MH 03 AUTO 909" },
+      { name: "Kiran Rane", city: "Mumbai", zone: "MUMBAI_AIRPORT" as ZoneId, type: "UBER_GREEN_EV" as const, model: "Tata Tiago EV", plate: "MH 02 EV 3314" },
+      { name: "Ganesh Parab", city: "Mumbai", zone: "MUMBAI_SOUTH" as ZoneId, type: "UBER_GO" as const, model: "Tata Tigor CNG", plate: "MH 01 AQ 4018" },
+
+      // Hyderabad Drivers (TS)
+      { name: "Venkat Reddy", city: "Hyderabad", zone: "HYDERABAD_HITEC" as ZoneId, type: "UBER_PREMIER" as const, model: "Kia Carens", plate: "TS 07 HK 2040" },
+      { name: "Syed Khaja", city: "Hyderabad", zone: "HYDERABAD_AIRPORT" as ZoneId, type: "UBER_GO" as const, model: "Maruti Swift", plate: "TS 09 BA 3381" },
+      { name: "Prashanth Goud", city: "Hyderabad", zone: "HYDERABAD_HITEC" as ZoneId, type: "UBER_AUTO" as const, model: "TVS King Auto", plate: "TS 07 AUTO 441" },
+      { name: "Sowmya Rao", city: "Hyderabad", zone: "HYDERABAD_AIRPORT" as ZoneId, type: "UBER_GREEN_EV" as const, model: "Tata Nexon EV", plate: "TS 08 EV 9012" },
+
+      // Chennai Drivers (TN)
+      { name: "Karthik Subramanian", city: "Chennai", zone: "CHENNAI_OMR" as ZoneId, type: "UBER_GO" as const, model: "Hyundai Aura", plate: "TN 01 AK 3390" },
+      { name: "Muthu Vel", city: "Chennai", zone: "CHENNAI_OMR" as ZoneId, type: "UBER_AUTO" as const, model: "Bajaj RE Auto", plate: "TN 07 AUTO 229" },
+      { name: "Anand Natarajan", city: "Chennai", zone: "CHENNAI_OMR" as ZoneId, type: "UBER_PREMIER" as const, model: "Toyota Crysta", plate: "TN 09 CQ 7701" },
+
+      // Kolkata Drivers (WB)
+      { name: "Subir Mukherjee", city: "Kolkata", zone: "KOLKATA_SALTLAKE" as ZoneId, type: "UBER_GO" as const, model: "Maruti Dzire", plate: "WB 02 AJ 4091" },
+      { name: "Debabrata Bose", city: "Kolkata", zone: "KOLKATA_SALTLAKE" as ZoneId, type: "UBER_PREMIER" as const, model: "Honda Amaze", plate: "WB 06 EF 8820" },
+      { name: "Tapas Das", city: "Kolkata", zone: "KOLKATA_SALTLAKE" as ZoneId, type: "UBER_GREEN_EV" as const, model: "Tata Tigor EV", plate: "WB 01 EV 1990" },
     ];
 
-    const zoneKeys: ZoneId[] = ["STADIUM", "DOWNTOWN", "AIRPORT", "TECH_PARK", "ENTERTAINMENT"];
-
-    return driverProfiles.map((p, i) => {
-      const zoneId = zoneKeys[i % zoneKeys.length];
-      const baseZone = zones[zoneId];
-      // Random geographic jitter within ~1km in Bengaluru
-      const lat = baseZone.lat + (Math.random() - 0.5) * 0.018;
-      const lng = baseZone.lng + (Math.random() - 0.5) * 0.018;
-      const status = (i % 3 === 0 ? "ON_TRIP" : i % 3 === 1 ? "IDLE" : "EN_ROUTE_SURGE");
-
-      // Generate realistic route waypoints if en route or on trip
-      const nextZoneId = zoneKeys[(i + 1) % zoneKeys.length];
-      const targetZone = zones[nextZoneId];
-      const routeCoordinates: [number, number][] | undefined = status !== "IDLE"
-        ? [
-            [lat, lng],
-            [(lat + targetZone.lat) / 2 + (Math.random() - 0.5) * 0.005, (lng + targetZone.lng) / 2 + (Math.random() - 0.5) * 0.005],
-            [targetZone.lat, targetZone.lng],
-          ]
-        : undefined;
+    return rawDriverCatalog.map((p, i) => {
+      const baseZone = zones[p.zone];
+      const lat = baseZone.lat + (Math.random() - 0.5) * 0.022;
+      const lng = baseZone.lng + (Math.random() - 0.5) * 0.022;
+      const status = i % 3 === 0 ? "ON_TRIP" : i % 3 === 1 ? "IDLE" : "EN_ROUTE_SURGE";
 
       return {
         id: `DRV_${100 + i}`,
         name: p.name,
+        city: p.city,
         rating: Math.round((4.85 + Math.random() * 0.14) * 100) / 100,
         vehicleType: p.type,
         vehicleModel: p.model,
         licensePlate: p.plate,
-        batteryOrFuelPercent: Math.round(52 + Math.random() * 45),
-        currentZone: zoneId,
-        targetZone: status === "EN_ROUTE_SURGE" ? nextZoneId : undefined,
+        batteryOrFuelPercent: Math.round(55 + Math.random() * 42),
+        currentZone: p.zone,
         status,
         lat,
         lng,
-        earningsToday: Math.round(1850 + Math.random() * 950), // in ₹ INR
+        heading: Math.round(Math.random() * 360),
+        speedKmh: status === "IDLE" ? 0 : Math.round(36 + Math.random() * 24),
+        earningsToday: Math.round(1950 + Math.random() * 1100),
         tripsCompleted: Math.floor(6 + Math.random() * 8),
-        shiftHours: 4.5,
-        routeCoordinates: routeCoordinates,
+        shiftHours: 4.8,
       };
     });
   }
@@ -233,38 +391,36 @@ export class UberMarketplaceEngine {
 
   public tick(): MarketplaceState {
     this.state.step += 1;
-    const zoneKeys: ZoneId[] = ["STADIUM", "DOWNTOWN", "AIRPORT", "TECH_PARK", "ENTERTAINMENT"];
 
-    // 1. Move vehicles on real Indian city coordinates with continuous dispatch lifecycle
+    // 1. Move vehicles within their respective metropolitan sectors
     this.state.drivers.forEach((driver) => {
       if (driver.targetZone) {
         const target = this.state.zones[driver.targetZone];
+        if (!target) return;
+
         const dLat = target.lat - driver.lat;
         const dLng = target.lng - driver.lng;
         const dist = Math.sqrt(dLat * dLat + dLng * dLng);
 
-        // Calculate vehicle heading (0 to 360 deg) for realistic car rotation
+        // Heading rotation
         const angleDeg = (Math.atan2(dLng, dLat) * 180) / Math.PI;
         driver.heading = Math.round((angleDeg + 360) % 360);
 
-        // Speed in km/h (slower in flood scenario)
-        const isFlood = this.state.activeScenario.type === "MONSOON_FLASH_FLOOD";
-        driver.speedKmh = isFlood ? Math.round(18 + Math.random() * 12) : Math.round(38 + Math.random() * 24);
-
+        const isFlood = this.state.activeScenario.type === "MONSOON_FLASH_FLOOD" && driver.city === "Bengaluru";
+        driver.speedKmh = isFlood ? Math.round(18 + Math.random() * 10) : Math.round(38 + Math.random() * 24);
         const step = isFlood ? 0.0012 : 0.0022;
 
         if (dist > 0.003) {
           driver.lat += (dLat / dist) * step;
           driver.lng += (dLng / dist) * step;
 
-          // Update active route line
           driver.routeCoordinates = [
             [driver.lat, driver.lng],
             [(driver.lat + target.lat) / 2 + 0.001, (driver.lng + target.lng) / 2 - 0.001],
             [target.lat, target.lng],
           ];
         } else {
-          // Trip Completed! Payout fare & complete cycle
+          // Trip Completed!
           const fare = Math.round((280 + Math.random() * 260) * target.surgeMultiplier);
           driver.earningsToday += fare;
           driver.tripsCompleted += 1;
@@ -276,53 +432,47 @@ export class UberMarketplaceEngine {
           driver.routeCoordinates = undefined;
         }
       } else {
-        // Idle driver behavior: slight street cruise & chance to pick up next trip
-        driver.speedKmh = Math.round(14 + Math.random() * 10);
+        // Idle driver behavior in local sector
+        driver.speedKmh = Math.round(12 + Math.random() * 10);
         driver.lat += (Math.random() - 0.5) * 0.0006;
         driver.lng += (Math.random() - 0.5) * 0.0006;
         driver.heading = Math.round(((driver.heading || 90) + (Math.random() - 0.5) * 30 + 360) % 360);
 
-        // 35% chance per tick to receive an active dispatch or repositioning command
+        // 35% chance per tick to receive intra-city dispatch
         if (Math.random() < 0.35) {
-          const eligibleTargets = zoneKeys.filter((z) => z !== driver.currentZone);
-          // Prefer zones with higher surge or deficit
-          let chosen = eligibleTargets[Math.floor(Math.random() * eligibleTargets.length)];
-          if (this.state.zones.STADIUM.surgeMultiplier >= 2.0 && Math.random() < 0.6) {
-            chosen = "STADIUM";
-          } else if (this.state.zones.TECH_PARK.surgeMultiplier >= 2.0 && Math.random() < 0.5) {
-            chosen = "TECH_PARK";
-          }
+          const driverCity = driver.city || this.state.zones[driver.currentZone]?.city || "Bengaluru";
+          const eligibleTargets = Object.values(this.state.zones)
+            .filter((z) => z.city === driverCity && z.id !== driver.currentZone)
+            .map((z) => z.id);
 
-          const targetZoneObj = this.state.zones[chosen];
-          driver.targetZone = chosen;
-          driver.status = Math.random() > 0.4 ? "ON_TRIP" : "EN_ROUTE_SURGE";
-          driver.currentTripDestinationName = targetZoneObj.name.split(" ")[0];
-          driver.routeCoordinates = [
-            [driver.lat, driver.lng],
-            [(driver.lat + targetZoneObj.lat) / 2, (driver.lng + targetZoneObj.lng) / 2],
-            [targetZoneObj.lat, targetZoneObj.lng],
-          ];
+          if (eligibleTargets.length > 0) {
+            const chosen = eligibleTargets[Math.floor(Math.random() * eligibleTargets.length)];
+            const targetZoneObj = this.state.zones[chosen];
+            driver.targetZone = chosen;
+            driver.status = Math.random() > 0.35 ? "ON_TRIP" : "EN_ROUTE_SURGE";
+            driver.currentTripDestinationName = targetZoneObj.name.split(" ")[0];
+            driver.routeCoordinates = [
+              [driver.lat, driver.lng],
+              [(driver.lat + targetZoneObj.lat) / 2, (driver.lng + targetZoneObj.lng) / 2],
+              [targetZoneObj.lat, targetZoneObj.lng],
+            ];
+          }
         }
       }
     });
 
     // 2. Count active drivers per zone
-    const counts: Record<ZoneId, number> = {
-      STADIUM: 0,
-      DOWNTOWN: 0,
-      AIRPORT: 0,
-      TECH_PARK: 0,
-      ENTERTAINMENT: 0,
-    };
-
+    const counts: Partial<Record<ZoneId, number>> = {};
     let activeTripsCount = 0;
+
     this.state.drivers.forEach((d) => {
-      counts[d.currentZone] += 1;
+      counts[d.currentZone] = (counts[d.currentZone] || 0) + 1;
       if (d.status === "ON_TRIP") activeTripsCount++;
     });
+
     this.state.metrics.totalTripsActive = activeTripsCount;
 
-    // 3. Recalculate Dynamic Surge and Predicted Demand
+    // 3. Recalculate Dynamic Surge and Predicted Demand across all Pan-India zones
     let totalSurge = 0;
     let totalWait = 0;
     let zoneCount = 0;
@@ -347,9 +497,8 @@ export class UberMarketplaceEngine {
     this.state.metrics.cityAvgSurge = Math.round((totalSurge / zoneCount) * 10) / 10;
     this.state.metrics.avgRiderWaitTimeMin = Math.round((totalWait / zoneCount) * 10) / 10;
 
-    // Update hourly rate based on live driver earnings
-    const totalDriverEarnings = this.state.drivers.reduce((acc, d) => acc + d.earningsToday, 0);
-    this.state.metrics.avgDriverHourlyRate = Math.round(totalDriverEarnings / (this.state.drivers.length * 4.5));
+    const totalEarnings = this.state.drivers.reduce((acc, d) => acc + d.earningsToday, 0);
+    this.state.metrics.avgDriverHourlyRate = Math.round(totalEarnings / (this.state.drivers.length * 4.8));
 
     // 4. Auto-recover from Stale Model Drift if active
     if (this.state.modelHealth.status === "FALLBACK_ENGAGED") {
