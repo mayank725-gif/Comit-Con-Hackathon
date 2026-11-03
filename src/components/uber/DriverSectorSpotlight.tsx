@@ -55,7 +55,7 @@ export default function DriverSectorSpotlight({
               <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold">
                 DRIVER PARTNER PORTAL
               </span>
-              <span className="text-[11px] text-zinc-400">Firebase &amp; Firestore Connected</span>
+              <span className="text-[11px] text-zinc-400">Google Verified &bull; Custom Driver Database</span>
             </div>
             <h3 className="text-base font-bold text-white mt-0.5">
               Sign in with your Google account to access your live sector &amp; shift dashboard

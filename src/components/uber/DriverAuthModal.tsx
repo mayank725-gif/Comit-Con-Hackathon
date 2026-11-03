@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { DriverUser, DriverWorkProfile } from "@/lib/db/driverDb";
 import {
   signInWithRealGoogleFirebase,
-  saveDriverProfileToFirestore,
+  saveDriverProfileToCustomDb,
 } from "@/lib/firebase/authService";
 import {
   X,
@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Building2,
   Lock,
+  Database,
 } from "lucide-react";
 
 interface DriverAuthModalProps {
@@ -82,8 +83,8 @@ export default function DriverAuthModal({
 
   if (!isOpen) return null;
 
-  // Real Google Sign-In via Firebase Authentication
-  const handleRealFirebaseGoogleLogin = async () => {
+  // Real Google Sign-In (Identity via Google, database is 100% our own)
+  const handleRealGoogleLogin = async () => {
     setIsLoading(true);
     setAuthError(null);
 
@@ -98,7 +99,7 @@ export default function DriverAuthModal({
     setIsLoading(false);
   };
 
-  // Save Territory to Cloud Firestore and Server Session
+  // Save Territory directly to our OWN database
   const handleSaveTerritory = async () => {
     if (!currentUser) return;
     setIsLoading(true);
@@ -131,23 +132,18 @@ export default function DriverAuthModal({
     };
 
     try {
-      // 1. Save directly into Cloud Firestore
-      await saveDriverProfileToFirestore(currentUser.id, profileData);
+      // Save directly into our OWN database
+      const res = await saveDriverProfileToCustomDb(profileData);
 
-      // 2. Save into server session
-      const res = await fetch("/api/auth/onboarding", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profileData),
-      });
-
-      const data = await res.json();
-      if (data.success && data.profile) {
-        onAuthSuccess(currentUser, data.profile);
+      if (res.success && res.profile) {
+        onAuthSuccess(currentUser, res.profile);
         onClose();
+      } else {
+        setAuthError(res.error || "Failed to update territory in custom database");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Onboarding error:", err);
+      setAuthError(err?.message || "Failed to save profile");
     } finally {
       setIsLoading(false);
     }
@@ -161,8 +157,8 @@ export default function DriverAuthModal({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 font-mono text-[10px] font-bold flex items-center gap-1">
-                <ShieldCheck className="h-3 w-3" />
-                FIREBASE &amp; FIRESTORE AUTHENTICATION
+                <Database className="h-3 w-3" />
+                GOOGLE AUTHENTICATION &bull; CUSTOM DATABASE
               </span>
               <span className="text-zinc-500 text-xs font-mono">
                 {step === "LOGIN" ? "Step 1 of 2: Sign-in" : "Step 2 of 2: Work Area"}
@@ -183,7 +179,7 @@ export default function DriverAuthModal({
           </button>
         </div>
 
-        {/* STEP 1: REAL GOOGLE FIREBASE SIGN-IN ONLY */}
+        {/* STEP 1: REAL GOOGLE SIGN-IN */}
         {step === "LOGIN" && (
           <div className="space-y-5">
             <div className="rounded-2xl border-2 border-indigo-500/50 bg-gradient-to-r from-indigo-950/40 via-zinc-900 to-zinc-900 p-6 space-y-4 shadow-xl text-center">
@@ -193,17 +189,17 @@ export default function DriverAuthModal({
 
               <div>
                 <h3 className="text-base font-bold text-white">
-                  Official Google OAuth via Firebase
+                  Official Google Account Sign-In
                 </h3>
                 <p className="text-xs text-zinc-400 max-w-sm mx-auto mt-1 leading-relaxed">
-                  Sign in with your Google account. Your driver work territory, shift pacing, and vehicle profile will be stored securely in Cloud Firestore.
+                  Sign in with your Google account. Your driver work territory, shift pacing, and vehicle profile are stored securely in your own custom database.
                 </p>
               </div>
 
               {/* Official Google Sign-In Button */}
               <button
                 type="button"
-                onClick={handleRealFirebaseGoogleLogin}
+                onClick={handleRealGoogleLogin}
                 disabled={isLoading}
                 className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-100 text-black font-extrabold text-sm flex items-center justify-center gap-3 shadow-lg hover:shadow-white/20 transition-all disabled:opacity-50"
               >
@@ -238,7 +234,7 @@ export default function DriverAuthModal({
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-zinc-500 px-1 font-mono">
-              <span>● Cloud Firestore Driver Database</span>
+              <span>● Self-Hosted Driver Database</span>
               <span>🔒 256-bit TLS Encrypted</span>
             </div>
           </div>
@@ -250,7 +246,7 @@ export default function DriverAuthModal({
             <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-200 flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-cyan-400 shrink-0" />
               <span>
-                Operating sector and vehicle details are saved directly to Cloud Firestore.
+                Operating sector and vehicle details are saved directly into your custom driver database.
               </span>
             </div>
 
@@ -366,7 +362,7 @@ export default function DriverAuthModal({
                 className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs shadow-md transition-all flex items-center gap-2"
               >
                 <CheckCircle2 className="h-4 w-4" />
-                <span>Save to Cloud Firestore &amp; Go Online</span>
+                <span>Save Work Area &amp; Go Online</span>
               </button>
             </div>
           </div>
