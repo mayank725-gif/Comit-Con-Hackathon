@@ -126,12 +126,24 @@ export async function signInWithRealGoogleFirebase(): Promise<RealAuthResult> {
     };
   } catch (err: any) {
     console.error("Firebase Sign-in error:", err);
+    let friendlyError = err?.message || "Failed to sign in with Google Firebase";
+
+    if (err?.code === "auth/unauthorized-domain") {
+      friendlyError = `Domain not authorized yet in Firebase. Please add "${typeof window !== 'undefined' ? window.location.hostname : 'your domain'}" to Firebase Console -> Authentication -> Settings -> Authorized Domains.`;
+    } else if (err?.code === "auth/operation-not-allowed") {
+      friendlyError = "Google Sign-in is not enabled yet in your Firebase project. Please enable Google in Firebase Console -> Authentication -> Sign-in Method.";
+    } else if (err?.code === "auth/popup-blocked") {
+      friendlyError = "Sign-in popup was blocked by your browser. Please allow popups for this site.";
+    } else if (err?.code === "auth/popup-closed-by-user") {
+      friendlyError = "Sign-in popup was closed before completing.";
+    }
+
     return {
       success: false,
       user: null,
       profile: null,
       source: "FIREBASE_FIRESTORE",
-      error: err?.message || "Failed to sign in with Google Firebase",
+      error: friendlyError,
     };
   }
 }
