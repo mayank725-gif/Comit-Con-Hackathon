@@ -15,70 +15,71 @@ export class UberMarketplaceEngine {
   }
 
   private getInitialState(): MarketplaceState {
+    // Real Coordinates for Bengaluru (India's Tech Capital)
     const zones: Record<ZoneId, CityZone> = {
       STADIUM: {
         id: "STADIUM",
-        name: "Chase Center & Oracle Park (Stadium)",
-        lat: 37.7786,
-        lng: -122.3893,
+        name: "M. Chinnaswamy Stadium (Cricket & Arena)",
+        lat: 12.9788,
+        lng: 77.5996,
         radiusMeters: 1400,
-        currentDemand: 45,
-        activeDrivers: 14,
+        currentDemand: 50,
+        activeDrivers: 15,
         surgeMultiplier: 1.0,
-        predictedDemand15m: 60,
-        deficitOrSurplus: 46,
+        predictedDemand15m: 65,
+        deficitOrSurplus: 50,
         status: "NORMAL",
       },
       DOWNTOWN: {
         id: "DOWNTOWN",
-        name: "Financial District & Market St",
-        lat: 37.7946,
-        lng: -122.4000,
+        name: "MG Road & Central Business District (CBD)",
+        lat: 12.9756,
+        lng: 77.6097,
         radiusMeters: 1600,
-        currentDemand: 110,
-        activeDrivers: 32,
+        currentDemand: 120,
+        activeDrivers: 34,
         surgeMultiplier: 1.2,
-        predictedDemand15m: 125,
-        deficitOrSurplus: 93,
+        predictedDemand15m: 135,
+        deficitOrSurplus: 101,
         status: "NORMAL",
       },
       AIRPORT: {
         id: "AIRPORT",
-        name: "SFO International Airport Hub",
-        lat: 37.6213,
-        lng: -122.3790,
-        radiusMeters: 2200,
-        currentDemand: 80,
-        activeDrivers: 24,
+        name: "Kempegowda International Airport (BLR Hub)",
+        lat: 13.1986,
+        lng: 77.7066,
+        radiusMeters: 2400,
+        currentDemand: 85,
+        activeDrivers: 25,
         surgeMultiplier: 1.1,
-        predictedDemand15m: 95,
-        deficitOrSurplus: 71,
+        predictedDemand15m: 100,
+        deficitOrSurplus: 75,
         status: "NORMAL",
       },
       TECH_PARK: {
         id: "TECH_PARK",
-        name: "SoMa Innovation & Tech Corridor",
-        lat: 37.7775,
-        lng: -122.4168,
-        radiusMeters: 1300,
-        currentDemand: 55,
-        activeDrivers: 18,
-        surgeMultiplier: 1.0,
-        predictedDemand15m: 60,
-        deficitOrSurplus: 42,
+        name: "Outer Ring Road & Bellandur Tech Corridor",
+        lat: 12.9260,
+        lng: 77.6762,
+        radiusMeters: 1800,
+        currentDemand: 95,
+        activeDrivers: 28,
+        surgeMultiplier: 1.3,
+        predictedDemand15m: 115,
+        deficitOrSurplus: 87,
         status: "NORMAL",
       },
       ENTERTAINMENT: {
         id: "ENTERTAINMENT",
-        name: "Mission & Valencia Nightlife Hub",
-        lat: 37.7599,
-        lng: -122.4148,
-        radiusMeters: 1400,
-        currentDemand: 90,
-        activeDrivers: 26,
-        surgeMultiplier: 1.3,
-        predictedDemand15m: 110,
-        deficitOrSurplus: 84,
+        name: "Koramangala & Indiranagar Nightlife Hub",
+        lat: 12.9352,
+        lng: 77.6245,
+        radiusMeters: 1500,
+        currentDemand: 105,
+        activeDrivers: 30,
+        surgeMultiplier: 1.2,
+        predictedDemand15m: 120,
+        deficitOrSurplus: 90,
         status: "NORMAL",
       },
     };
@@ -87,7 +88,7 @@ export class UberMarketplaceEngine {
 
     const activeScenario: ScenarioEvent = {
       type: "NORMAL",
-      title: "Nominal City Operations (San Francisco Metro)",
+      title: "Nominal Marketplace Operations (Bengaluru Metro)",
       description: "Equilibrium dispatch across all 5 municipal sectors. P99 model inference latency at 8.4ms.",
       active: true,
       timestamp: new Date().toISOString(),
@@ -108,9 +109,9 @@ export class UberMarketplaceEngine {
       activeScenario,
       modelHealth,
       metrics: {
-        cityAvgSurge: 1.12,
+        cityAvgSurge: 1.16,
         avgRiderWaitTimeMin: 7.2,
-        avgDriverHourlyRate: 28.5,
+        avgDriverHourlyRate: 460, // ₹460/hr
         unfulfilledRequests: 18,
         totalTripsActive: 42,
         antiHerdDampingActive: false,
@@ -120,11 +121,11 @@ export class UberMarketplaceEngine {
 
   private seedDrivers(zones: Record<ZoneId, CityZone>): Driver[] {
     const driverNames = [
-      "Alex M.", "Marcus V.", "Priya S.", "Elena R.", "Chen W.",
-      "Jordan T.", "Samira K.", "David L.", "Amina B.", "Liam O.",
-      "Fatima H.", "Carlos D.", "Kenji N.", "Sarah B.", "Tariq A.",
-      "Lucas F.", "Chloe M.", "Ravi P.", "Zoe K.", "Noah S.",
-      "Maya G.", "Ethan W.", "Sofia C.", "Leo J.", "Hana Y."
+      "Ramesh K.", "Suresh M.", "Priya N.", "Amit S.", "Vikram R.",
+      "Arjun P.", "Ananya G.", "Deepak L.", "Kavita B.", "Rajesh O.",
+      "Manoj H.", "Kiran D.", "Sunil V.", "Pooja B.", "Tariq A.",
+      "Santosh F.", "Neha M.", "Ravi P.", "Gaurav K.", "Naveen S.",
+      "Mohan G.", "Rahul W.", "Swati C.", "Alok J.", "Harish Y."
     ];
 
     const zoneKeys: ZoneId[] = ["STADIUM", "DOWNTOWN", "AIRPORT", "TECH_PARK", "ENTERTAINMENT"];
@@ -132,9 +133,9 @@ export class UberMarketplaceEngine {
     return driverNames.map((name, i) => {
       const zoneId = zoneKeys[i % zoneKeys.length];
       const baseZone = zones[zoneId];
-      // Random geographic jitter within ~800 meters (0.008 deg)
-      const lat = baseZone.lat + (Math.random() - 0.5) * 0.015;
-      const lng = baseZone.lng + (Math.random() - 0.5) * 0.015;
+      // Random geographic jitter within ~1km in Bengaluru
+      const lat = baseZone.lat + (Math.random() - 0.5) * 0.018;
+      const lng = baseZone.lng + (Math.random() - 0.5) * 0.018;
 
       return {
         id: `DRV_${100 + i}`,
@@ -143,7 +144,7 @@ export class UberMarketplaceEngine {
         status: (i % 3 === 0 ? "ON_TRIP" : i % 3 === 1 ? "IDLE" : "EN_ROUTE_SURGE"),
         lat,
         lng,
-        earningsToday: Math.round(110 + Math.random() * 90),
+        earningsToday: Math.round(1850 + Math.random() * 950), // in ₹ INR
         tripsCompleted: Math.floor(6 + Math.random() * 8),
         shiftHours: 4.5,
       };
@@ -157,7 +158,7 @@ export class UberMarketplaceEngine {
   public tick(): MarketplaceState {
     this.state.step += 1;
 
-    // 1. Move vehicles on real coordinates
+    // 1. Move vehicles on real Indian city coordinates
     this.state.drivers.forEach((driver) => {
       if (driver.targetZone) {
         const target = this.state.zones[driver.targetZone];
@@ -166,11 +167,9 @@ export class UberMarketplaceEngine {
         const dist = Math.sqrt(dLat * dLat + dLng * dLng);
 
         if (dist > 0.004) {
-          // Move towards target zone
           driver.lat += (dLat / dist) * 0.0035;
           driver.lng += (dLng / dist) * 0.0035;
         } else {
-          // Reached destination
           driver.currentZone = driver.targetZone;
           driver.targetZone = undefined;
           driver.status = "IDLE";
@@ -247,16 +246,16 @@ export class UberMarketplaceEngine {
     if (type === "STADIUM_CONCERT_END") {
       this.state.activeScenario = {
         type: "STADIUM_CONCERT_END",
-        title: "Coldplay Concert Concludes at Chase Center (65,000 Attendees)",
-        description: "Massive egress surge: Demand spiked to 480 requests against 14 active vehicles in sector.",
+        title: "IPL T20 Match Concludes at M. Chinnaswamy Stadium (40,000 Spectators)",
+        description: "Massive egress surge along Cubbon Park & MG Road: Demand spiked to 490 requests against 15 active vehicles.",
         affectedZone: "STADIUM",
         active: true,
         timestamp: new Date().toISOString(),
       };
 
       const stadium = this.state.zones.STADIUM;
-      stadium.currentDemand = 480;
-      stadium.predictedDemand15m = 550;
+      stadium.currentDemand = 490;
+      stadium.predictedDemand15m = 560;
       stadium.surgeMultiplier = 3.5;
       stadium.status = "HIGH_SURGE";
 
@@ -276,8 +275,8 @@ export class UberMarketplaceEngine {
     if (type === "STALE_MODEL_DRIFT") {
       this.state.activeScenario = {
         type: "STALE_MODEL_DRIFT",
-        title: "Predictive Feature Drift Detected in ML Pipeline",
-        description: "Sensor ingest latency caused 78% prediction deviation. Michelangelo Self-Healing Fallback engaged.",
+        title: "Predictive Feature Drift Detected in ML Pipeline (Sudden Monsoon Inflow)",
+        description: "Monsoon downpour created 78% deviation between historical model and ground sensor feeds. Self-Healing Fallback engaged.",
         active: true,
         timestamp: new Date().toISOString(),
       };
@@ -294,16 +293,16 @@ export class UberMarketplaceEngine {
     if (type === "AIRPORT_FLIGHT_WAVE") {
       this.state.activeScenario = {
         type: "AIRPORT_FLIGHT_WAVE",
-        title: "International Flight Bank Arrival at SFO (8 Long-Hauls Landed)",
-        description: "Airport terminal demand surges +140%. High-fare airport-to-downtown trips available.",
+        title: "International Flight Bank Arrival at Kempegowda BLR (10 Long-Hauls Landed)",
+        description: "Airport terminal demand surges +160%. Premium airport-to-city trips available along Bellary Road / Hebbal Expressway.",
         affectedZone: "AIRPORT",
         active: true,
         timestamp: new Date().toISOString(),
       };
 
       const airport = this.state.zones.AIRPORT;
-      airport.currentDemand = 240;
-      airport.predictedDemand15m = 290;
+      airport.currentDemand = 250;
+      airport.predictedDemand15m = 310;
       airport.surgeMultiplier = 2.4;
       airport.status = "HIGH_SURGE";
 

@@ -41,7 +41,7 @@ export default function Home() {
       id: "INIT_1",
       sender: "ASSISTANT",
       agentType: "DISPATCH",
-      text: "👋 Welcome, Driver Alex! Michelangelo Market Engine is online. Central Stadium and Downtown are currently your highest-earning sectors. How can I guide your shift?",
+      text: "👋 Welcome, Driver Ramesh! Michelangelo Market Engine is online. M. Chinnaswamy Stadium and MG Road CBD are currently your highest-earning sectors. How can I guide your shift?",
       timestamp: "2026-11-03T23:00:00.000Z",
     },
   ]);
@@ -197,12 +197,12 @@ export default function Home() {
             </span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-black text-emerald-400">
-                ${state.metrics.avgDriverHourlyRate}/hr
+                ₹{state.metrics.avgDriverHourlyRate}/hr
               </span>
-              <span className="text-xs font-bold text-emerald-400">+61%</span>
+              <span className="text-xs font-bold text-emerald-400">+64%</span>
             </div>
             <span className="text-[10px] text-zinc-500 block font-mono">
-              vs $18.40 unassisted baseline
+              vs ₹280 unassisted baseline
             </span>
           </div>
 

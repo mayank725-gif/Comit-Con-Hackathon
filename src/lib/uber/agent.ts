@@ -14,14 +14,14 @@ export class MultiAgentDriverCopilot {
           .map((z) => `${z.name}: Demand=${z.currentDemand}, ActiveDrivers=${z.activeDrivers}, Surge=${z.surgeMultiplier}x, Deficit=${z.deficitOrSurplus}`)
           .join(" | ");
 
-        const systemPrompt = `You are the Uber Assistant (powered by the Michelangelo ML Platform). You are acting as an expert real-time AI copilot for an active Uber driver in San Francisco.
+        const systemPrompt = `You are the Uber India Assistant (powered by the Michelangelo ML Platform). You are acting as an expert real-time AI copilot for an active Uber driver in Bengaluru, India.
 Live City Telemetry:
 ${zoneSummary}
 City Avg Surge: ${state.metrics.cityAvgSurge}x, Avg Rider Wait: ${state.metrics.avgRiderWaitTimeMin} min.
 Model Health: ${state.modelHealth.status} (${state.modelHealth.activeRoutingAlgorithm}).
 Active Scenario: ${state.activeScenario.title} - ${state.activeScenario.description}.
 
-Answer the driver's query concisely (2-4 sentences max), professionally, and actionably. Include specific dollar estimates or zone recommendations where relevant.`;
+Answer the driver's query concisely (2-4 sentences max), professionally, and actionably in English with INR (₹) estimates. Mention relevant Indian routes (e.g. Hebbal Flyover, Outer Ring Road, MG Road) where helpful.`;
 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
         const aiResponse = await fetch(geminiUrl, {
@@ -51,7 +51,7 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
               actionableRecommendation: {
                 suggestedZone: state.zones.STADIUM.surgeMultiplier >= 2.0 ? "STADIUM" : "AIRPORT",
                 estimatedSurge: Math.max(state.zones.STADIUM.surgeMultiplier, state.zones.AIRPORT.surgeMultiplier),
-                extraEarningsEstimate: "+$18 - $28 / trip",
+                extraEarningsEstimate: "+₹350 - ₹600 / trip",
               },
             };
           }
@@ -89,12 +89,12 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
         id,
         sender: "ASSISTANT",
         agentType: "DISPATCH",
-        text: `📍 **Dispatch Forecaster**: Michelangelo recommends repositioning to **${target.name}**. Current Surge is **${target.surgeMultiplier}x** with a net deficit of **${target.deficitOrSurplus} unfulfilled passengers**. Expected payout is ~**$${Math.round(22 * target.surgeMultiplier)} - $${Math.round(34 * target.surgeMultiplier)}** on your next trip.`,
+        text: `📍 **Dispatch Forecaster**: Michelangelo recommends repositioning to **${target.name}**. Current Surge is **${target.surgeMultiplier}x** with a net deficit of **${target.deficitOrSurplus} unfulfilled riders**. Expected fare is ~**₹${Math.round(380 * target.surgeMultiplier)} - ₹${Math.round(650 * target.surgeMultiplier)}** on your next trip.`,
         timestamp,
         actionableRecommendation: {
           suggestedZone: bestZone,
           estimatedSurge: target.surgeMultiplier,
-          extraEarningsEstimate: `+$${Math.round(10 * target.surgeMultiplier)} surge bonus`,
+          extraEarningsEstimate: `+₹${Math.round(200 * target.surgeMultiplier)} surge bonus`,
         },
       };
     }
@@ -105,6 +105,8 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
       q.includes("surge") ||
       q.includes("stadium") ||
       q.includes("airport") ||
+      q.includes("chinnaswamy") ||
+      q.includes("match") ||
       q.includes("concert") ||
       q.includes("red") ||
       q.includes("event")
@@ -114,7 +116,7 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
           id,
           sender: "ASSISTANT",
           agentType: "EVENT_INTEL",
-          text: `🏟️ **Event Alert**: The Coldplay Concert at **Chase Center / Oracle Park** has concluded with 65,000 attendees exiting. Rider app open rates spiked **+420%** along 3rd St. Michelangelo has set dynamic surge to **${state.zones.STADIUM.surgeMultiplier}x**. Anti-herd protection is capping incoming driver flow to prevent gridlock.`,
+          text: `🏟️ **Event Alert**: The IPL T20 match at **M. Chinnaswamy Stadium** has concluded with 40,000 spectators exiting along MG Road & Cubbon Park. Rider booking requests surged **+440%**. Michelangelo has set dynamic surge to **${state.zones.STADIUM.surgeMultiplier}x**. Anti-herd protection is managing inflow to prevent road gridlock.`,
           timestamp,
         };
       } else if (state.activeScenario.type === "AIRPORT_FLIGHT_WAVE") {
@@ -122,7 +124,7 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
           id,
           sender: "ASSISTANT",
           agentType: "EVENT_INTEL",
-          text: `✈️ **Airport Inflow**: 8 long-haul international flights landed at SFO Terminals 2 & 3 within 25 minutes. Average trip distance from SFO is 18 miles along US-101. Surge is at **${state.zones.AIRPORT.surgeMultiplier}x**.`,
+          text: `✈️ **Airport Inflow Alert**: 10 long-haul domestic & international flights arrived at Kempegowda Airport (BLR) within 30 minutes. Average fare back to city via Bellary Road / Hebbal Expressway is ~₹1,200 - ₹1,600. Current surge is **${state.zones.AIRPORT.surgeMultiplier}x**.`,
           timestamp,
         };
       } else {
@@ -130,7 +132,7 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
           id,
           sender: "ASSISTANT",
           agentType: "EVENT_INTEL",
-          text: `📊 **Market Intelligence**: City-wide average surge is **${state.metrics.cityAvgSurge}x**. Financial District and SoMa Corridor are showing steady commuter pickups with low traffic delays.`,
+          text: `📊 **Bengaluru Market Intelligence**: City-wide average surge is **${state.metrics.cityAvgSurge}x**. Bellandur Outer Ring Road and Koramangala are showing heavy tech-park and dinner demand with moderate Silk Board traffic.`,
           timestamp,
         };
       }
@@ -150,7 +152,7 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
         id,
         sender: "ASSISTANT",
         agentType: "EARNINGS",
-        text: `💰 **Shift Telemetry**: Your current pace is **$${state.metrics.avgDriverHourlyRate}/hr** ($138 today across 4.5 hours). You are pacing **+61% above the unassisted market baseline** ($18.40/hr) thanks to predictive surge repositioning.`,
+        text: `💰 **Shift Telemetry**: Your current pace is **₹${state.metrics.avgDriverHourlyRate}/hr** (₹2,070 earned today across 4.5 hours). You are pacing **+64% above the unassisted market baseline** (₹280/hr) thanks to predictive surge positioning.`,
         timestamp,
       };
     }
@@ -171,7 +173,7 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
           id,
           sender: "ASSISTANT",
           agentType: "SYSTEM_GUARD",
-          text: `⚠️ **Self-Healing Failover**: Sensor latency caused a temporary 78% feature deviation. Michelangelo automatically switched to the **Real-Time Heuristic Failover Engine** with zero dispatch disruption. Recalibration completes in ~3 seconds.`,
+          text: `⚠️ **Self-Healing Failover**: Sensor latency & rain deviations caused a temporary 78% feature deviation. Michelangelo automatically switched to the **Real-Time Heuristic Failover Engine** with zero driver disruption. Recalibration completes in ~3 seconds.`,
           timestamp,
         };
       } else {
@@ -186,12 +188,12 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
     }
 
     // E. TRAFFIC & ROUTING QUESTIONS
-    if (q.includes("traffic") || q.includes("route") || q.includes("bridge") || q.includes("highway") || q.includes("101")) {
+    if (q.includes("traffic") || q.includes("route") || q.includes("hebbal") || q.includes("silk board") || q.includes("ring road")) {
       return {
         id,
         sender: "ASSISTANT",
         agentType: "DISPATCH",
-        text: `🚗 **Transit Navigation**: US-101 South towards SFO is flowing at 58 mph. Northbound towards Downtown via I-80 is clear. If heading to Chase Center, approach via Mariposa St to avoid 3rd St pedestrian congestion.`,
+        text: `🚗 **Bengaluru Traffic Guidance**: Hebbal Flyover towards Kempegowda Airport is moving smoothly at 52 km/h. Outer Ring Road near Bellandur has moderate tech park rush. If heading to Chinnaswamy Stadium, take Queens Road to avoid MG Road bottleneck.`,
         timestamp,
       };
     }
@@ -201,7 +203,7 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
       id,
       sender: "ASSISTANT",
       agentType: "DISPATCH",
-      text: `👋 **Uber Assistant**: Michelangelo is tracking San Francisco fleet supply in real time. Demand is strongest at **${state.zones.STADIUM.name}** (${state.zones.STADIUM.surgeMultiplier}x) and **${state.zones.AIRPORT.name}** (${state.zones.AIRPORT.surgeMultiplier}x). What would you like to optimize?`,
+      text: `👋 **Uber India Assistant**: Michelangelo is tracking Bengaluru fleet supply in real time. Demand is highest at **${state.zones.STADIUM.name}** (${state.zones.STADIUM.surgeMultiplier}x) and **${state.zones.AIRPORT.name}** (${state.zones.AIRPORT.surgeMultiplier}x). What would you like to optimize?`,
       timestamp,
     };
   }

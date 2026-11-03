@@ -27,10 +27,10 @@ export default function RealLeafletMap({
     import("leaflet").then((L) => {
       if (!isMounted || !mapContainerRef.current) return;
 
-      // Initialize map once
+      // Initialize map once centered on Bengaluru, India
       if (!mapInstanceRef.current) {
         const map = L.map(mapContainerRef.current, {
-          center: [37.735, -122.405],
+          center: [12.975, 77.63],
           zoom: 12,
           minZoom: 10,
           maxZoom: 16,
@@ -40,17 +40,17 @@ export default function RealLeafletMap({
         // Add custom zoom control in top right
         L.control.zoom({ position: "topright" }).addTo(map);
 
-        // Official ESRI World Dark Gray Canvas (100% Free, Zero Watermark, Zero API Key Required)
+        // Official ESRI World Dark Gray Canvas (Zero Watermark, Zero API Key Required)
         L.tileLayer(
           "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
           {
             attribution:
-              'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; San Francisco Transit Network',
+              'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; Bengaluru Metro Transit Network',
             maxZoom: 16,
           }
         ).addTo(map);
 
-        // ESRI World Dark Gray Reference Layer (Streets, Freeways & Neighborhood Names)
+        // ESRI World Dark Gray Reference Layer (Streets, Outer Ring Road & Neighborhoods)
         L.tileLayer(
           "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
           {
@@ -167,7 +167,7 @@ export default function RealLeafletMap({
         }).addTo(markersLayer);
 
         carMarker.bindTooltip(
-          `<div class="text-xs font-sans"><b>${driver.name}</b><br/>Status: ${driver.status}<br/>Earnings: $${driver.earningsToday}</div>`,
+          `<div class="text-xs font-sans"><b>${driver.name}</b><br/>Status: ${driver.status}<br/>Earnings: ₹${driver.earningsToday}</div>`,
           { className: "custom-leaflet-tooltip", direction: "top", offset: [0, -6] }
         );
       });
@@ -189,32 +189,32 @@ export default function RealLeafletMap({
       {/* Real Leaflet Map Container */}
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-      {/* Floating City Navigation Quick-Pills */}
+      {/* Floating City Navigation Quick-Pills for Bengaluru, India */}
       <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-zinc-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-zinc-800 shadow-xl">
         <button
-          onClick={() => handleFlyTo(37.7786, -122.3893, 14)}
+          onClick={() => handleFlyTo(12.9788, 77.5996, 14)}
           className="px-2.5 py-1 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all flex items-center gap-1"
         >
           <Zap className="h-3 w-3 text-rose-400" />
-          <span>Chase Center (Stadium)</span>
+          <span>Chinnaswamy Stadium</span>
         </button>
         <button
-          onClick={() => handleFlyTo(37.7946, -122.4000, 14)}
+          onClick={() => handleFlyTo(12.9756, 77.6097, 14)}
           className="px-2.5 py-1 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all"
         >
-          Financial District
+          MG Road CBD
         </button>
         <button
-          onClick={() => handleFlyTo(37.6213, -122.3790, 13)}
+          onClick={() => handleFlyTo(13.1986, 77.7066, 13)}
           className="px-2.5 py-1 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all flex items-center gap-1"
         >
-          <span>SFO Airport</span>
+          <span>BLR Airport</span>
         </button>
       </div>
 
       {/* Floating Map Legend */}
       <div className="absolute bottom-4 left-4 z-10 rounded-2xl border border-zinc-800 bg-zinc-950/85 backdrop-blur-md p-3 space-y-1.5 text-[10px] font-mono shadow-xl">
-        <div className="text-[11px] font-bold text-white mb-1">San Francisco Fleet Radar</div>
+        <div className="text-[11px] font-bold text-white mb-1">Bengaluru Fleet Radar (India)</div>
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-emerald-400" />
           <span className="text-zinc-300">Available ({state.drivers.filter(d => d.status === "IDLE").length})</span>
