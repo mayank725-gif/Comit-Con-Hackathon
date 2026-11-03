@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     const engine = getUberEngine();
     const state = engine.getState();
-    const answer = driverCopilot.answerDriverQuery(query, state);
+    const answer = await driverCopilot.answerDriverQuery(query, state);
 
     return NextResponse.json({
       success: true,

@@ -3,8 +3,9 @@ export type ZoneId = "STADIUM" | "DOWNTOWN" | "AIRPORT" | "TECH_PARK" | "ENTERTA
 export interface CityZone {
   id: ZoneId;
   name: string;
-  x: number; // Coordinate for canvas/map representation (percentage 0-100)
-  y: number;
+  lat: number;
+  lng: number;
+  radiusMeters: number;
   currentDemand: number;
   activeDrivers: number;
   surgeMultiplier: number; // e.g. 1.0x to 3.5x
@@ -21,8 +22,8 @@ export interface Driver {
   currentZone: ZoneId;
   targetZone?: ZoneId;
   status: DriverStatus;
-  x: number; // 0 - 100 for visual map
-  y: number;
+  lat: number;
+  lng: number;
   earningsToday: number;
   tripsCompleted: number;
   shiftHours: number;
@@ -40,7 +41,7 @@ export interface ScenarioEvent {
 export interface ModelHealth {
   status: "HEALTHY" | "DRIFT_DETECTED" | "FALLBACK_ENGAGED";
   latencyMs: number;
-  featureDriftScore: number; // 0.0 to 1.0 (threshold > 0.4 triggers fallback)
+  featureDriftScore: number; // 0.0 to 1.0
   lastRecalibrated: string;
   activeRoutingAlgorithm: "MICHELANGELO_ML" | "REALTIME_HEURISTIC_FALLBACK";
 }
@@ -64,7 +65,7 @@ export interface MarketplaceState {
 export interface AssistantMessage {
   id: string;
   sender: "DRIVER" | "ASSISTANT";
-  agentType?: "EARNINGS" | "DISPATCH" | "EVENT_INTEL" | "SYSTEM_GUARD";
+  agentType?: "DISPATCH" | "EVENT_INTEL" | "EARNINGS" | "SYSTEM_GUARD";
   text: string;
   timestamp: string;
   actionableRecommendation?: {

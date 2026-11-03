@@ -1,28 +1,32 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import UberNavbar, { UberTab } from "@/components/uber/UberNavbar";
-import CityMapCanvas from "@/components/uber/CityMapCanvas";
 import DriverAssistantChat from "@/components/uber/DriverAssistantChat";
 import UberBenchmarkView from "@/components/uber/UberBenchmarkView";
 import {
   MarketplaceState,
   ZoneId,
   AssistantMessage,
-  UberBenchmarkStats,
 } from "@/lib/uber/types";
 import { UBER_BENCHMARK_DATA } from "@/lib/uber/benchmark";
-import {
-  Car,
-  Zap,
-  TrendingUp,
-  Clock,
-  ShieldCheck,
-  Navigation,
-  ArrowRight,
-  AlertTriangle,
-  Flame,
-} from "lucide-react";
+
+// Dynamic import with ssr: false for Leaflet real map
+const RealLeafletMap = dynamic(
+  () => import("@/components/uber/RealLeafletMap"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[540px] rounded-3xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center space-y-2">
+        <div className="h-6 w-6 rounded-full border-2 border-white border-t-transparent animate-spin" />
+        <span className="text-xs font-mono text-zinc-400">
+          Loading San Francisco Real-Time Fleet Map...
+        </span>
+      </div>
+    ),
+  }
+);
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<UberTab>("map");
@@ -103,11 +107,11 @@ export default function Home() {
               id: `SCEN_${Date.now()}`,
               sender: "ASSISTANT",
               agentType: "EVENT_INTEL",
-              text: "🚨 **URGENT SURGE ALERT**: Coldplay Concert has ended at Central Stadium. 65,000 attendees exiting! Surge multiplier increased to 3.4x. Forecaster recommends immediate repositioning.",
+              text: "🚨 **URGENT SURGE ALERT**: Coldplay Concert has ended at Chase Center / Oracle Park. 65,000 attendees exiting! Surge multiplier increased to 3.5x. Forecaster recommends immediate repositioning.",
               timestamp: new Date().toISOString(),
               actionableRecommendation: {
                 suggestedZone: "STADIUM",
-                estimatedSurge: 3.4,
+                estimatedSurge: 3.5,
                 extraEarningsEstimate: "+$24 - $32 / trip",
               },
             },
@@ -248,12 +252,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* TAB 1: LIVE CITY MAP & DRIVER COPILOT */}
+        {/* TAB 1: REAL CITY MAP & DRIVER COPILOT */}
         {activeTab === "map" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left 7 Cols: City Map Canvas */}
+            {/* Left 7 Cols: Real Leaflet Map */}
             <div className="lg:col-span-7 space-y-4">
-              <CityMapCanvas
+              <RealLeafletMap
                 state={state}
                 selectedZone={selectedZone}
                 onSelectZone={setSelectedZone}
@@ -265,7 +269,7 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[10px] font-mono text-zinc-400 uppercase">
-                        SECTOR TELEMETRY
+                        REAL-TIME SECTOR TELEMETRY
                       </span>
                       <h4 className="text-base font-bold text-white mt-0.5">{focusedZone.name}</h4>
                     </div>

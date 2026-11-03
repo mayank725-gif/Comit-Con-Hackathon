@@ -18,9 +18,10 @@ export class UberMarketplaceEngine {
     const zones: Record<ZoneId, CityZone> = {
       STADIUM: {
         id: "STADIUM",
-        name: "Central Stadium Arena",
-        x: 78,
-        y: 22,
+        name: "Chase Center & Oracle Park (Stadium)",
+        lat: 37.7786,
+        lng: -122.3893,
+        radiusMeters: 1400,
         currentDemand: 45,
         activeDrivers: 14,
         surgeMultiplier: 1.0,
@@ -30,9 +31,10 @@ export class UberMarketplaceEngine {
       },
       DOWNTOWN: {
         id: "DOWNTOWN",
-        name: "Metropolitan Financial Center",
-        x: 50,
-        y: 50,
+        name: "Financial District & Market St",
+        lat: 37.7946,
+        lng: -122.4000,
+        radiusMeters: 1600,
         currentDemand: 110,
         activeDrivers: 32,
         surgeMultiplier: 1.2,
@@ -42,9 +44,10 @@ export class UberMarketplaceEngine {
       },
       AIRPORT: {
         id: "AIRPORT",
-        name: "International Terminal Hub",
-        x: 18,
-        y: 82,
+        name: "SFO International Airport Hub",
+        lat: 37.6213,
+        lng: -122.3790,
+        radiusMeters: 2200,
         currentDemand: 80,
         activeDrivers: 24,
         surgeMultiplier: 1.1,
@@ -54,9 +57,10 @@ export class UberMarketplaceEngine {
       },
       TECH_PARK: {
         id: "TECH_PARK",
-        name: "Innovation Silicon Corridor",
-        x: 22,
-        y: 24,
+        name: "SoMa Innovation & Tech Corridor",
+        lat: 37.7775,
+        lng: -122.4168,
+        radiusMeters: 1300,
         currentDemand: 55,
         activeDrivers: 18,
         surgeMultiplier: 1.0,
@@ -66,9 +70,10 @@ export class UberMarketplaceEngine {
       },
       ENTERTAINMENT: {
         id: "ENTERTAINMENT",
-        name: "Arts & Nightlife District",
-        x: 75,
-        y: 78,
+        name: "Mission & Valencia Nightlife Hub",
+        lat: 37.7599,
+        lng: -122.4148,
+        radiusMeters: 1400,
         currentDemand: 90,
         activeDrivers: 26,
         surgeMultiplier: 1.3,
@@ -78,12 +83,12 @@ export class UberMarketplaceEngine {
       },
     };
 
-    const drivers: Driver[] = this.seedDrivers();
+    const drivers: Driver[] = this.seedDrivers(zones);
 
     const activeScenario: ScenarioEvent = {
       type: "NORMAL",
-      title: "Nominal City Operations",
-      description: "Standard morning/evening dispatch equilibrium across all 5 municipal sectors.",
+      title: "Nominal City Operations (San Francisco Metro)",
+      description: "Equilibrium dispatch across all 5 municipal sectors. P99 model inference latency at 8.4ms.",
       active: true,
       timestamp: new Date().toISOString(),
     };
@@ -113,7 +118,7 @@ export class UberMarketplaceEngine {
     };
   }
 
-  private seedDrivers(): Driver[] {
+  private seedDrivers(zones: Record<ZoneId, CityZone>): Driver[] {
     const driverNames = [
       "Alex M.", "Marcus V.", "Priya S.", "Elena R.", "Chen W.",
       "Jordan T.", "Samira K.", "David L.", "Amina B.", "Liam O.",
@@ -122,37 +127,27 @@ export class UberMarketplaceEngine {
       "Maya G.", "Ethan W.", "Sofia C.", "Leo J.", "Hana Y."
     ];
 
-    const zones: ZoneId[] = ["STADIUM", "DOWNTOWN", "AIRPORT", "TECH_PARK", "ENTERTAINMENT"];
+    const zoneKeys: ZoneId[] = ["STADIUM", "DOWNTOWN", "AIRPORT", "TECH_PARK", "ENTERTAINMENT"];
 
     return driverNames.map((name, i) => {
-      const zoneId = zones[i % zones.length];
-      const baseCoords = this.getZoneCoords(zoneId);
-      // Small random offset
-      const x = Math.min(95, Math.max(5, baseCoords.x + (Math.random() * 8 - 4)));
-      const y = Math.min(95, Math.max(5, baseCoords.y + (Math.random() * 8 - 4)));
+      const zoneId = zoneKeys[i % zoneKeys.length];
+      const baseZone = zones[zoneId];
+      // Random geographic jitter within ~800 meters (0.008 deg)
+      const lat = baseZone.lat + (Math.random() - 0.5) * 0.015;
+      const lng = baseZone.lng + (Math.random() - 0.5) * 0.015;
 
       return {
         id: `DRV_${100 + i}`,
         name,
         currentZone: zoneId,
         status: (i % 3 === 0 ? "ON_TRIP" : i % 3 === 1 ? "IDLE" : "EN_ROUTE_SURGE"),
-        x,
-        y,
+        lat,
+        lng,
         earningsToday: Math.round(110 + Math.random() * 90),
         tripsCompleted: Math.floor(6 + Math.random() * 8),
         shiftHours: 4.5,
       };
     });
-  }
-
-  public getZoneCoords(zoneId: ZoneId): { x: number; y: number } {
-    switch (zoneId) {
-      case "STADIUM": return { x: 78, y: 22 };
-      case "DOWNTOWN": return { x: 50, y: 50 };
-      case "AIRPORT": return { x: 18, y: 82 };
-      case "TECH_PARK": return { x: 22, y: 24 };
-      case "ENTERTAINMENT": return { x: 75, y: 78 };
-    }
   }
 
   public getState(): MarketplaceState {
@@ -162,17 +157,18 @@ export class UberMarketplaceEngine {
   public tick(): MarketplaceState {
     this.state.step += 1;
 
-    // 1. Move vehicles slightly towards their target or drift organically
+    // 1. Move vehicles on real coordinates
     this.state.drivers.forEach((driver) => {
       if (driver.targetZone) {
-        const target = this.getZoneCoords(driver.targetZone);
-        const dx = target.x - driver.x;
-        const dy = target.y - driver.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const target = this.state.zones[driver.targetZone];
+        const dLat = target.lat - driver.lat;
+        const dLng = target.lng - driver.lng;
+        const dist = Math.sqrt(dLat * dLat + dLng * dLng);
 
-        if (dist > 3) {
-          driver.x += (dx / dist) * 2.2;
-          driver.y += (dy / dist) * 2.2;
+        if (dist > 0.004) {
+          // Move towards target zone
+          driver.lat += (dLat / dist) * 0.0035;
+          driver.lng += (dLng / dist) * 0.0035;
         } else {
           // Reached destination
           driver.currentZone = driver.targetZone;
@@ -180,11 +176,9 @@ export class UberMarketplaceEngine {
           driver.status = "IDLE";
         }
       } else {
-        // Subtle organic wander
-        driver.x += (Math.random() - 0.5) * 0.8;
-        driver.y += (Math.random() - 0.5) * 0.8;
-        driver.x = Math.max(5, Math.min(95, driver.x));
-        driver.y = Math.max(5, Math.min(95, driver.y));
+        // Subtle realistic street drift
+        driver.lat += (Math.random() - 0.5) * 0.001;
+        driver.lng += (Math.random() - 0.5) * 0.001;
       }
     });
 
@@ -210,7 +204,6 @@ export class UberMarketplaceEngine {
       const zId = id as ZoneId;
       zone.activeDrivers = counts[zId] || 1;
 
-      // Realistic surge formula
       const ratio = zone.currentDemand / Math.max(1, zone.activeDrivers);
       let calculatedSurge = 1.0;
       if (ratio > 1.2) {
@@ -227,7 +220,7 @@ export class UberMarketplaceEngine {
     this.state.metrics.cityAvgSurge = Math.round((totalSurge / zoneCount) * 10) / 10;
     this.state.metrics.avgRiderWaitTimeMin = Math.round((totalWait / zoneCount) * 10) / 10;
 
-    // 4. Handle Stale Model auto-recovery if triggered
+    // 4. Auto-recover from Stale Model Drift if active
     if (this.state.modelHealth.status === "FALLBACK_ENGAGED") {
       this.state.modelHealth.featureDriftScore = Math.max(
         0.05,
@@ -254,7 +247,7 @@ export class UberMarketplaceEngine {
     if (type === "STADIUM_CONCERT_END") {
       this.state.activeScenario = {
         type: "STADIUM_CONCERT_END",
-        title: "Coldplay Concert Concludes at Stadium (65,000 Attendees)",
+        title: "Coldplay Concert Concludes at Chase Center (65,000 Attendees)",
         description: "Massive egress surge: Demand spiked to 480 requests against 14 active vehicles in sector.",
         affectedZone: "STADIUM",
         active: true,
@@ -264,11 +257,10 @@ export class UberMarketplaceEngine {
       const stadium = this.state.zones.STADIUM;
       stadium.currentDemand = 480;
       stadium.predictedDemand15m = 550;
-      stadium.surgeMultiplier = 3.4;
+      stadium.surgeMultiplier = 3.5;
       stadium.status = "HIGH_SURGE";
 
-      // Trigger automatic Michelangelo repositioning dispatch
-      // Direct up to 10 idle drivers from Downtown & Tech Park toward Stadium
+      // Dispatched drivers start driving on map toward Stadium coordinates
       let dispatched = 0;
       this.state.drivers.forEach((driver) => {
         if (driver.status === "IDLE" && driver.currentZone !== "STADIUM" && dispatched < 10) {
@@ -302,7 +294,7 @@ export class UberMarketplaceEngine {
     if (type === "AIRPORT_FLIGHT_WAVE") {
       this.state.activeScenario = {
         type: "AIRPORT_FLIGHT_WAVE",
-        title: "International Flight Bank Arrival (8 Long-Hauls Landed)",
+        title: "International Flight Bank Arrival at SFO (8 Long-Hauls Landed)",
         description: "Airport terminal demand surges +140%. High-fare airport-to-downtown trips available.",
         affectedZone: "AIRPORT",
         active: true,
