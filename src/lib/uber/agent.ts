@@ -268,7 +268,36 @@ Answer the driver's query concisely (2-4 sentences max), professionally, and act
       }
     }
 
-    // F. TRAFFIC & ROUTING QUESTIONS
+    // F. TOURIST PLACES & OUTSTATION INTELLIGENCE
+    if (
+      q.includes("tourist") ||
+      q.includes("taj") ||
+      q.includes("agra") ||
+      q.includes("goa") ||
+      q.includes("kedarnath") ||
+      q.includes("mysore") ||
+      q.includes("hampi") ||
+      q.includes("manali") ||
+      q.includes("varanasi") ||
+      q.includes("outstation") ||
+      q.includes("travel")
+    ) {
+      return {
+        id,
+        sender: "ASSISTANT",
+        agentType: "EVENT_INTEL",
+        text: `🏛️ **Pan-India Tourist Intelligence**: 32+ premier heritage & travel destinations are active across India. For **Taj Mahal (Agra)**, typical Uber Outstation fare from Delhi NCR is ~₹2,800. For **Mysore Palace**, fare from Bengaluru via the Expressway is ~₹2,400. You can also click on any tourist badge or use the map search bar to fly directly to that site!`,
+        timestamp,
+        routingTrace: {
+          confidenceScore: 0.988,
+          tokensEvaluated: 165,
+          featuresQueried: ["national_tourism_corridors", "uber_outstation_intercity_pricing", "expressway_toll_rates"],
+          latencyMs: 5.6,
+        },
+      };
+    }
+
+    // G. TRAFFIC & ROUTING QUESTIONS
     if (q.includes("traffic") || q.includes("route") || q.includes("hebbal") || q.includes("silk board") || q.includes("ring road")) {
       return {
         id,

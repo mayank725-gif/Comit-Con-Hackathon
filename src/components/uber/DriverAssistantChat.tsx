@@ -28,12 +28,12 @@ const PRESET_QUERIES = [
     query: "Where should I go to get high-fare rides right now?",
   },
   {
-    label: "🏟️ Explain Stadium Surge",
-    query: "Why is the surge so high at M. Chinnaswamy Stadium?",
+    label: "🏛️ Tourist Outstation Fares",
+    query: "What are the Uber Outstation fares for major tourist destinations like Taj Mahal, Goa, or Mysore?",
   },
   {
-    label: "🌧️ Monsoon & Flood Safety",
-    query: "Are there any waterlogged routes or rain safety advisories in Bengaluru?",
+    label: "🏟️ Explain Stadium Surge",
+    query: "Why is the surge so high at M. Chinnaswamy Stadium?",
   },
   {
     label: "💰 Shift Earnings & Pace",
