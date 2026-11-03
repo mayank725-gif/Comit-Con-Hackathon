@@ -15,6 +15,7 @@ import {
   Radio,
   Clock,
   Gauge,
+  MapPin,
 } from "lucide-react";
 
 interface RealLeafletMapProps {
@@ -24,20 +25,38 @@ interface RealLeafletMapProps {
   onSelectDriverForCopilot?: (driver: Driver) => void;
 }
 
-type MapTileStyle = "streets" | "midnight" | "satellite";
+type MapTileStyle = "google_streets" | "google_satellite" | "google_terrain" | "uber_midnight";
 
-const TILE_LAYERS: Record<MapTileStyle, { url: string; attribution: string; className?: string }> = {
-  streets: {
-    url: "https://tile.openstreetmap.org/{z}/{y}/{x}.png",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &mdash; Bengaluru Metro Grid',
+interface TileConfig {
+  url: string;
+  subdomains?: string[];
+  attribution: string;
+  maxZoom: number;
+}
+
+const TILE_CONFIGS: Record<MapTileStyle, TileConfig> = {
+  google_streets: {
+    url: "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+    subdomains: ["0", "1", "2", "3"],
+    attribution: "&copy; Google Maps &mdash; Bengaluru Urban Transit Mesh",
+    maxZoom: 20,
   },
-  midnight: {
+  google_satellite: {
+    url: "https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+    subdomains: ["0", "1", "2", "3"],
+    attribution: "&copy; Google Earth Imagery &mdash; Bengaluru Metro",
+    maxZoom: 20,
+  },
+  google_terrain: {
+    url: "https://mt{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+    subdomains: ["0", "1", "2", "3"],
+    attribution: "&copy; Google Maps Terrain",
+    maxZoom: 20,
+  },
+  uber_midnight: {
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
-    attribution: '&copy; <a href="https://www.esri.com">Esri</a> &mdash; World Dark Gray Canvas',
-  },
-  satellite: {
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: '&copy; <a href="https://www.esri.com">Esri</a> &mdash; Earth Satellite Imagery',
+    attribution: "&copy; Esri World Dark Gray Canvas",
+    maxZoom: 18,
   },
 };
 
@@ -56,7 +75,7 @@ export default function RealLeafletMap({
   const zonesLayerRef = useRef<any>(null);
   const routesLayerRef = useRef<any>(null);
 
-  const [mapStyle, setMapStyle] = useState<MapTileStyle>("streets");
+  const [mapStyle, setMapStyle] = useState<MapTileStyle>("google_streets");
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [liveClock, setLiveClock] = useState<string>("");
 
@@ -77,7 +96,7 @@ export default function RealLeafletMap({
     return () => clearInterval(interval);
   }, []);
 
-  // 1. Initialize Map once
+  // 1. Initialize Leaflet Map once centered on Central Bengaluru
   useEffect(() => {
     let isMounted = true;
 
@@ -85,7 +104,7 @@ export default function RealLeafletMap({
       if (!isMounted || !mapContainerRef.current) return;
 
       if (!mapInstanceRef.current) {
-        // Fix default leaflet icons
+        // Fix Leaflet's default image path issues
         delete (L.Icon.Default.prototype as any)._getIconUrl;
         L.Icon.Default.mergeOptions({
           iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -93,26 +112,28 @@ export default function RealLeafletMap({
           shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
         });
 
-        // Center on Central Bengaluru (Cubbon Park / MG Road area)
+        // Center on Central Bengaluru (Chinnaswamy Stadium / MG Road / Cubbon Park)
         const map = L.map(mapContainerRef.current, {
           center: [12.975, 77.62],
           zoom: 12,
           minZoom: 10,
-          maxZoom: 17,
+          maxZoom: 19,
           zoomControl: false,
         });
 
         L.control.zoom({ position: "topright" }).addTo(map);
 
-        // Initial default Tile Layer (Detailed Streets OSM)
-        const initialTile = L.tileLayer(TILE_LAYERS[mapStyle].url, {
-          attribution: TILE_LAYERS[mapStyle].attribution,
-          maxZoom: 18,
+        // Add initial Tile Layer (Google Maps Streets by default)
+        const cfg = TILE_CONFIGS[mapStyle];
+        const tileLayer = L.tileLayer(cfg.url, {
+          subdomains: cfg.subdomains || ["a", "b", "c"],
+          attribution: cfg.attribution,
+          maxZoom: cfg.maxZoom,
         }).addTo(map);
 
-        activeTileLayerRef.current = initialTile;
+        activeTileLayerRef.current = tileLayer;
 
-        // Add layers
+        // Initialize Layer Groups
         zonesLayerRef.current = L.featureGroup().addTo(map);
         routesLayerRef.current = L.featureGroup().addTo(map);
         markersLayerRef.current = L.featureGroup().addTo(map);
@@ -129,7 +150,7 @@ export default function RealLeafletMap({
     };
   }, []);
 
-  // 2. Handle Map Style Switcher (Streets, Midnight, Satellite)
+  // 2. Map Style Switcher (Google Streets, Satellite, Terrain, Uber Midnight)
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -143,15 +164,17 @@ export default function RealLeafletMap({
         referenceTileLayerRef.current = null;
       }
 
-      const newTile = L.tileLayer(TILE_LAYERS[mapStyle].url, {
-        attribution: TILE_LAYERS[mapStyle].attribution,
-        maxZoom: 18,
+      const cfg = TILE_CONFIGS[mapStyle];
+      const newTile = L.tileLayer(cfg.url, {
+        subdomains: cfg.subdomains || ["a", "b", "c"],
+        attribution: cfg.attribution,
+        maxZoom: cfg.maxZoom,
       }).addTo(map);
 
       activeTileLayerRef.current = newTile;
 
-      // If midnight or satellite, optionally add reference overlay for street names
-      if (mapStyle === "midnight" || mapStyle === "satellite") {
+      // Add reference overlay for Midnight theme
+      if (mapStyle === "uber_midnight") {
         const refTile = L.tileLayer(
           "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
           { attribution: "", maxZoom: 18 }
@@ -161,7 +184,64 @@ export default function RealLeafletMap({
     });
   }, [mapStyle]);
 
-  // 3. Update Zones & Polylines & Markers in Realtime
+  // 3. Helper to generate realistic top-down SVG car icon
+  const getCarSvg = (driver: Driver, isSelected: boolean) => {
+    const isEnRoute = driver.status === "EN_ROUTE_SURGE";
+    const isOnTrip = driver.status === "ON_TRIP";
+
+    let bodyFill = "#18181b"; // default dark obsidian
+    let trimColor = "#6366f1"; // indigo
+    let headlightColor = "#fef08a";
+
+    if (driver.vehicleType === "UBER_GREEN_EV") {
+      bodyFill = "#064e3b";
+      trimColor = "#10b981";
+      headlightColor = "#a7f3d0";
+    } else if (driver.vehicleType === "UBER_PREMIER") {
+      bodyFill = "#09090b";
+      trimColor = "#eab308";
+      headlightColor = "#fef08a";
+    } else if (driver.vehicleType === "UBER_AUTO") {
+      // Iconic yellow and green Bengaluru auto
+      bodyFill = "#ca8a04";
+      trimColor = "#15803d";
+      headlightColor = "#fef08a";
+    }
+
+    if (isSelected) {
+      trimColor = "#ffffff";
+    }
+
+    // Status indicator glow dot
+    const statusGlow = isEnRoute
+      ? "filter: drop-shadow(0 0 6px #06b6d4);"
+      : isOnTrip
+      ? "filter: drop-shadow(0 0 6px #8b5cf6);"
+      : "filter: drop-shadow(0 0 5px #10b981);";
+
+    return `
+      <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-125" style="transform: rotate(${driver.heading || 0}deg); ${statusGlow}">
+        <svg viewBox="0 0 24 38" width="20" height="34" class="drop-shadow-md">
+          <!-- Main Chassis -->
+          <rect x="2" y="3" width="20" height="32" rx="5" fill="${bodyFill}" stroke="${trimColor}" stroke-width="${isSelected ? '2.5' : '1.5'}"/>
+          <!-- Front Windshield -->
+          <path d="M4 12 Q12 9 20 12 L18 17 Q12 16 6 17 Z" fill="#38bdf8" fill-opacity="0.85"/>
+          <!-- Sunroof / Roof -->
+          <rect x="5.5" y="19" width="13" height="7" rx="2" fill="${trimColor}" fill-opacity="0.4"/>
+          <!-- Rear Windshield -->
+          <path d="M5.5 28 Q12 29 18.5 28 L18 31 Q12 32 6 31 Z" fill="#38bdf8" fill-opacity="0.7"/>
+          <!-- Dual Headlights -->
+          <circle cx="5" cy="4" r="1.5" fill="${headlightColor}"/>
+          <circle cx="19" cy="4" r="1.5" fill="${headlightColor}"/>
+          <!-- Taillights -->
+          <rect x="3.5" y="33" width="3" height="1.5" rx="0.5" fill="#ef4444"/>
+          <rect x="17.5" y="33" width="3" height="1.5" rx="0.5" fill="#ef4444"/>
+        </svg>
+      </div>
+    `;
+  };
+
+  // 4. Update Zones, Routes, and Vehicle Markers
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -172,7 +252,7 @@ export default function RealLeafletMap({
       const markersLayer = markersLayerRef.current;
       if (!map || !zonesLayer || !routesLayer || !markersLayer) return;
 
-      // A. Render Zones
+      // A. Zones with Glowing Surge Multipliers
       zonesLayer.clearLayers();
       Object.values(state.zones).forEach((zone) => {
         const isSelected = selectedZone === zone.id;
@@ -181,19 +261,19 @@ export default function RealLeafletMap({
 
         const color = isSevereSurge ? "#ef4444" : isHighSurge ? "#f59e0b" : "#10b981";
 
-        // Circle
+        // Surge radius circle
         const circle = L.circle([zone.lat, zone.lng], {
           radius: zone.radiusMeters,
           color,
           weight: isSelected ? 3 : 1.5,
           fillColor: color,
-          fillOpacity: isSevereSurge ? 0.35 : isHighSurge ? 0.25 : 0.12,
+          fillOpacity: isSevereSurge ? 0.32 : isHighSurge ? 0.22 : 0.12,
           dashArray: isSelected ? "4, 6" : undefined,
         }).addTo(zonesLayer);
 
         circle.on("click", () => onSelectZone(zone.id));
 
-        // DivIcon Label
+        // Zone Badge Pin
         const labelHtml = `
           <div class="cursor-pointer select-none transition-transform hover:scale-110 -translate-x-1/2 -translate-y-1/2">
             <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border ${
@@ -203,8 +283,8 @@ export default function RealLeafletMap({
                 ? "border-rose-500/80 bg-rose-950/95 animate-pulse"
                 : isHighSurge
                 ? "border-amber-500/80 bg-amber-950/95"
-                : "border-zinc-700 bg-zinc-900/95"
-            } shadow-lg backdrop-blur-md">
+                : "border-zinc-800 bg-zinc-950/90 text-white"
+            } shadow-xl backdrop-blur-md">
               <span class="text-[11px] font-black text-white whitespace-nowrap">${zone.name.split(" ")[0]}</span>
               <span class="text-[10px] font-black px-1.5 py-0.2 rounded-full ${
                 isSevereSurge
@@ -228,7 +308,7 @@ export default function RealLeafletMap({
         labelMarker.on("click", () => onSelectZone(zone.id));
       });
 
-      // Flood Hazard circle if monsoon active
+      // B. Flood Hazard Zone if Monsoon is Active
       if (state.activeScenario.type === "MONSOON_FLASH_FLOOD") {
         const bellandur = state.zones.TECH_PARK;
         L.circle([bellandur.lat, bellandur.lng], {
@@ -241,7 +321,7 @@ export default function RealLeafletMap({
         }).addTo(zonesLayer);
       }
 
-      // B. Render Dynamic Polylines
+      // C. Render Dynamic Arterial Routes
       routesLayer.clearLayers();
       state.drivers.forEach((driver) => {
         if (driver.routeCoordinates && driver.routeCoordinates.length > 1) {
@@ -249,33 +329,16 @@ export default function RealLeafletMap({
           L.polyline(driver.routeCoordinates, {
             color: isEnRoute ? "#06b6d4" : "#8b5cf6",
             weight: 2.5,
-            opacity: 0.75,
+            opacity: 0.8,
             dashArray: "4, 6",
           }).addTo(routesLayer);
         }
       });
 
-      // C. Move Existing Markers or Create New (Smooth Realtime Updating without Flickering)
+      // D. Smooth Non-Flickering Car Marker Updates
       state.drivers.forEach((driver) => {
-        const isEnRoute = driver.status === "EN_ROUTE_SURGE";
-        const isOnTrip = driver.status === "ON_TRIP";
         const isSelected = selectedDriverId === driver.id;
-
-        const colorBg = isEnRoute
-          ? "bg-cyan-400 shadow-cyan-400/50"
-          : isOnTrip
-          ? "bg-violet-400 shadow-violet-400/50"
-          : "bg-emerald-400 shadow-emerald-400/50";
-
-        const carHtml = `
-          <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-125" style="transform: rotate(${driver.heading || 0}deg);">
-            <div class="h-4 w-4 rounded-full ${colorBg} ${
-              isSelected ? "ring-4 ring-white" : ""
-            } shadow-md flex items-center justify-center">
-              <div class="h-1.5 w-1 bg-black rounded-sm"></div>
-            </div>
-          </div>
-        `;
+        const carHtml = getCarSvg(driver, isSelected);
 
         const tooltipContent = `
           <div class="text-xs font-sans space-y-0.5">
@@ -287,23 +350,28 @@ export default function RealLeafletMap({
               ${driver.vehicleModel} &bull; ${driver.speedKmh || 0} km/h
             </div>
             <div class="text-[10px] ${
-              isOnTrip ? "text-violet-400 font-semibold" : isEnRoute ? "text-cyan-400 font-semibold" : "text-emerald-400"
+              driver.status === "ON_TRIP"
+                ? "text-violet-400 font-semibold"
+                : driver.status === "EN_ROUTE_SURGE"
+                ? "text-cyan-400 font-semibold"
+                : "text-emerald-400"
             }">
-              ${driver.status === "ON_TRIP" ? `Ride to ${driver.currentTripDestinationName || "CBD"}` : driver.status}
+              ${driver.status === "ON_TRIP" ? `Trip to ${driver.currentTripDestinationName || "CBD"}` : driver.status}
             </div>
             <div class="text-[10px] text-zinc-300">Earnings: ₹${driver.earningsToday}</div>
           </div>
         `;
 
         if (markersMapRef.current.has(driver.id)) {
-          // Smoothly glide marker to new coordinates
+          // Smoothly glide existing marker without re-mounting
           const existingMarker = markersMapRef.current.get(driver.id);
           existingMarker.setLatLng([driver.lat, driver.lng]);
           existingMarker.setIcon(
             L.divIcon({
               html: carHtml,
               className: "custom-car-marker",
-              iconSize: [0, 0],
+              iconSize: [20, 34],
+              iconAnchor: [10, 17],
             })
           );
           existingMarker.setTooltipContent(tooltipContent);
@@ -313,8 +381,9 @@ export default function RealLeafletMap({
             icon: L.divIcon({
               html: carHtml,
               className: "custom-car-marker",
-              iconSize: [0, 0],
-            })
+              iconSize: [20, 34],
+              iconAnchor: [10, 17],
+            }),
           }).addTo(markersLayer);
 
           marker.on("click", () => {
@@ -324,7 +393,7 @@ export default function RealLeafletMap({
           marker.bindTooltip(tooltipContent, {
             className: "custom-leaflet-tooltip",
             direction: "top",
-            offset: [0, -8],
+            offset: [0, -12],
           });
 
           markersMapRef.current.set(driver.id, marker);
@@ -373,41 +442,51 @@ export default function RealLeafletMap({
           onClick={() => handleFlyTo(12.9260, 77.6762, 13)}
           className="px-2.5 py-1 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all"
         >
-          Bellandur (Tech Park)
+          Bellandur (ORR)
         </button>
       </div>
 
-      {/* Top Right: Map Tile Layer Switcher (Streets | Midnight | Satellite) */}
+      {/* Top Right: Real Map Tile Layer Switcher (Google Streets | Google Satellite | Terrain | Midnight) */}
       <div className="absolute top-4 right-14 z-10 flex items-center gap-1 bg-zinc-950/90 backdrop-blur-md p-1 rounded-2xl border border-zinc-800 shadow-xl text-[11px] font-semibold">
         <button
-          onClick={() => setMapStyle("streets")}
+          onClick={() => setMapStyle("google_streets")}
           className={`px-2.5 py-1 rounded-xl transition-all ${
-            mapStyle === "streets"
+            mapStyle === "google_streets"
               ? "bg-white text-black shadow-sm font-bold"
               : "text-zinc-400 hover:text-white"
           }`}
         >
-          Streets
+          Google Streets
         </button>
         <button
-          onClick={() => setMapStyle("midnight")}
+          onClick={() => setMapStyle("google_satellite")}
           className={`px-2.5 py-1 rounded-xl transition-all ${
-            mapStyle === "midnight"
-              ? "bg-white text-black shadow-sm font-bold"
-              : "text-zinc-400 hover:text-white"
-          }`}
-        >
-          Midnight
-        </button>
-        <button
-          onClick={() => setMapStyle("satellite")}
-          className={`px-2.5 py-1 rounded-xl transition-all ${
-            mapStyle === "satellite"
+            mapStyle === "google_satellite"
               ? "bg-white text-black shadow-sm font-bold"
               : "text-zinc-400 hover:text-white"
           }`}
         >
           Satellite
+        </button>
+        <button
+          onClick={() => setMapStyle("google_terrain")}
+          className={`px-2.5 py-1 rounded-xl transition-all ${
+            mapStyle === "google_terrain"
+              ? "bg-white text-black shadow-sm font-bold"
+              : "text-zinc-400 hover:text-white"
+          }`}
+        >
+          Terrain
+        </button>
+        <button
+          onClick={() => setMapStyle("uber_midnight")}
+          className={`px-2.5 py-1 rounded-xl transition-all ${
+            mapStyle === "uber_midnight"
+              ? "bg-white text-black shadow-sm font-bold"
+              : "text-zinc-400 hover:text-white"
+          }`}
+        >
+          Dark
         </button>
       </div>
 
