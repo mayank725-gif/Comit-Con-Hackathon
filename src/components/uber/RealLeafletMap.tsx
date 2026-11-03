@@ -25,7 +25,7 @@ import {
   Landmark,
   Sparkles,
   ChevronRight,
-  Info,
+  Languages,
 } from "lucide-react";
 
 interface RealLeafletMapProps {
@@ -35,7 +35,7 @@ interface RealLeafletMapProps {
   onSelectDriverForCopilot?: (driver: Driver) => void;
 }
 
-type MapTileStyle = "google_traffic" | "google_satellite" | "google_terrain" | "uber_midnight";
+type MapTileStyle = "google_traffic" | "google_satellite" | "uber_midnight";
 
 interface TileConfig {
   url: string;
@@ -57,12 +57,6 @@ const TILE_CONFIGS: Record<MapTileStyle, TileConfig> = {
     attribution: "&copy; Google Earth Satellite & Live Traffic",
     maxZoom: 20,
   },
-  google_terrain: {
-    url: "https://mt{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
-    subdomains: ["0", "1", "2", "3"],
-    attribution: "&copy; Google Maps Terrain",
-    maxZoom: 20,
-  },
   uber_midnight: {
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
     attribution: "&copy; Esri World Dark Gray Canvas",
@@ -71,13 +65,13 @@ const TILE_CONFIGS: Record<MapTileStyle, TileConfig> = {
 };
 
 const METRO_HUBS = [
-  { id: "INDIA", name: "🇮🇳 Whole India", lat: 22.0, lng: 79.0, zoom: 5 },
-  { id: "BLR", name: "Bengaluru", lat: 12.9756, lng: 77.6097, zoom: 12 },
-  { id: "DEL", name: "Delhi NCR", lat: 28.6139, lng: 77.2090, zoom: 11 },
-  { id: "BOM", name: "Mumbai", lat: 19.0760, lng: 72.8777, zoom: 11 },
-  { id: "HYD", name: "Hyderabad", lat: 17.3850, lng: 78.4867, zoom: 12 },
-  { id: "MAA", name: "Chennai", lat: 12.9800, lng: 80.2200, zoom: 12 },
-  { id: "CCU", name: "Kolkata", lat: 22.5726, lng: 88.3639, zoom: 12 },
+  { id: "INDIA", nameEn: "🇮🇳 Whole India", nameHi: "🇮🇳 पूरा भारत", lat: 22.0, lng: 79.0, zoom: 5 },
+  { id: "DEL", nameEn: "Delhi NCR", nameHi: "दिल्ली NCR", lat: 28.6139, lng: 77.2090, zoom: 11 },
+  { id: "BOM", nameEn: "Mumbai", nameHi: "मुंबई", lat: 19.0760, lng: 72.8777, zoom: 11 },
+  { id: "BLR", nameEn: "Bengaluru", nameHi: "बेंगलुरु", lat: 12.9756, lng: 77.6097, zoom: 12 },
+  { id: "HYD", nameEn: "Hyderabad", nameHi: "हैदराबाद", lat: 17.3850, lng: 78.4867, zoom: 12 },
+  { id: "MAA", nameEn: "Chennai", nameHi: "चेन्नई", lat: 12.9800, lng: 80.2200, zoom: 12 },
+  { id: "CCU", nameEn: "Kolkata", nameHi: "कोलकाता", lat: 22.5726, lng: 88.3639, zoom: 12 },
 ];
 
 export default function RealLeafletMap({
@@ -100,6 +94,7 @@ export default function RealLeafletMap({
   const [mapStyle, setMapStyle] = useState<MapTileStyle>("google_traffic");
   const [isTrafficOverlayOn, setIsTrafficOverlayOn] = useState<boolean>(true);
   const [isTouristLayerOn, setIsTouristLayerOn] = useState<boolean>(true);
+  const [voiceLang, setVoiceLang] = useState<"hi" | "en">("hi"); // Default to Hindi as requested
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [selectedTouristPlace, setSelectedTouristPlace] = useState<TouristPlace | null>(null);
   const [activeMetroId, setActiveMetroId] = useState<string>("INDIA");
@@ -113,6 +108,7 @@ export default function RealLeafletMap({
   // Voice Assistant State
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [voiceFeedbackText, setVoiceFeedbackText] = useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const recognitionRef = useRef<any>(null);
 
   // Live ticking clock for India (IST)
@@ -150,18 +146,54 @@ export default function RealLeafletMap({
     setSearchResults(matches);
   }, [searchQuery]);
 
-  // Voice Synthesis (TTS) Helper
-  const speakText = (text: string) => {
+  // Pre-load speech synthesis voices on mount for prompt Hindi voice detection
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      const getV = () => window.speechSynthesis.getVoices();
+      getV();
+      window.speechSynthesis.onvoiceschanged = getV;
+    }
+  }, []);
+
+  // Voice Synthesis (TTS) in Natural Hindi or English
+  const speakVoice = (text: string, forceLang?: "hi" | "en") => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
-    const cleanText = text.replace(/[*_#`~]/g, "");
+
+    const cleanText = text.replace(/[*_#`~]/g, "").replace(/[^\w\s\u0900-\u097F₹.,!?-]/g, "");
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.05;
-    utterance.lang = "en-IN";
+
+    const targetLang = forceLang || voiceLang;
+    utterance.lang = targetLang === "hi" ? "hi-IN" : "en-IN";
+    utterance.rate = 0.92; // Slightly measured, natural human cadence
+    utterance.pitch = 1.0;
+
+    // Search for best Hindi voice in user's browser
+    if (targetLang === "hi") {
+      const voices = window.speechSynthesis.getVoices();
+      const hindiVoice = voices.find(
+        (v) =>
+          v.lang === "hi-IN" ||
+          v.lang.startsWith("hi") ||
+          v.name.includes("Hindi") ||
+          v.name.includes("हिन्दी") ||
+          v.name.includes("Hemant") ||
+          v.name.includes("Kalpana") ||
+          v.name.includes("Lekha")
+      );
+      if (hindiVoice) {
+        utterance.voice = hindiVoice;
+      }
+    }
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
     window.speechSynthesis.speak(utterance);
   };
 
-  // Voice Assistant Speech-to-Text handler
+  // Human Voice Assistant Speech-to-Text Handler (Hindi & English)
   const toggleVoiceAssistant = () => {
     if (typeof window === "undefined") return;
 
@@ -169,7 +201,11 @@ export default function RealLeafletMap({
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.");
+      alert(
+        voiceLang === "hi"
+          ? "इस ब्राउज़र में आवाज़ पहचान समर्थित नहीं है। कृपया Chrome, Edge, या Safari का उपयोग करें।"
+          : "Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari."
+      );
       return;
     }
 
@@ -184,11 +220,15 @@ export default function RealLeafletMap({
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
-      recognition.lang = "en-IN";
+      recognition.lang = voiceLang === "hi" ? "hi-IN" : "en-IN";
 
       recognition.onstart = () => {
         setIsVoiceListening(true);
-        setVoiceFeedbackText("Listening... (e.g., 'Take me to Taj Mahal', 'Show Mumbai traffic')");
+        setVoiceFeedbackText(
+          voiceLang === "hi"
+            ? "सुन रहा हूँ... बोलिए (जैसे: 'ताज महल ले चलो', 'मुंबई का ट्रैफिक दिखाओ', 'पूरा भारत दिखाओ')"
+            : "Listening... speak now (e.g., 'Take me to Taj Mahal', 'Show Mumbai traffic')"
+        );
       };
 
       recognition.onresult = (event: any) => {
@@ -200,7 +240,9 @@ export default function RealLeafletMap({
 
       recognition.onerror = () => {
         setIsVoiceListening(false);
-        setVoiceFeedbackText("Could not hear clearly. Please try again.");
+        setVoiceFeedbackText(
+          voiceLang === "hi" ? "आवाज़ स्पष्ट नहीं आई। कृपया पुनः प्रयास करें।" : "Could not hear clearly. Please try again."
+        );
         setTimeout(() => setVoiceFeedbackText(null), 3000);
       };
 
@@ -216,67 +258,72 @@ export default function RealLeafletMap({
     }
   };
 
-  // Process natural language voice command
+  // Natural Language Hindi & English Voice Command Parser
   const processVoiceCommand = (command: string) => {
     const cmd = command.toLowerCase().trim();
     setVoiceFeedbackText(`"${command}"`);
 
-    // 1. Check for tourist place names
+    // 1. Tourist Places Matching (Hindi & English)
     const matchedPlace = INDIA_TOURIST_PLACES.find(
       (p) =>
         cmd.includes(p.name.toLowerCase()) ||
         cmd.includes(p.city.toLowerCase()) ||
-        (p.id === "taj_mahal" && (cmd.includes("taj") || cmd.includes("agra"))) ||
-        (p.id === "baga_beach" && cmd.includes("goa")) ||
-        (p.id === "golden_temple" && (cmd.includes("golden") || cmd.includes("amritsar"))) ||
-        (p.id === "kedarnath_temple" && cmd.includes("kedarnath")) ||
-        (p.id === "varanasi_ghats" && (cmd.includes("varanasi") || cmd.includes("kashi") || cmd.includes("ganga"))) ||
-        (p.id === "rohtang_pass" && (cmd.includes("manali") || cmd.includes("rohtang"))) ||
-        (p.id === "mysore_palace" && cmd.includes("mysore")) ||
-        (p.id === "hampi_unesco" && cmd.includes("hampi")) ||
-        (p.id === "alleppey_backwaters" && (cmd.includes("alleppey") || cmd.includes("kerala"))) ||
-        (p.id === "statue_of_unity" && (cmd.includes("statue of unity") || cmd.includes("patel")))
+        (p.id === "taj_mahal" && (cmd.includes("ताज") || cmd.includes("आगरा") || cmd.includes("taj"))) ||
+        (p.id === "baga_beach" && (cmd.includes("गोवा") || cmd.includes("गोआ") || cmd.includes("goa") || cmd.includes("बीच"))) ||
+        (p.id === "golden_temple" && (cmd.includes("स्वर्ण") || cmd.includes("गोल्डन") || cmd.includes("अमृतसर") || cmd.includes("golden"))) ||
+        (p.id === "kedarnath_temple" && (cmd.includes("केदारनाथ") || cmd.includes("kedarnath"))) ||
+        (p.id === "varanasi_ghats" && (cmd.includes("वाराणसी") || cmd.includes("काशी") || cmd.includes("बनारस") || cmd.includes("गंगा") || cmd.includes("varanasi"))) ||
+        (p.id === "rohtang_pass" && (cmd.includes("मनाली") || cmd.includes("रोहतांग") || cmd.includes("manali"))) ||
+        (p.id === "mysore_palace" && (cmd.includes("मैसूर") || cmd.includes("mysore"))) ||
+        (p.id === "hampi_unesco" && (cmd.includes("हम्पी") || cmd.includes("hampi"))) ||
+        (p.id === "alleppey_backwaters" && (cmd.includes("केरल") || cmd.includes("अल्लेप्पी") || cmd.includes("kerala"))) ||
+        (p.id === "statue_of_unity" && (cmd.includes("स्टैच्यू") || cmd.includes("पटेल") || cmd.includes("unity"))) ||
+        (p.id === "red_fort" && (cmd.includes("लाल किला") || cmd.includes("red fort"))) ||
+        (p.id === "qutub_minar" && (cmd.includes("कुतुब") || cmd.includes("qutub"))) ||
+        (p.id === "charminar_hyderabad" && (cmd.includes("चारमीनार") || cmd.includes("charminar"))) ||
+        (p.id === "victoria_memorial" && (cmd.includes("विक्टोरिया") || cmd.includes("हावड़ा") || cmd.includes("victoria")))
     );
 
     if (matchedPlace) {
       handleSelectTouristPlace(matchedPlace);
-      const reply = `Navigating to ${matchedPlace.name} in ${matchedPlace.city}, ${matchedPlace.state}. Estimated ${matchedPlace.uberCategory} fare is ${matchedPlace.estimatedFareFromHub}.`;
-      speakText(reply);
-      setTimeout(() => setVoiceFeedbackText(null), 4000);
+      const hindiReply = `${matchedPlace.name}, ${matchedPlace.city} का नक्शा खोला जा रहा है। उबर आउटस्टेशन का अनुमानित किराया ${matchedPlace.estimatedFareFromHub} है।`;
+      const englishReply = `Navigating to ${matchedPlace.name} in ${matchedPlace.city}, ${matchedPlace.state}. Estimated fare is ${matchedPlace.estimatedFareFromHub}.`;
+      speakVoice(voiceLang === "hi" ? hindiReply : englishReply);
+      setTimeout(() => setVoiceFeedbackText(null), 5000);
       return;
     }
 
-    // 2. Check for Metro Hubs
-    if (cmd.includes("delhi")) {
+    // 2. City / Metro Matching (Hindi & English)
+    if (cmd.includes("दिल्ली") || cmd.includes("delhi") || cmd.includes("गुड़गांव") || cmd.includes("नोएडा")) {
       handleFlyTo(28.6139, 77.2090, 11, "DEL");
-      speakText("Flying to Delhi NCR National Capital Region.");
-    } else if (cmd.includes("mumbai")) {
+      speakVoice(voiceLang === "hi" ? "दिल्ली NCR का लाइव नक्शा दिखाया जा रहा है।" : "Flying to Delhi NCR National Capital.");
+    } else if (cmd.includes("मुंबई") || cmd.includes("बॉम्बे") || cmd.includes("mumbai")) {
       handleFlyTo(19.0760, 72.8777, 11, "BOM");
-      speakText("Flying to Mumbai Financial Capital.");
-    } else if (cmd.includes("bengaluru") || cmd.includes("bangalore")) {
+      speakVoice(voiceLang === "hi" ? "मुंबई का लाइव नक्शा और बीकेसी वित्तीय केंद्र खोला जा रहा है।" : "Navigating to Mumbai Financial Capital.");
+    } else if (cmd.includes("बेंगलुरु") || cmd.includes("बैंगलोर") || cmd.includes("bengaluru") || cmd.includes("bangalore")) {
       handleFlyTo(12.9756, 77.6097, 12, "BLR");
-      speakText("Flying to Bengaluru Tech Capital.");
-    } else if (cmd.includes("hyderabad")) {
+      speakVoice(voiceLang === "hi" ? "बेंगलुरु टेक कॉरिडोर और एम. चिन्नास्वामी स्टेडियम का दृश्य दिखाया जा रहा है।" : "Flying to Bengaluru Tech Corridor.");
+    } else if (cmd.includes("हैदराबाद") || cmd.includes("hyderabad")) {
       handleFlyTo(17.3850, 78.4867, 12, "HYD");
-      speakText("Flying to Hyderabad HITEC City.");
-    } else if (cmd.includes("chennai")) {
+      speakVoice(voiceLang === "hi" ? "हैदराबाद हाईटेक सिटी का नक्शा दिखाया जा रहा है।" : "Flying to Hyderabad HITEC City.");
+    } else if (cmd.includes("चेन्नई") || cmd.includes("मद्रास") || cmd.includes("chennai")) {
       handleFlyTo(12.9800, 80.2200, 12, "MAA");
-      speakText("Flying to Chennai OMR IT Corridor.");
-    } else if (cmd.includes("kolkata")) {
+      speakVoice(voiceLang === "hi" ? "चेन्नई ओएमआर आईटी एक्सप्रेसवे का दृश्य खोला जा रहा है।" : "Flying to Chennai OMR Corridor.");
+    } else if (cmd.includes("कोलकाता") || cmd.includes("कलकत्ता") || cmd.includes("kolkata")) {
       handleFlyTo(22.5726, 88.3639, 12, "CCU");
-      speakText("Flying to Kolkata City of Joy.");
-    } else if (cmd.includes("india") || cmd.includes("whole") || cmd.includes("all")) {
+      speakVoice(voiceLang === "hi" ? "कोलकाता सॉल्ट लेक सेक्टर 5 का दृश्य दिखाया जा रहा है।" : "Flying to Kolkata City of Joy.");
+    } else if (cmd.includes("भारत") || cmd.includes("देश") || cmd.includes("इंडिया") || cmd.includes("india") || cmd.includes("whole") || cmd.includes("all")) {
       handleFlyTo(22.0, 79.0, 5, "INDIA");
-      speakText("Zooming out to full India overview.");
-    } else if (cmd.includes("traffic")) {
+      speakVoice(voiceLang === "hi" ? "पूरा भारत का दृश्य दिखाया जा रहा है। सभी 6 प्रमुख महानगर सक्रिय हैं।" : "Zooming out to full India overview.");
+    } else if (cmd.includes("ट्रैफिक") || cmd.includes("जाम") || cmd.includes("traffic")) {
       setIsTrafficOverlayOn(true);
-      speakText("Live Google traffic layer enabled across all roads.");
+      speakVoice(voiceLang === "hi" ? "गूगल लाइव ट्रैफिक सभी सड़कों पर चालू कर दिया गया है।" : "Live Google Traffic layer enabled.");
     } else {
-      speakText(`Searching for ${command} across India.`);
+      speakVoice(voiceLang === "hi" ? `${command} के लिए खोजा जा रहा है।` : `Searching for ${command}.`);
       setSearchQuery(command);
     }
 
-    setTimeout(() => setVoiceFeedbackText(null), 4000);
+    setTimeout(() => setVoiceFeedbackText(null), 5000);
   };
 
   // 1. Initialize Leaflet Map once with Pan-India Zoom Boundaries
@@ -303,7 +350,8 @@ export default function RealLeafletMap({
           zoomControl: false,
         });
 
-        L.control.zoom({ position: "topright" }).addTo(map);
+        // Add custom zoom control in bottom right so it doesn't collide with top menus
+        L.control.zoom({ position: "bottomright" }).addTo(map);
 
         // Add Base Tile Layer (Google Maps Traffic)
         const cfg = TILE_CONFIGS[mapStyle];
@@ -341,7 +389,7 @@ export default function RealLeafletMap({
     };
   }, []);
 
-  // 2. Handle Map Style Switcher (Google Traffic, Satellite, Terrain, Midnight)
+  // 2. Handle Map Style Switcher (Google Traffic, Satellite, Midnight)
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -488,12 +536,12 @@ export default function RealLeafletMap({
       // Pan-India Metro Overview Badges
       cityClustersLayer.clearLayers();
       const metros = [
-        { name: "Delhi NCR", lat: 28.6139, lng: 77.2090, count: 18, surge: "1.4x" },
-        { name: "Mumbai", lat: 19.0760, lng: 72.8777, count: 18, surge: "1.5x" },
-        { name: "Bengaluru", lat: 12.9756, lng: 77.6097, count: 25, surge: "1.2x" },
-        { name: "Hyderabad", lat: 17.3850, lng: 78.4867, count: 8, surge: "1.2x" },
-        { name: "Chennai", lat: 13.0827, lng: 80.2707, count: 6, surge: "1.1x" },
-        { name: "Kolkata", lat: 22.5726, lng: 88.3639, count: 6, surge: "1.2x" },
+        { name: voiceLang === "hi" ? "दिल्ली NCR" : "Delhi NCR", lat: 28.6139, lng: 77.2090, count: 18, surge: "1.4x" },
+        { name: voiceLang === "hi" ? "मुंबई" : "Mumbai", lat: 19.0760, lng: 72.8777, count: 18, surge: "1.5x" },
+        { name: voiceLang === "hi" ? "बेंगलुरु" : "Bengaluru", lat: 12.9756, lng: 77.6097, count: 25, surge: "1.2x" },
+        { name: voiceLang === "hi" ? "हैदराबाद" : "Hyderabad", lat: 17.3850, lng: 78.4867, count: 8, surge: "1.2x" },
+        { name: voiceLang === "hi" ? "चेन्नई" : "Chennai", lat: 13.0827, lng: 80.2707, count: 6, surge: "1.1x" },
+        { name: voiceLang === "hi" ? "कोलकाता" : "Kolkata", lat: 22.5726, lng: 88.3639, count: 6, surge: "1.2x" },
       ];
 
       metros.forEach((m) => {
@@ -653,7 +701,7 @@ export default function RealLeafletMap({
         }
       });
     });
-  }, [state, selectedZone, onSelectZone, selectedDriverId, mapStyle]);
+  }, [state, selectedZone, onSelectZone, selectedDriverId, mapStyle, voiceLang]);
 
   const handleFlyTo = (lat: number, lng: number, zoom: number = 12, hubId?: string) => {
     if (hubId) setActiveMetroId(hubId);
@@ -675,169 +723,229 @@ export default function RealLeafletMap({
     : null;
 
   return (
-    <div className="relative w-full h-[620px] rounded-3xl border border-zinc-800 bg-zinc-950 overflow-hidden shadow-2xl">
+    <div className="relative w-full h-[640px] rounded-3xl border border-zinc-800 bg-zinc-950 overflow-hidden shadow-2xl">
       {/* Real Leaflet Map Viewport */}
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-      {/* TOP LEFT: Prominent Location Search Bar with Autocomplete & Voice Search */}
-      <div className="absolute top-4 left-4 z-20 w-80 sm:w-96">
-        <div className="relative flex items-center bg-zinc-950/95 backdrop-blur-xl rounded-2xl border border-zinc-700/80 shadow-2xl p-1.5 ring-1 ring-white/10">
-          <Search className="h-4 w-4 text-zinc-400 ml-2.5 shrink-0" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-            placeholder="Search India (e.g. Taj Mahal, Goa, Kedarnath)..."
-            className="w-full bg-transparent px-2.5 py-1.5 text-xs text-white placeholder-zinc-400 focus:outline-none"
-          />
+      {/* =========================================================================
+          TOP UNIFIED HEADER CONTROLS (FLEX COLUMN - ZERO OVERLAP GUARANTEED)
+         ========================================================================= */}
+      <div className="absolute top-3 left-3 right-3 z-20 pointer-events-none flex flex-col gap-2">
+        {/* ROW 1: Search Bar (Left) + Language Selector & Map Style Switcher (Right) */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Location Search Bar with Voice Mic */}
+          <div className="pointer-events-auto flex-1 min-w-[200px] max-w-sm relative">
+            <div className="relative flex items-center bg-zinc-950/95 backdrop-blur-xl rounded-2xl border border-zinc-700/80 shadow-2xl p-1.5 ring-1 ring-white/10">
+              <Search className="h-4 w-4 text-zinc-400 ml-2.5 shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                placeholder={
+                  voiceLang === "hi"
+                    ? "स्थान खोजें (जैसे: ताज महल, गोवा, केदारनाथ)..."
+                    : "Search India (e.g. Taj Mahal, Goa, Kedarnath)..."
+                }
+                className="w-full bg-transparent px-2.5 py-1.5 text-xs text-white placeholder-zinc-400 focus:outline-none"
+              />
 
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="p-1 text-zinc-400 hover:text-white mr-1"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="p-1 text-zinc-400 hover:text-white mr-1"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
 
-          {/* Voice Search Microphone inside Search Bar */}
-          <button
-            onClick={toggleVoiceAssistant}
-            title={isVoiceListening ? "Listening... (Click to stop)" : "Search by Voice / AI Copilot"}
-            className={`p-2 rounded-xl transition-all shrink-0 ${
-              isVoiceListening
-                ? "bg-rose-500 text-white animate-pulse ring-2 ring-rose-400"
-                : "bg-indigo-600/90 text-white hover:bg-indigo-500 shadow-md shadow-indigo-600/30"
-            }`}
-          >
-            {isVoiceListening ? <Mic className="h-3.5 w-3.5 animate-bounce" /> : <Mic className="h-3.5 w-3.5" />}
-          </button>
-        </div>
-
-        {/* Live Search Autocomplete Dropdown */}
-        {isSearchFocused && searchResults.length > 0 && (
-          <div className="mt-1.5 rounded-2xl border border-zinc-800 bg-zinc-950/98 backdrop-blur-2xl shadow-2xl overflow-hidden divide-y divide-zinc-800/60 max-h-72 overflow-y-auto">
-            {searchResults.map((place) => (
+              {/* Voice Assistant Microphone Button inside Search Bar */}
               <button
-                key={place.id}
-                onClick={() => handleSelectTouristPlace(place)}
-                className="w-full p-2.5 text-left hover:bg-zinc-900/90 transition-colors flex items-center justify-between gap-2"
+                onClick={toggleVoiceAssistant}
+                title={
+                  isVoiceListening
+                    ? voiceLang === "hi" ? "सुन रहा हूँ... (रोकने के लिए क्लिक करें)" : "Listening... (Click to stop)"
+                    : voiceLang === "hi" ? "हिंदी आवाज़ सहायक चालू करें" : "Start Voice Assistant"
+                }
+                className={`p-2 rounded-xl transition-all shrink-0 flex items-center gap-1.5 ${
+                  isVoiceListening
+                    ? "bg-rose-500 text-white animate-pulse ring-2 ring-rose-400 shadow-lg shadow-rose-500/50"
+                    : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30"
+                }`}
               >
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs">
-                      {place.category === "BEACH"
-                        ? "🏖️"
-                        : place.category === "RELIGIOUS"
-                        ? "🛕"
-                        : place.category === "HILL_STATION"
-                        ? "🏔️"
-                        : "🏛️"}
-                    </span>
-                    <span className="text-xs font-bold text-white">{place.name}</span>
-                  </div>
-                  <p className="text-[10px] text-zinc-400 font-mono">
-                    {place.city}, {place.state} &bull; {place.uberCategory}
-                  </p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-zinc-500 shrink-0" />
+                {isVoiceListening ? <Mic className="h-3.5 w-3.5 animate-bounce" /> : <Mic className="h-3.5 w-3.5" />}
+                <span className="text-[10px] font-bold hidden sm:inline">
+                  {isVoiceListening ? (voiceLang === "hi" ? "सुन रहा हूँ" : "Listening") : (voiceLang === "hi" ? "आवाज़" : "Voice")}
+                </span>
               </button>
-            ))}
+            </div>
+
+            {/* Autocomplete Dropdown */}
+            {isSearchFocused && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1.5 rounded-2xl border border-zinc-800 bg-zinc-950/98 backdrop-blur-2xl shadow-2xl overflow-hidden divide-y divide-zinc-800/60 max-h-72 overflow-y-auto z-30">
+                {searchResults.map((place) => (
+                  <button
+                    key={place.id}
+                    onClick={() => handleSelectTouristPlace(place)}
+                    className="w-full p-2.5 text-left hover:bg-zinc-900/90 transition-colors flex items-center justify-between gap-2"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs">
+                          {place.category === "BEACH"
+                            ? "🏖️"
+                            : place.category === "RELIGIOUS"
+                            ? "🛕"
+                            : place.category === "HILL_STATION"
+                            ? "🏔️"
+                            : "🏛️"}
+                        </span>
+                        <span className="text-xs font-bold text-white">{place.name}</span>
+                      </div>
+                      <p className="text-[10px] text-zinc-400 font-mono">
+                        {place.city}, {place.state} &bull; {place.uberCategory}
+                      </p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-zinc-500 shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Live Voice Assistant Feedback Pill */}
+            {voiceFeedbackText && (
+              <div className="absolute top-full left-0 right-0 mt-1.5 flex items-center gap-2 p-2.5 rounded-xl border border-indigo-500/60 bg-indigo-950/95 backdrop-blur-xl shadow-2xl text-xs text-indigo-200 animate-fadeIn z-30">
+                <Sparkles className="h-4 w-4 text-amber-400 shrink-0 animate-spin" />
+                <span className="font-medium text-[11px] leading-snug">{voiceFeedbackText}</span>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Voice Assistant Live Feedback Pill */}
-        {voiceFeedbackText && (
-          <div className="mt-2 flex items-center gap-2 p-2.5 rounded-xl border border-indigo-500/60 bg-indigo-950/95 backdrop-blur-xl shadow-2xl text-xs text-indigo-200 animate-fadeIn">
-            <Sparkles className="h-4 w-4 text-amber-400 shrink-0 animate-spin" />
-            <span className="font-medium text-[11px]">{voiceFeedbackText}</span>
+          {/* TOP RIGHT: Language Toggle + Map Style Switcher (NO OVERLAP) */}
+          <div className="pointer-events-auto flex items-center gap-1.5 shrink-0">
+            {/* Hindi / English Voice Language Selector */}
+            <div className="flex items-center gap-1 bg-zinc-950/95 backdrop-blur-xl p-1 rounded-2xl border border-zinc-800 shadow-xl text-[11px] font-bold">
+              <button
+                onClick={() => {
+                  setVoiceLang("hi");
+                  speakVoice("हिंदी वॉइस असिस्टेंट सक्रिय है। बोलिए, मैं क्या मदद करूँ?", "hi");
+                }}
+                title="हिंदी आवाज़ सहायक"
+                className={`px-2.5 py-1 rounded-xl transition-all flex items-center gap-1 ${
+                  voiceLang === "hi"
+                    ? "bg-amber-500 text-black shadow-md font-extrabold"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <span>🇮🇳 हिंदी</span>
+              </button>
+              <button
+                onClick={() => {
+                  setVoiceLang("en");
+                  speakVoice("English voice assistant activated. How can I assist your route?", "en");
+                }}
+                title="English Voice Assistant"
+                className={`px-2.5 py-1 rounded-xl transition-all ${
+                  voiceLang === "en"
+                    ? "bg-white text-black shadow-md font-bold"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <span>English</span>
+              </button>
+            </div>
+
+            {/* Map Style Switcher */}
+            <div className="flex items-center gap-1 bg-zinc-950/95 backdrop-blur-xl p-1 rounded-2xl border border-zinc-800 shadow-xl text-[11px] font-semibold">
+              <button
+                onClick={() => setMapStyle("google_traffic")}
+                className={`px-2.5 py-1 rounded-xl transition-all ${
+                  mapStyle === "google_traffic"
+                    ? "bg-white text-black shadow-sm font-bold"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Traffic
+              </button>
+              <button
+                onClick={() => setMapStyle("google_satellite")}
+                className={`px-2.5 py-1 rounded-xl transition-all ${
+                  mapStyle === "google_satellite"
+                    ? "bg-white text-black shadow-sm font-bold"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Satellite
+              </button>
+              <button
+                onClick={() => setMapStyle("uber_midnight")}
+                className={`px-2.5 py-1 rounded-xl transition-all ${
+                  mapStyle === "uber_midnight"
+                    ? "bg-white text-black shadow-sm font-bold"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Dark
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* TOP CENTER: Pan-India Quick Metro Hubs */}
-      <div className="absolute top-4 left-[410px] hidden xl:flex items-center gap-1.5 bg-zinc-950/90 backdrop-blur-md p-1.5 rounded-2xl border border-zinc-800 shadow-xl z-10">
-        {METRO_HUBS.map((hub) => (
+        {/* ROW 2: SECONDARY FILTER BAR (HORIZONTALLY SCROLLABLE - ZERO OVERLAP) */}
+        <div className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          {/* Toggle Tourist Places Button */}
           <button
-            key={hub.id}
-            onClick={() => handleFlyTo(hub.lat, hub.lng, hub.zoom, hub.id)}
-            className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 ${
-              activeMetroId === hub.id
-                ? "bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/30"
-                : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+            onClick={() => setIsTouristLayerOn(!isTouristLayerOn)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all shadow-lg shrink-0 backdrop-blur-md ${
+              isTouristLayerOn
+                ? "bg-amber-500/25 border-amber-500/70 text-amber-300 ring-1 ring-amber-500/40"
+                : "bg-zinc-950/90 border-zinc-800 text-zinc-400 hover:text-white"
             }`}
           >
-            {hub.id === "INDIA" && <Globe2 className="h-3 w-3 text-amber-400" />}
-            <span>{hub.name}</span>
+            <Landmark className="h-3.5 w-3.5 text-amber-400" />
+            <span>
+              {voiceLang === "hi" ? "32 पर्यटन स्थल" : "32 Tourist Places"} {isTouristLayerOn ? "ON" : "OFF"}
+            </span>
           </button>
-        ))}
-      </div>
 
-      {/* TOP RIGHT: Real Map Tiles + Tourist Places Toggle + Live Traffic Toggle */}
-      <div className="absolute top-4 right-14 z-10 flex items-center gap-2">
-        {/* Tourist Places Toggle */}
-        <button
-          onClick={() => setIsTouristLayerOn(!isTouristLayerOn)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold border transition-all shadow-xl backdrop-blur-md ${
-            isTouristLayerOn
-              ? "bg-amber-500/20 border-amber-500/60 text-amber-300 ring-2 ring-amber-500/30"
-              : "bg-zinc-950/90 border-zinc-800 text-zinc-400 hover:text-white"
-          }`}
-        >
-          <Landmark className="h-3.5 w-3.5 text-amber-400" />
-          <span>{INDIA_TOURIST_PLACES.length} Tourist Places {isTouristLayerOn ? "ON" : "OFF"}</span>
-        </button>
-
-        {/* Live Traffic Toggle */}
-        <button
-          onClick={() => setIsTrafficOverlayOn(!isTrafficOverlayOn)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold border transition-all shadow-xl backdrop-blur-md ${
-            isTrafficOverlayOn
-              ? "bg-rose-500/20 border-rose-500/60 text-rose-300 ring-2 ring-rose-500/30"
-              : "bg-zinc-950/90 border-zinc-800 text-zinc-400 hover:text-white"
-          }`}
-        >
-          <span className={`h-2 w-2 rounded-full ${isTrafficOverlayOn ? "bg-rose-400 animate-pulse" : "bg-zinc-500"}`} />
-          <span>Live Traffic {isTrafficOverlayOn ? "ON" : "OFF"}</span>
-        </button>
-
-        {/* Style Switcher */}
-        <div className="flex items-center gap-1 bg-zinc-950/90 backdrop-blur-md p-1 rounded-2xl border border-zinc-800 shadow-xl text-[11px] font-semibold">
+          {/* Toggle Live Traffic Button */}
           <button
-            onClick={() => setMapStyle("google_traffic")}
-            className={`px-2.5 py-1 rounded-xl transition-all ${
-              mapStyle === "google_traffic"
-                ? "bg-white text-black shadow-sm font-bold"
-                : "text-zinc-400 hover:text-white"
+            onClick={() => setIsTrafficOverlayOn(!isTrafficOverlayOn)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all shadow-lg shrink-0 backdrop-blur-md ${
+              isTrafficOverlayOn
+                ? "bg-rose-500/25 border-rose-500/70 text-rose-300 ring-1 ring-rose-500/40"
+                : "bg-zinc-950/90 border-zinc-800 text-zinc-400 hover:text-white"
             }`}
           >
-            Google Traffic
+            <span className={`h-2 w-2 rounded-full ${isTrafficOverlayOn ? "bg-rose-400 animate-pulse" : "bg-zinc-500"}`} />
+            <span>
+              {voiceLang === "hi" ? "लाइव ट्रैफिक" : "Live Traffic"} {isTrafficOverlayOn ? "ON" : "OFF"}
+            </span>
           </button>
-          <button
-            onClick={() => setMapStyle("google_satellite")}
-            className={`px-2.5 py-1 rounded-xl transition-all ${
-              mapStyle === "google_satellite"
-                ? "bg-white text-black shadow-sm font-bold"
-                : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            Satellite
-          </button>
-          <button
-            onClick={() => setMapStyle("uber_midnight")}
-            className={`px-2.5 py-1 rounded-xl transition-all ${
-              mapStyle === "uber_midnight"
-                ? "bg-white text-black shadow-sm font-bold"
-                : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            Dark
-          </button>
+
+          <span className="h-4 w-[1px] bg-zinc-800 shrink-0 mx-1" />
+
+          {/* Pan-India Metro Quick-Fly Buttons */}
+          {METRO_HUBS.map((hub) => (
+            <button
+              key={hub.id}
+              onClick={() => handleFlyTo(hub.lat, hub.lng, hub.zoom, hub.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 shrink-0 backdrop-blur-md shadow-md ${
+                activeMetroId === hub.id
+                  ? "bg-indigo-600 text-white font-bold ring-1 ring-indigo-400"
+                  : "bg-zinc-950/90 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-900"
+              }`}
+            >
+              {hub.id === "INDIA" && <Globe2 className="h-3 w-3 text-amber-400" />}
+              <span>{voiceLang === "hi" ? hub.nameHi : hub.nameEn}</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* FLOATING BOTTOM LEFT: Pan-India Live Radar & Traffic Legend */}
+      {/* =========================================================================
+          FLOATING BOTTOM LEFT: Pan-India Live Radar & Traffic Legend
+         ========================================================================= */}
       <div className="absolute bottom-4 left-4 z-10 rounded-2xl border border-zinc-800 bg-zinc-950/95 backdrop-blur-md p-3.5 space-y-2 text-[10px] font-mono shadow-2xl">
         <div className="flex items-center justify-between gap-4 text-white">
           <div className="flex items-center gap-1.5 font-bold">
@@ -845,7 +953,9 @@ export default function RealLeafletMap({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            <span>PAN-INDIA FLEET &bull; 6 METROS &bull; 32+ TOURIST HUBS</span>
+            <span>
+              {voiceLang === "hi" ? "भारत फ्लीट रडार • 6 महानगर • 32 पर्यटन स्थल" : "PAN-INDIA FLEET • 6 METROS • 32 TOURIST HUBS"}
+            </span>
           </div>
           <span className="text-zinc-400 flex items-center gap-1 font-mono text-[9px]">
             <Clock className="h-3 w-3" />
@@ -855,42 +965,46 @@ export default function RealLeafletMap({
 
         {/* Real Traffic Congestion Legend */}
         <div className="flex items-center gap-3 pt-1 border-t border-zinc-800/80 text-[9px]">
-          <span className="text-zinc-400 font-sans font-bold">Google Live Traffic:</span>
+          <span className="text-zinc-400 font-sans font-bold">
+            {voiceLang === "hi" ? "ट्रैफिक स्थिति:" : "Live Traffic:"}
+          </span>
           <div className="flex items-center gap-1">
             <span className="h-1.5 w-4 rounded-full bg-emerald-500" />
-            <span className="text-zinc-300">Fast Flow</span>
+            <span className="text-zinc-300">{voiceLang === "hi" ? "खुला मार्ग" : "Fast Flow"}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="h-1.5 w-4 rounded-full bg-amber-500" />
-            <span className="text-zinc-300">Moderate</span>
+            <span className="text-zinc-300">{voiceLang === "hi" ? "मध्यम" : "Moderate"}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="h-1.5 w-4 rounded-full bg-rose-500" />
-            <span className="text-zinc-300">Congested</span>
+            <span className="text-zinc-300">{voiceLang === "hi" ? "धीमा" : "Congested"}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="h-1.5 w-4 rounded-full bg-rose-900" />
-            <span className="text-zinc-300">Heavy Jam</span>
+            <span className="text-zinc-300">{voiceLang === "hi" ? "भारी जाम" : "Heavy Jam"}</span>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-2 pt-1 border-t border-zinc-800/80">
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span className="text-zinc-300">Idle ({state.drivers.filter((d) => d.status === "IDLE").length})</span>
+            <span className="text-zinc-300">{voiceLang === "hi" ? "उपलब्ध" : "Idle"} ({state.drivers.filter((d) => d.status === "IDLE").length})</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-cyan-400" />
-            <span className="text-zinc-300">Surge ({state.drivers.filter((d) => d.status === "EN_ROUTE_SURGE").length})</span>
+            <span className="text-zinc-300">{voiceLang === "hi" ? "सर्ज मार्ग" : "Surge"} ({state.drivers.filter((d) => d.status === "EN_ROUTE_SURGE").length})</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-violet-400" />
-            <span className="text-zinc-300">Active Trip ({state.drivers.filter((d) => d.status === "ON_TRIP").length})</span>
+            <span className="text-zinc-300">{voiceLang === "hi" ? "यात्रा में" : "Active Trip"} ({state.drivers.filter((d) => d.status === "ON_TRIP").length})</span>
           </div>
         </div>
       </div>
 
-      {/* FLOATING TOURIST DESTINATION CARD */}
+      {/* =========================================================================
+          FLOATING TOURIST DESTINATION CARD
+         ========================================================================= */}
       {selectedTouristPlace && (
         <div className="absolute bottom-4 right-4 z-20 w-84 sm:w-96 rounded-3xl border border-amber-500/50 bg-zinc-950/98 backdrop-blur-2xl p-5 shadow-2xl space-y-3 animate-fadeIn">
           <div className="flex items-start justify-between border-b border-zinc-800/80 pb-2.5">
@@ -921,25 +1035,25 @@ export default function RealLeafletMap({
 
           <div className="space-y-1.5 text-[11px] pt-1">
             <div className="flex items-center justify-between text-zinc-400">
-              <span>Popular For:</span>
+              <span>{voiceLang === "hi" ? "प्रसिद्ध किसके लिए:" : "Popular For:"}</span>
               <span className="text-white font-medium truncate max-w-[200px]">
                 {selectedTouristPlace.popularFor}
               </span>
             </div>
             <div className="flex items-center justify-between text-zinc-400">
-              <span>Uber Service:</span>
+              <span>{voiceLang === "hi" ? "उबर श्रेणी:" : "Uber Service:"}</span>
               <span className="text-emerald-400 font-bold">
                 {selectedTouristPlace.uberCategory}
               </span>
             </div>
             <div className="flex items-center justify-between text-zinc-400">
-              <span>Estimated Fare:</span>
+              <span>{voiceLang === "hi" ? "अनुमानित किराया:" : "Estimated Fare:"}</span>
               <span className="text-amber-400 font-bold font-mono">
                 {selectedTouristPlace.estimatedFareFromHub}
               </span>
             </div>
             <div className="flex items-center justify-between text-zinc-400">
-              <span>Typical Duration:</span>
+              <span>{voiceLang === "hi" ? "दर्शन समय:" : "Typical Duration:"}</span>
               <span className="text-white font-mono">
                 {selectedTouristPlace.typicalVisitHours}
               </span>
@@ -949,24 +1063,30 @@ export default function RealLeafletMap({
           <div className="pt-2 border-t border-zinc-800/80 flex items-center gap-2">
             <button
               onClick={() => {
-                speakText(`Tourist destination ${selectedTouristPlace.name} in ${selectedTouristPlace.city}. ${selectedTouristPlace.description}. Estimated ${selectedTouristPlace.uberCategory} fare is ${selectedTouristPlace.estimatedFareFromHub}.`);
+                const speechMsg =
+                  voiceLang === "hi"
+                    ? `${selectedTouristPlace.name}, ${selectedTouristPlace.city}। ${selectedTouristPlace.description}। अनुमानित उबर किराया ${selectedTouristPlace.estimatedFareFromHub} है।`
+                    : `Tourist destination ${selectedTouristPlace.name} in ${selectedTouristPlace.city}. ${selectedTouristPlace.description}. Estimated ${selectedTouristPlace.uberCategory} fare is ${selectedTouristPlace.estimatedFareFromHub}.`;
+                speakVoice(speechMsg);
               }}
               className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white transition-colors"
-              title="Speak destination details"
+              title={voiceLang === "hi" ? "विवरण सुनें" : "Speak destination details"}
             >
-              <Volume2 className="h-4 w-4" />
+              <Volume2 className={`h-4 w-4 ${isSpeaking ? "text-amber-400 animate-bounce" : ""}`} />
             </button>
             <button
               onClick={() => handleFlyTo(selectedTouristPlace.lat, selectedTouristPlace.lng, 17)}
               className="flex-1 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition-all shadow-lg shadow-amber-500/25"
             >
-              Zoom Street / Satellite View
+              {voiceLang === "hi" ? "ज़ूम से देखें (सैटेलाइट व्यू)" : "Zoom Satellite View"}
             </button>
           </div>
         </div>
       )}
 
-      {/* FLOATING DRIVER CARD */}
+      {/* =========================================================================
+          FLOATING DRIVER CARD
+         ========================================================================= */}
       {selectedDriver && !selectedTouristPlace && (
         <div className="absolute bottom-4 right-4 z-20 w-84 rounded-2xl border border-indigo-500/50 bg-zinc-950/95 backdrop-blur-xl p-4 shadow-2xl space-y-3">
           <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
@@ -999,7 +1119,7 @@ export default function RealLeafletMap({
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/80 p-2 space-y-0.5">
               <span className="text-zinc-500 flex items-center gap-1">
                 <Gauge className="h-3 w-3 text-cyan-400" />
-                <span>Live GPS Speed</span>
+                <span>{voiceLang === "hi" ? "लाइव स्पीड" : "Live GPS Speed"}</span>
               </span>
               <span className="text-white text-sm font-black block">
                 {selectedDriver.speedKmh || 0} <span className="text-[10px] font-normal text-zinc-400">km/h</span>
@@ -1016,7 +1136,7 @@ export default function RealLeafletMap({
                 ) : (
                   <Fuel className="h-3 w-3 text-amber-400" />
                 )}
-                <span>Level</span>
+                <span>{voiceLang === "hi" ? "बैटरी / ईंधन" : "Level"}</span>
               </span>
               <span className="text-emerald-400 text-sm font-black block">
                 {selectedDriver.batteryOrFuelPercent || 78}%
@@ -1029,7 +1149,7 @@ export default function RealLeafletMap({
 
           <div className="flex items-center justify-between pt-1 border-t border-zinc-800 text-[10px] font-mono">
             <div>
-              <span className="text-zinc-500">Earnings: </span>
+              <span className="text-zinc-500">{voiceLang === "hi" ? "आज की कमाई: " : "Earnings: "}</span>
               <span className="text-white font-bold">₹{selectedDriver.earningsToday}</span>
               <span className="text-zinc-500 text-[9px]"> ({selectedDriver.tripsCompleted} trips)</span>
             </div>
