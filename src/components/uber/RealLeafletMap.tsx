@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { MarketplaceState, ZoneId } from "@/lib/uber/types";
-import { Car, Zap, Users, Navigation } from "lucide-react";
+import { Zap } from "lucide-react";
 
 interface RealLeafletMapProps {
   state: MarketplaceState;
@@ -40,14 +40,22 @@ export default function RealLeafletMap({
         // Add custom zoom control in top right
         L.control.zoom({ position: "topright" }).addTo(map);
 
-        // CartoDB Dark Matter Tile Layer (Industry standard for modern dark-mode transit maps)
+        // Official ESRI World Dark Gray Canvas (100% Free, Zero Watermark, Zero API Key Required)
         L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+          "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
           {
             attribution:
-              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: "abcd",
-            maxZoom: 19,
+              'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; San Francisco Transit Network',
+            maxZoom: 16,
+          }
+        ).addTo(map);
+
+        // ESRI World Dark Gray Reference Layer (Streets, Freeways & Neighborhood Names)
+        L.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+          {
+            attribution: "",
+            maxZoom: 16,
           }
         ).addTo(map);
 
@@ -55,6 +63,11 @@ export default function RealLeafletMap({
         zonesLayerRef.current = L.featureGroup().addTo(map);
         markersLayerRef.current = L.featureGroup().addTo(map);
         mapInstanceRef.current = map;
+
+        // Ensure tiles render immediately across full viewport
+        setTimeout(() => {
+          map.invalidateSize();
+        }, 200);
       }
 
       const map = mapInstanceRef.current;
@@ -177,7 +190,7 @@ export default function RealLeafletMap({
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
       {/* Floating City Navigation Quick-Pills */}
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-zinc-950/80 backdrop-blur-md p-1.5 rounded-2xl border border-zinc-800 shadow-xl">
+      <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-zinc-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-zinc-800 shadow-xl">
         <button
           onClick={() => handleFlyTo(37.7786, -122.3893, 14)}
           className="px-2.5 py-1 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all flex items-center gap-1"
