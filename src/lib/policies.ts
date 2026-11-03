@@ -1,0 +1,58 @@
+import { PolicyRule } from "./types";
+
+export const DEFAULT_POLICIES: PolicyRule[] = [
+  {
+    id: "RULE_BUDGET_TIER_1",
+    name: "Tier-1 Expenditure Guardrail ($1,000+)",
+    description: "Any automated financial transaction exceeding $1,000 requires human managerial sign-off.",
+    category: "BUDGET",
+    severity: "REQUIRE_APPROVAL",
+    threshold: 1000,
+    enabled: true,
+  },
+  {
+    id: "RULE_BUDGET_TIER_2",
+    name: "Maximum Hard Ceiling ($10,000+)",
+    description: "Autonomous agents are strictly blocked from authorizing expenditures exceeding $10,000.",
+    category: "BUDGET",
+    severity: "BLOCK",
+    threshold: 10000,
+    enabled: true,
+  },
+  {
+    id: "RULE_RESTRICTED_VENDORS",
+    name: "Sanctioned & Unverified Entity Filter",
+    description: "Blocks payments or data transmission to blacklisted or non-KYC vendors.",
+    category: "VENDOR",
+    severity: "BLOCK",
+    pattern: "shadowtech|unknown wire|offshore holdings|crypto mixer|stealth corp|unverified llc",
+    enabled: true,
+  },
+  {
+    id: "RULE_PII_PROTECTION",
+    name: "PII & Confidential Data Boundary",
+    description: "Prevents exposure or transmission of SSNs, CVV codes, passwords, and private employee salaries.",
+    category: "DATA_PRIVACY",
+    severity: "BLOCK",
+    pattern: "(\\b\\d{3}-\\d{2}-\\d{4}\\b)|(\\bpassword\\s*=|salary_dump|private_key|cvv)",
+    enabled: true,
+  },
+  {
+    id: "RULE_PROMPT_INJECTION",
+    name: "Adversarial Prompt & Jailbreak Defense",
+    description: "Intercepts attempts to override agent instructions, trigger debug mode, or bypass guardrails.",
+    category: "SAFETY",
+    severity: "BLOCK",
+    pattern: "ignore (all )?previous instructions|system override|developer mode|bypass policy|disable guardrails|sudo mode",
+    enabled: true,
+  },
+  {
+    id: "RULE_COMPLIANCE_PURPOSE",
+    name: "Legitimate Business Purpose Enforcement",
+    description: "Rejects non-compliant personal or prohibited expense claims (e.g. gambling, luxury gifts, personal vacation).",
+    category: "COMPLIANCE",
+    severity: "BLOCK",
+    pattern: "casino|gambling|luxury jewelry|personal vacation|crypto trade|rolex",
+    enabled: true,
+  },
+];
