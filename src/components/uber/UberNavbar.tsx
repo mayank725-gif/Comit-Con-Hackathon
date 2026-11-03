@@ -32,6 +32,7 @@ interface UberNavbarProps {
   currentUser?: DriverUser | null;
   currentProfile?: DriverWorkProfile | null;
   onOpenAuthModal?: () => void;
+  onOpenRiderBooking?: () => void;
 }
 
 export default function UberNavbar({
@@ -43,6 +44,7 @@ export default function UberNavbar({
   currentUser,
   currentProfile,
   onOpenAuthModal,
+  onOpenRiderBooking,
 }: UberNavbarProps) {
   const [isDemoMenuOpen, setIsDemoMenuOpen] = useState(false);
   const demoMenuRef = useRef<HTMLDivElement>(null);
@@ -135,8 +137,18 @@ export default function UberNavbar({
           </button>
         </nav>
 
-        {/* Right Section: Driver Sign-In & User-Friendly Demo Event Switcher */}
+        {/* Right Section: Rider Booking, Rush Events & Driver Sign-In */}
         <div className="flex items-center gap-2">
+          {/* Uber 2.0 Two-Sided Ride Booking Trigger */}
+          <button
+            type="button"
+            onClick={onOpenRiderBooking}
+            title="Book a ride as a Passenger (Two-Sided Marketplace Test)"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-500/50 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-200 font-extrabold text-xs transition-all shadow-sm"
+          >
+            <span>🚖 Book Ride</span>
+          </button>
+
           {/* Live Events Dropdown (User-Friendly Demo Triggers) */}
           <div className="relative" ref={demoMenuRef}>
             <button

@@ -8,11 +8,16 @@ import UberBenchmarkView from "@/components/uber/UberBenchmarkView";
 import MichelangeloTelemetryView from "@/components/uber/MichelangeloTelemetryView";
 import DriverSectorSpotlight from "@/components/uber/DriverSectorSpotlight";
 import DriverAuthModal from "@/components/uber/DriverAuthModal";
+import RiderBookingModal from "@/components/uber/RiderBookingModal";
+import IncomingRideDispatchModal from "@/components/uber/IncomingRideDispatchModal";
+import ActiveTripHUD from "@/components/uber/ActiveTripHUD";
 import { DriverUser, DriverWorkProfile } from "@/lib/db/driverDb";
+import { saveDriverProfileToCustomDb } from "@/lib/firebase/authService";
 import {
   MarketplaceState,
   ZoneId,
   AssistantMessage,
+  RideRequest,
 } from "@/lib/uber/types";
 import { UBER_BENCHMARK_DATA } from "@/lib/uber/benchmark";
 
@@ -46,13 +51,18 @@ export default function Home() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [mapFlyToCoords, setMapFlyToCoords] = useState<[number, number] | null>(null);
 
+  // Uber 2.0 Two-Sided Marketplace & Dispatch State
+  const [isRiderBookingOpen, setIsRiderBookingOpen] = useState(false);
+  const [incomingRideRequest, setIncomingRideRequest] = useState<RideRequest | null>(null);
+  const [activeTrip, setActiveTrip] = useState<RideRequest | null>(null);
+
   // Chat conversation
   const [chatMessages, setChatMessages] = useState<AssistantMessage[]>([
     {
       id: "INIT_1",
       sender: "ASSISTANT",
       agentType: "DISPATCH",
-      text: "👋 नमस्ते! उबर ड्राइवर स्मार्ट कॉपायलट सक्रिय है। चिन्नास्वामी स्टेडियम और एमजी रोड में अभी सबसे ज्यादा किराए की राइड्स मिल रही हैं। आप माइक दबाकर हिंदी या English में कुछ भी पूछ सकते हैं!",
+      text: "👋 नमस्ते! उबर 2.0 स्मार्ट मार्केट इंजन सक्रिय है। चिन्नास्वामी स्टेडियम और एमजी रोड में अभी सबसे ज्यादा किराए की राइड्स मिल रही हैं। आप माइक दबाकर हिंदी या English में कुछ भी पूछ सकते हैं!",
       timestamp: "2026-11-03T23:00:00.000Z",
       actionableRecommendation: {
         suggestedZone: "STADIUM",
@@ -176,6 +186,111 @@ export default function Home() {
     }
   };
 
+  // Uber 2.0 Ride Request Handlers (Two-Sided Marketplace)
+  const handleRequestRide = (request: RideRequest) => {
+    setIncomingRideRequest(request);
+  };
+
+  const handleSimulateDispatch = () => {
+    const cityName = currentProfile?.cityName || "Bengaluru";
+    const primaryZoneName = currentProfile?.primaryZoneName?.split("&")[0].trim() || "M. Chinnaswamy Stadium";
+
+    const simRequest: RideRequest = {
+      id: `DISPATCH_${Date.now().toString().slice(-5)}`,
+      riderName: "Rahul Verma",
+      riderRating: 4.96,
+      pickupAddress: `${primaryZoneName}, ${cityName}`,
+      pickupCoords: currentProfile?.assignedCoordinates || [12.9788, 77.5980],
+      dropoffAddress: `Kempegowda International Airport (BLR T2), ${cityName}`,
+      dropoffCoords: [13.1986, 77.7066],
+      vehicleType: currentProfile?.vehicleType || "UBER_GO",
+      distanceKm: 32,
+      durationMin: 45,
+      fareInr: 780,
+      surgeMultiplier: sectorTelemetry?.surgeMultiplier || 2.8,
+      surgeBonusInr: 280,
+      timestamp: new Date().toISOString(),
+      status: "REQUESTED",
+      paymentMode: "GOOGLE_PAY_UPI",
+    };
+
+    setIncomingRideRequest(simRequest);
+  };
+
+  const handleAcceptRide = (request: RideRequest) => {
+    setIncomingRideRequest(null);
+    setActiveTrip(request);
+
+    // Fly map to pickup/dropoff
+    if (request.pickupCoords) {
+      setMapFlyToCoords([...request.pickupCoords]);
+    }
+
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        id: `ACCEPT_${Date.now()}`,
+        sender: "ASSISTANT",
+        agentType: "DISPATCH",
+        text: `🚖 **सवारी स्वीकार की गई!**\nयात्री: **${request.riderName}** (★ ${request.riderRating})\nपिकअप: **${request.pickupAddress}**\nगंतव्य: **${request.dropoffAddress}**\nकिराया: **₹${request.fareInr}** (सर्ज बोनस शामिल: ₹${request.surgeBonusInr})\n\nनेविगेशन लाइव है। सुरक्षित यात्रा!`,
+        timestamp: new Date().toISOString(),
+        actionableRecommendation: {
+          suggestedZone: selectedZone || "STADIUM",
+          estimatedSurge: request.surgeMultiplier,
+          extraEarningsEstimate: `Earn ₹${request.fareInr}`,
+        },
+      },
+    ]);
+  };
+
+  const handleDeclineRide = () => {
+    setIncomingRideRequest(null);
+  };
+
+  const handleCompleteTrip = async (trip: RideRequest) => {
+    setActiveTrip(null);
+
+    // Update earnings in current profile & persist into custom database
+    const newEarnings = ((currentProfile?.currentEarnings) || 2070) + trip.fareInr;
+
+    if (currentUser && currentProfile) {
+      const updatedProfile: DriverWorkProfile = {
+        ...currentProfile,
+        currentEarnings: newEarnings,
+      };
+      setCurrentProfile(updatedProfile);
+
+      try {
+        await saveDriverProfileToCustomDb({
+          userId: currentUser.id,
+          city: currentProfile.city,
+          cityName: currentProfile.cityName,
+          primaryZone: currentProfile.primaryZone,
+          primaryZoneName: currentProfile.primaryZoneName,
+          vehicleType: currentProfile.vehicleType,
+          vehicleModel: currentProfile.vehicleModel,
+          licensePlate: currentProfile.licensePlate,
+          dailyEarningsTarget: currentProfile.dailyEarningsTarget,
+          willingOutstation: currentProfile.willingOutstation,
+          driverName: currentProfile.driverName,
+        });
+      } catch (e) {
+        console.error("Failed to persist trip earnings:", e);
+      }
+    }
+
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        id: `FINISH_${Date.now()}`,
+        sender: "ASSISTANT",
+        agentType: "EARNINGS",
+        text: `🎉 **यात्रा सफलतापूर्वक पूरी हुई!**\n💰 आपने इस ट्रिप से **₹${trip.fareInr}** कमाए।\nआज की कुल कमाई: **₹${newEarnings}**। आपका दैनिक लक्ष्य तेजी से पूरा हो रहा है!`,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+  };
+
   const handleTriggerScenario = async (
     type: "STADIUM_CONCERT_END" | "STALE_MODEL_DRIFT" | "AIRPORT_FLIGHT_WAVE" | "MONSOON_FLASH_FLOOD" | "RESET"
   ) => {
@@ -270,7 +385,7 @@ export default function Home() {
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center space-y-3 font-sans">
         <div className="h-8 w-8 rounded-full border-2 border-white border-t-transparent animate-spin" />
         <span className="text-xs font-mono text-zinc-400">
-          Starting Uber Driver Partner Pro...
+          Starting Uber 2.0 Real-Time Marketplace Engine...
         </span>
       </div>
     );
@@ -289,10 +404,11 @@ export default function Home() {
         currentUser={currentUser}
         currentProfile={currentProfile}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenRiderBooking={() => setIsRiderBookingOpen(true)}
       />
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-        {/* TAB 1: REAL DRIVER MAP & COPILOT */}
+        {/* TAB 1: REAL DRIVER MAP & TWO-SIDED COPILOT */}
         {activeTab === "map" && (
           <div className="space-y-4">
             {/* Sleek Compact Driver HUD (Takes minimal vertical space) */}
@@ -302,10 +418,11 @@ export default function Home() {
               sectorTelemetry={sectorTelemetry}
               onFlyToMySector={handleFlyToMySector}
               onOpenTerritoryModal={() => setIsAuthModalOpen(true)}
+              onSimulateDispatch={handleSimulateDispatch}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-              {/* Left 7 Cols: Clean Leaflet Map */}
+              {/* Left 7 Cols: Clean Leaflet Map + Active Trip Navigation Bar */}
               <div className="lg:col-span-7 space-y-3">
                 <RealLeafletMap
                   state={state}
@@ -314,8 +431,16 @@ export default function Home() {
                   flyToCoords={mapFlyToCoords}
                 />
 
+                {/* Active Trip Navigation HUD (When Ride is In-Progress) */}
+                {activeTrip && (
+                  <ActiveTripHUD
+                    trip={activeTrip}
+                    onCompleteTrip={handleCompleteTrip}
+                  />
+                )}
+
                 {/* Selected Hotspot Card (Clean, Simple Drawer) */}
-                {focusedZone && (
+                {focusedZone && !activeTrip && (
                   <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 p-4 shadow-lg backdrop-blur-md">
                     <div className="flex items-center justify-between">
                       <div>
@@ -376,7 +501,7 @@ export default function Home() {
         {/* TAB 3: SHIFT EARNINGS & BENCHMARKS */}
         {activeTab === "benchmark" && (
           <div className="space-y-6">
-            {/* 4 Big KPI Metric Cards (Moved here to clean up the main map view) */}
+            {/* 4 Big KPI Metric Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 space-y-1 backdrop-blur-sm shadow-md">
                 <span className="text-[11px] text-zinc-400 font-medium block">
@@ -452,6 +577,21 @@ export default function Home() {
           />
         )}
       </main>
+
+      {/* Uber 2.0 Rider Booking Modal */}
+      <RiderBookingModal
+        isOpen={isRiderBookingOpen}
+        onClose={() => setIsRiderBookingOpen(false)}
+        onRequestRide={handleRequestRide}
+        activeSurge={focusedZone?.surgeMultiplier || 1.4}
+      />
+
+      {/* Uber 2.0 Incoming Ride Dispatch Modal (Driver Alert) */}
+      <IncomingRideDispatchModal
+        request={incomingRideRequest}
+        onAccept={handleAcceptRide}
+        onDecline={handleDeclineRide}
+      />
 
       {/* Driver Google Auth & Work Area Onboarding Modal */}
       <DriverAuthModal

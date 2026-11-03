@@ -112,6 +112,25 @@ export interface MarketplaceState {
   };
 }
 
+export interface RideRequest {
+  id: string;
+  riderName: string;
+  riderRating: number;
+  pickupAddress: string;
+  pickupCoords: [number, number];
+  dropoffAddress: string;
+  dropoffCoords: [number, number];
+  vehicleType: VehicleType;
+  distanceKm: number;
+  durationMin: number;
+  fareInr: number;
+  surgeMultiplier: number;
+  surgeBonusInr: number;
+  timestamp: string;
+  status: "REQUESTED" | "DISPATCHED" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  paymentMode: "GOOGLE_PAY_UPI" | "CASH" | "UBER_CASH";
+}
+
 export interface AssistantMessage {
   id: string;
   sender: "DRIVER" | "ASSISTANT";

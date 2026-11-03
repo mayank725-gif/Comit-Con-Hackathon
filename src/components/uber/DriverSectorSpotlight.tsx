@@ -27,6 +27,7 @@ interface DriverSectorSpotlightProps {
   } | null;
   onFlyToMySector: (coords: [number, number]) => void;
   onOpenTerritoryModal: () => void;
+  onSimulateDispatch?: () => void;
 }
 
 export default function DriverSectorSpotlight({
@@ -35,6 +36,7 @@ export default function DriverSectorSpotlight({
   sectorTelemetry,
   onFlyToMySector,
   onOpenTerritoryModal,
+  onSimulateDispatch,
 }: DriverSectorSpotlightProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -138,6 +140,17 @@ export default function DriverSectorSpotlight({
             <Navigation className="h-3.5 w-3.5" />
             <span>Go to My Area</span>
           </button>
+
+          {onSimulateDispatch && (
+            <button
+              type="button"
+              onClick={onSimulateDispatch}
+              title="Simulate an incoming passenger ride request for your car"
+              className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
+            >
+              <span>🔔 Test Dispatch</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenTerritoryModal}
