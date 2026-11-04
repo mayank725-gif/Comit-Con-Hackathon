@@ -138,6 +138,7 @@ export default function CustomerPortalView({
   const [activeTab, setActiveTab] = useState<"BOOK" | "SURGE_STREAM" | "HISTORY">("BOOK");
   const [rideHistory, setRideHistory] = useState<RideRequest[]>([]);
   const [selectedHistoryRide, setSelectedHistoryRide] = useState<RideRequest | null>(null);
+  const [isBooking, setIsBooking] = useState(false);
 
   // Fetch rider trip history from Custom DB
   const fetchRideHistory = async () => {
@@ -346,57 +347,53 @@ export default function CustomerPortalView({
   };
 
   // Submit Ride Request (Two-Sided Dispatch & Realistic Lifecycle)
-  const handleConfirmBooking = () => {
-    // Generate realistic 4-digit ride OTP
-    const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    setRideOtp(generatedOtp);
+  const handleConfirmBooking = async () => {
+    // Prevent double-clicking, duplicate requests, or requesting while another trip is active
+    if (isBooking || tripState !== "IDLE") return;
+    setIsBooking(true);
 
-    // Pick real commercial driver from state or DB catalog
-    const fleetDriver = state.drivers[0] || {
-      name: "Ramesh Kumar",
-      rating: 4.93,
-      vehicleModel: "Maruti Suzuki Dzire",
-      licensePlate: "KA 01 MJ 1042",
-      tripsCompleted: 2840,
-    };
+    try {
+      // Generate realistic 4-digit ride OTP
+      const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+      setRideOtp(generatedOtp);
 
-    const newRide: RideRequest = {
-      id: `RIDE_${Date.now().toString().slice(-6)}`,
-      riderName: travelProfile === "BUSINESS" ? "Aman Gupta (Corp Travel)" : "Aman Gupta",
-      riderRating: 4.95,
-      pickupAddress: pickupQuery,
-      pickupCoords,
-      dropoffAddress: dropoffQuery,
-      dropoffCoords,
-      vehicleType: selectedVehicle,
-      distanceKm: routeData.distanceKm,
-      durationMin: routeData.travelTimeMin,
-      fareInr: routeData.finalFareInr,
-      surgeMultiplier: routeData.surgeMultiplier,
-      surgeBonusInr: routeData.surgeBonusInr,
-      timestamp: new Date().toISOString(),
-      status: "REQUESTED",
-      paymentMode: travelProfile === "BUSINESS" ? "GOOGLE_PAY_UPI" : paymentMode,
-    };
+      const newRide: RideRequest = {
+        id: `RIDE_${Date.now().toString().slice(-6)}`,
+        riderName: travelProfile === "BUSINESS" ? "Aman Gupta (Corp Travel)" : "Aman Gupta",
+        riderRating: 4.95,
+        pickupAddress: pickupQuery,
+        pickupCoords,
+        dropoffAddress: dropoffQuery,
+        dropoffCoords,
+        vehicleType: selectedVehicle,
+        distanceKm: routeData.distanceKm,
+        durationMin: routeData.travelTimeMin,
+        fareInr: routeData.finalFareInr,
+        surgeMultiplier: routeData.surgeMultiplier,
+        surgeBonusInr: routeData.surgeBonusInr,
+        timestamp: new Date().toISOString(),
+        status: "REQUESTED",
+        paymentMode: travelProfile === "BUSINESS" ? "GOOGLE_PAY_UPI" : paymentMode,
+      };
 
-    setConfirmedRide(newRide);
-    // Publish to Firestore in real-time
-    publishRideToFirestore(newRide).catch(() => {});
-    // Broadcast live dispatch over ultra-low-latency real-time stream (Sub-50ms)
-    broadcastNewDispatch(newRide).catch(() => {});
+      setConfirmedRide(newRide);
+      // Realistic matching radar animation (Listens in real-time for Driver on Phone 2 to accept)
+      setTripState("SEARCHING");
 
-    if (onBookRide) {
-      onBookRide(newRide);
-    } else {
-      fetch("/api/uber/rides", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newRide),
-      }).catch(console.error);
+      if (onBookRide) {
+        await onBookRide(newRide);
+      } else {
+        await fetch("/api/uber/rides", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newRide),
+        });
+      }
+    } catch (e) {
+      console.error("Booking error:", e);
+    } finally {
+      setIsBooking(false);
     }
-
-    // Realistic matching radar animation (Listens in real-time for Driver on Phone 2 to accept)
-    setTripState("SEARCHING");
   };
 
   // Ultra-Fast Real-Time 2-Phone Synchronization via LiveSync SSE, Cloud Firestore & Polling Fallback
@@ -897,7 +894,7 @@ export default function CustomerPortalView({
                     </button>
                   </div>
                   <p className="text-[11px] text-zinc-300 leading-snug">
-                    Surge shock protection enabled: +₹{routeData.surgeBonusInr} included. Anti-herd damping locks 65% fleet for surrounding city zones.
+                    High demand fair pricing enabled: +₹{routeData.surgeBonusInr} included. 65% of cabs stay reserved for the surrounding city.
                   </p>
                 </div>
               )}
@@ -1011,15 +1008,35 @@ export default function CustomerPortalView({
               </div>
 
               {/* FULL-WIDTH UBER REQUEST BUTTON */}
-              {tripState === "IDLE" && (
+              {tripState === "IDLE" ? (
                 <button
                   type="button"
                   onClick={handleConfirmBooking}
-                  className="w-full py-4 rounded-2xl bg-white hover:bg-zinc-200 text-black font-black text-sm transition-all shadow-xl flex items-center justify-center gap-2"
+                  disabled={isBooking}
+                  className="w-full py-4 rounded-2xl bg-white hover:bg-zinc-200 disabled:opacity-60 text-black font-black text-sm transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <span>Request {VEHICLE_TIERS.find((v) => v.type === selectedVehicle)?.name}</span>
-                  <span className="text-xs font-mono font-bold text-zinc-700">&bull; ₹{routeData.finalFareInr}</span>
+                  {isBooking ? (
+                    <>
+                      <div className="h-4 w-4 rounded-full border-2 border-black border-t-transparent animate-spin" />
+                      <span>Contacting nearby drivers...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Request {VEHICLE_TIERS.find((v) => v.type === selectedVehicle)?.name}</span>
+                      <span className="text-xs font-mono font-bold text-zinc-700">&bull; ₹{routeData.finalFareInr}</span>
+                    </>
+                  )}
                 </button>
+              ) : (
+                <div className="w-full py-3.5 px-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-1">
+                  <span className="text-xs font-bold text-emerald-400 flex items-center justify-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                    Active Ride in Progress
+                  </span>
+                  <span className="text-[11px] text-zinc-400 block">
+                    Complete your current ride before booking a new one.
+                  </span>
+                </div>
               )}
             </div>
 
@@ -1043,7 +1060,7 @@ export default function CustomerPortalView({
 
                 <div className="flex items-center justify-center gap-2 text-[11px] font-mono text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Anti-herd damping engaged &bull; Dispersal wave 1</span>
+                  <span>Fair city coverage enabled &bull; First group cab dispatch</span>
                 </div>
 
                 <div className="pt-2 border-t border-zinc-800/80 flex flex-col items-center gap-2">
@@ -1179,7 +1196,7 @@ export default function CustomerPortalView({
                 <div className="p-3.5 rounded-2xl border border-zinc-800 bg-zinc-900/80 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2 text-zinc-300">
                     <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                    <span>RideCheck Active: Route telemetry monitored 24/7</span>
+                    <span>RideCheck Active: Route safely tracked 24/7</span>
                   </div>
                   <span className="text-[10px] font-mono text-zinc-400">
                     Driver completes trip on arrival
@@ -1587,7 +1604,7 @@ export default function CustomerPortalView({
           <div className="flex items-center justify-between p-3.5 border-b border-zinc-800 bg-zinc-900/90">
             <div className="flex items-center gap-2">
               <span className="p-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold">● Active</span>
-              <span className="font-extrabold text-xs text-white">Uber 2.0 Michelangelo AI Assistant</span>
+              <span className="font-extrabold text-xs text-white">Uber AI Assistant</span>
             </div>
             <button
               onClick={() => setIsAiDrawerOpen(false)}

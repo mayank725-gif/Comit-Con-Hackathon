@@ -114,6 +114,9 @@ export function listenToRideStatus(
   };
 }
 
+// Deduplication map to prevent multiple duplicate dispatches or lag
+const seenDispatchIds = new Set<string>();
+
 // 4. Driver listens in real-time for incoming bookings from Rider
 export function listenToIncomingDispatches(
   onDispatch: (ride: RideRequest) => void
@@ -125,7 +128,8 @@ export function listenToIncomingDispatches(
   let eventSource: EventSource | null = null;
 
   try {
-    eventSource = new EventSource(`${BASE_RELAY}/${GLOBAL_DISPATCH_TOPIC}/sse`);
+    // ?since=now guarantees we only receive fresh, real-time incoming dispatches, not cached historic ones
+    eventSource = new EventSource(`${BASE_RELAY}/${GLOBAL_DISPATCH_TOPIC}/sse?since=now`);
 
     eventSource.onmessage = (e) => {
       try {
@@ -140,6 +144,15 @@ export function listenToIncomingDispatches(
           }
         }
         if (payload && payload.ride && (payload.ride.status === "REQUESTED" || payload.ride.status === "PENDING")) {
+          const rideId = payload.ride.id;
+          if (rideId && seenDispatchIds.has(rideId)) {
+            // Drop duplicate dispatch packet
+            return;
+          }
+          if (rideId) {
+            seenDispatchIds.add(rideId);
+            setTimeout(() => seenDispatchIds.delete(rideId), 15000);
+          }
           onDispatch(payload.ride);
         }
       } catch (err) {

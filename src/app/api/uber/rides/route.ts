@@ -147,11 +147,14 @@ export async function PATCH(req: Request) {
     // 2. Cloud Firestore Real-Time WebSocket
     updateRideInFirestore(rideId, status, driverDetails).catch(() => {});
 
+    const isFinished = status === "CANCELLED" || status === "COMPLETED";
+
     // 3. Shared Global Cloud State for serverless containers
     syncWithCloudState({
-      rideId,
+      rideId: isFinished ? null : rideId,
       status,
       driverDetails: driverDetails || null,
+      activeRide: isFinished ? null : (updated || null),
       updatedAt: Date.now(),
     }).catch(() => {});
 

@@ -161,7 +161,7 @@ export default function UberNavbar({
               onClick={onOpenStressTest}
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-extrabold text-xs transition-all shadow-sm"
             >
-              <span>💥 1,000 Stress Test</span>
+              <span>⚡ 1,000 Ride Spike</span>
             </button>
           ) : (
             <div className="relative" ref={demoMenuRef}>

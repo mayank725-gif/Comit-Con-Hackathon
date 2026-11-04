@@ -76,9 +76,6 @@ export default function RiderPage() {
       timestamp: new Date().toISOString(),
     };
 
-    // Publish directly to Cloud Firestore for instant sub-30ms WebSocket dispatch
-    publishRideToFirestore(enrichedRequest).catch(() => {});
-
     try {
       await fetch("/api/uber/rides", {
         method: "POST",

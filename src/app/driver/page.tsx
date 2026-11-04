@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import DriverSectorSpotlight from "@/components/uber/DriverSectorSpotlight";
@@ -79,6 +79,14 @@ export default function DriverPage() {
   const [driverTrips, setDriverTrips] = useState<RideRequest[]>([]);
   const [isLoadingTrips, setIsLoadingTrips] = useState(false);
 
+  // References to prevent duplicate dispatches, ghost re-alerts on decline, or alerts while on trip
+  const declinedRideIdsRef = useRef<Set<string>>(new Set());
+  const activeTripRef = useRef<RideRequest | null>(null);
+
+  useEffect(() => {
+    activeTripRef.current = activeTrip;
+  }, [activeTrip]);
+
   // AI Chat messages
   const [chatMessages, setChatMessages] = useState<AssistantMessage[]>([
     {
@@ -123,57 +131,52 @@ export default function DriverPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Real-Time Cross-Device Dispatch (LiveSync SSE + Cloud Firestore + 300ms Fast Polling)
+  // Real-Time Cross-Device Dispatch (LiveSync SSE + Cloud Firestore + 1500ms Fallback Polling)
   useEffect(() => {
-    if (activeTrip) return; // Driver already on trip
+    const handleIncomingDispatch = (active: RideRequest | null) => {
+      // Rule 1: DO NOT send or show new dispatch if driver is currently on an active trip!
+      if (activeTripRef.current) return;
+      // Rule 2: DO NOT show a ride that was declined by this driver!
+      if (!active || !active.id || declinedRideIdsRef.current.has(active.id)) return;
+      // Rule 3: Only PENDING or REQUESTED rides
+      if (active.status !== "REQUESTED" && active.status !== "PENDING") return;
+
+      setIncomingRideRequest((prev) => {
+        if (prev && prev.id === active.id) return prev;
+        return active;
+      });
+    };
 
     // 1. Ultra-Low-Latency SSE Stream (Sub-50ms instant dispatch push)
     const unsubLiveSync = listenToIncomingDispatches((active) => {
-      if (
-        active &&
-        (active.status === "REQUESTED" || active.status === "PENDING") &&
-        (!incomingRideRequest || incomingRideRequest.id !== active.id)
-      ) {
-        setIncomingRideRequest(active);
-      }
+      handleIncomingDispatch(active);
     });
 
     // 2. Cloud Firestore Real-Time Listener (Sub-30ms Instant Dispatch)
     const unsubFirestore = subscribeToActiveDispatch((active) => {
-      if (
-        active &&
-        (active.status === "REQUESTED" || active.status === "PENDING") &&
-        (!incomingRideRequest || incomingRideRequest.id !== active.id)
-      ) {
-        setIncomingRideRequest(active);
-      }
+      handleIncomingDispatch(active);
     });
 
-    // 3. High-speed 300ms HTTP Polling Fallback
+    // 3. Fallback Polling (1500ms instead of aggressive 300ms)
     const dispatchInterval = setInterval(async () => {
+      if (activeTripRef.current) return; // Driver on trip, don't poll
       try {
         const res = await fetch("/api/uber/rides");
         const data = await res.json();
         if (data.success && data.activeRide) {
-          const active: RideRequest = data.activeRide;
-          if (
-            (active.status === "REQUESTED" || active.status === "PENDING") &&
-            (!incomingRideRequest || incomingRideRequest.id !== active.id)
-          ) {
-            setIncomingRideRequest(active);
-          }
+          handleIncomingDispatch(data.activeRide);
         }
       } catch (e) {
-        console.warn("Driver incoming dispatch poll note:", e);
+        // quiet warning
       }
-    }, 300);
+    }, 1500);
 
     return () => {
       unsubLiveSync();
       if (unsubFirestore) unsubFirestore();
       clearInterval(dispatchInterval);
     };
-  }, [activeTrip, incomingRideRequest]);
+  }, []);
 
   // Fetch driver trip log whenever current profile is ready or tab switches
   useEffect(() => {
@@ -253,6 +256,7 @@ export default function DriverPage() {
   const handleAcceptRide = async (request: RideRequest) => {
     setIncomingRideRequest(null);
     setActiveTrip(request);
+    activeTripRef.current = request;
 
     if (request.pickupCoords) {
       setMapFlyToCoords([...request.pickupCoords]);
@@ -302,28 +306,34 @@ export default function DriverPage() {
   };
 
   const handleDeclineRide = async () => {
-    if (incomingRideRequest) {
-      broadcastRideStatus(incomingRideRequest.id, "CANCELLED").catch(() => {});
-      updateRideInFirestore(incomingRideRequest.id, "CANCELLED").catch(() => {});
-      try {
-        await fetch("/api/uber/rides", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            rideId: incomingRideRequest.id,
-            status: "CANCELLED",
-          }),
-        });
-      } catch (e) {
-        // ignore
-      }
-    }
+    if (!incomingRideRequest) return;
+    const decliningId = incomingRideRequest.id;
+
+    // 1. Permanently ignore this ride ID in memory so it never rings again
+    declinedRideIdsRef.current.add(decliningId);
     setIncomingRideRequest(null);
+
+    // 2. Broadcast cancellation
+    broadcastRideStatus(decliningId, "CANCELLED").catch(() => {});
+    updateRideInFirestore(decliningId, "CANCELLED").catch(() => {});
+    try {
+      await fetch("/api/uber/rides", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rideId: decliningId,
+          status: "CANCELLED",
+        }),
+      });
+    } catch (e) {
+      // ignore
+    }
   };
 
   // Complete Trip (Synced back to Rider Phone 1)
   const handleCompleteTrip = async (trip: RideRequest) => {
     setActiveTrip(null);
+    activeTripRef.current = null;
 
     // 1. Ultra-Low-Latency SSE/WebSocket broadcast (Sub-50ms instant trigger to Rider)
     broadcastRideStatus(trip.id, "COMPLETED").catch(() => {});
@@ -536,7 +546,7 @@ export default function DriverPage() {
                   activeTab === "telemetry" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                 }`}
               >
-                📊 Telemetry
+                📊 City Status
               </button>
               <button
                 type="button"
@@ -545,7 +555,7 @@ export default function DriverPage() {
                   activeTab === "benchmarks" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                 }`}
               >
-                🏆 Benchmarks
+                🏆 Earnings Growth
               </button>
             </div>
 
@@ -590,7 +600,7 @@ export default function DriverPage() {
               activeTab === "telemetry" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
             }`}
           >
-            📊 Telemetry
+            📊 City Status
           </button>
           <button
             type="button"
@@ -599,7 +609,7 @@ export default function DriverPage() {
               activeTab === "benchmarks" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
             }`}
           >
-            🏆 Benchmarks
+            🏆 Earnings Growth
           </button>
         </div>
       </header>

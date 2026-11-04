@@ -382,23 +382,23 @@ export default function SurgeHandlingMonitor({
               <span className="flex h-2.5 w-2.5 rounded-full bg-amber-400 animate-ping" />
               <span className="text-xs font-mono font-bold tracking-wider uppercase text-amber-400 flex items-center gap-1">
                 <Flame className="h-3.5 w-3.5" />
-                MICHELANGELO DYNAMIC SURGE &amp; SHOCK BALANCER
+                SMART HIGH DEMAND &amp; FARE BALANCER
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold flex items-center gap-1">
                 <span className={`h-1.5 w-1.5 rounded-full ${isAutoStreaming ? "bg-emerald-400 animate-pulse" : "bg-zinc-500"}`} />
-                {isAutoStreaming ? "Streaming Live (1.5s)" : "Stream Paused"}
+                {isAutoStreaming ? "Live Feed Active (1.5s)" : "Feed Paused"}
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono font-bold flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Custom Database Synced
+                Live Connected
               </span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Real-Time Surge Handling Requests
+              Live High-Demand Requests
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-2xl leading-relaxed">
-              Watch Uber&apos;s marketplace algorithm continuously ingest high localized request spikes, enforce the strict 3.8x anti-gouging price ceiling, engage 65% anti-herd fleet damping, and distribute passengers across 3 physical dispersal gates in real time.
+              Watch how Uber balances sudden crowd spikes, prevents unfair price gouging with a strict 3.8x limit, protects cab supply for the rest of the city, and directs riders to 3 designated pickup gates in real time.
             </p>
           </div>
 
@@ -409,10 +409,10 @@ export default function SurgeHandlingMonitor({
               onClick={handleRun1000Shock}
               disabled={isSimulating}
               className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition-all shadow-lg flex items-center gap-1.5 disabled:opacity-50 active:scale-95 cursor-pointer"
-              title="Stress-test the system with 1,000 instant concurrent ride requests"
+              title="Test system handling with 1,000 instant concurrent ride requests"
             >
               <Zap className="h-4 w-4 fill-black" />
-              <span>{isSimulating ? "⚡ Ingesting 1,000 Shock..." : "💥 Ingest 1,000 Requests Shock"}</span>
+              <span>{isSimulating ? "⚡ Testing 1,000 Rides..." : "⚡ Test 1,000 Ride Spike"}</span>
             </button>
 
             <button
@@ -499,7 +499,7 @@ export default function SurgeHandlingMonitor({
           {/* Card 1: Dynamic Multiplier */}
           <div className="rounded-2xl border border-zinc-800/90 bg-zinc-900/60 p-3.5 space-y-1 relative overflow-hidden">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Dynamic Surge Multiplier</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">Demand Multiplier</span>
               <Flame className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
             </div>
             <div className="flex items-baseline gap-2">
@@ -507,16 +507,16 @@ export default function SurgeHandlingMonitor({
                 {activeSurge.toFixed(1)}x
               </span>
               <span className="text-[10px] font-bold text-amber-300">
-                {activeSurge >= 3.8 ? "Max Cap Engaged" : "Auto-Capped at 3.8x"}
+                {activeSurge >= 3.8 ? "Max Cap Engaged" : "Capped at 3.8x"}
               </span>
             </div>
-            <span className="text-[10px] text-zinc-400 block">Prevents predatory price gouging</span>
+            <span className="text-[10px] text-zinc-400 block">Limits unfair price gouging</span>
           </div>
 
           {/* Card 2: Requests Handled (Live Counter) */}
           <div className="rounded-2xl border border-zinc-800/90 bg-zinc-900/60 p-3.5 space-y-1">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Requests Handled</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">Total Rides Handled</span>
               <Activity className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
             </div>
             <div className="flex items-baseline gap-2">
@@ -525,16 +525,16 @@ export default function SurgeHandlingMonitor({
               </span>
               <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-0.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-                100% Ingested
+                100% Fulfilled
               </span>
             </div>
-            <span className="text-[10px] text-zinc-400 block">Zero transaction drops or crashes</span>
+            <span className="text-[10px] text-zinc-400 block">Zero app crashes or dropped rides</span>
           </div>
 
           {/* Card 3: Anti-Herd Fleet Damping (Live) */}
           <div className="rounded-2xl border border-zinc-800/90 bg-zinc-900/60 p-3.5 space-y-1">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Anti-Herd Fleet Damping</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">Fair City Coverage</span>
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
             </div>
             <div className="flex items-baseline gap-2">
@@ -543,22 +543,22 @@ export default function SurgeHandlingMonitor({
               </span>
               <span className="text-[10px] font-bold text-emerald-300">City Safeguarded</span>
             </div>
-            <span className="text-[10px] text-zinc-400 block">Rest of city cab supply protected</span>
+            <span className="text-[10px] text-zinc-400 block">Nearby neighborhoods keep full cab supply</span>
           </div>
 
           {/* Card 4: Ingestion Processing Latency (Live Jitter) */}
           <div className="rounded-2xl border border-zinc-800/90 bg-zinc-900/60 p-3.5 space-y-1">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Ingestion Processing Latency</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">Response Speed</span>
               <Zap className="h-3.5 w-3.5 text-white" />
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-black text-white font-mono">
                 {currentLatency}ms
               </span>
-              <span className="text-[10px] font-bold text-emerald-400">&lt; 5ms Kafka SLA</span>
+              <span className="text-[10px] font-bold text-emerald-400">Instant (&lt; 5ms)</span>
             </div>
-            <span className="text-[10px] text-zinc-400 block">Sub-5ms Kafka pipeline throughput</span>
+            <span className="text-[10px] text-zinc-400 block">Instant processing for every booking</span>
           </div>
         </div>
       </div>
@@ -571,7 +571,7 @@ export default function SurgeHandlingMonitor({
             <div className="flex items-center gap-2">
               <Navigation className="h-4 w-4 text-emerald-400 animate-pulse" />
               <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                Multi-Arterial Pedestrian Dispersal Gates
+                Designated Pickup Gates
               </h3>
             </div>
             <span className="text-[10px] font-mono text-zinc-400 font-bold">
@@ -579,7 +579,7 @@ export default function SurgeHandlingMonitor({
             </span>
           </div>
           <p className="text-[11px] text-zinc-400">
-            Prevents crowd bottlenecks by dynamically distributing passengers evenly across 3 separate arterial pickup zones around the venue.
+            Spreads waiting passengers evenly across 3 pickup gates so crowds never block the streets.
           </p>
 
           <div className="space-y-2.5 pt-1 text-xs">
@@ -587,7 +587,7 @@ export default function SurgeHandlingMonitor({
             <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-900/60 space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-white block">Gate A (North Arterial Link)</span>
+                  <span className="font-bold text-white block">Gate A (North Link Exit)</span>
                   <span className="text-[10px] text-zinc-400 block">120m &bull; ~3 min walk via Cubbon Link</span>
                 </div>
                 <div className="text-right">
@@ -609,7 +609,7 @@ export default function SurgeHandlingMonitor({
             <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-900/60 space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-white block">Gate B (Metro Skywalk Plaza)</span>
+                  <span className="font-bold text-white block">Gate B (Metro Skywalk)</span>
                   <span className="text-[10px] text-zinc-400 block">200m &bull; ~5 min walk via MG Road Skywalk</span>
                 </div>
                 <div className="text-right">
@@ -631,7 +631,7 @@ export default function SurgeHandlingMonitor({
             <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-900/60 space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-white block">Gate C (South Express Flyover)</span>
+                  <span className="font-bold text-white block">Gate C (South Flyover)</span>
                   <span className="text-[10px] text-zinc-400 block">280m &bull; ~7 min walk via Queen&apos;s Link</span>
                 </div>
                 <div className="text-right">
@@ -657,7 +657,7 @@ export default function SurgeHandlingMonitor({
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-400 animate-spin" style={{ animationDuration: "12s" }} />
               <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                Staggered Departure Waves (Anti-Gridlock)
+                Timed Departure Waves (Traffic Smoothing)
               </h3>
             </div>
             <span className="text-[10px] font-mono text-amber-400 font-bold flex items-center gap-1">
@@ -666,7 +666,7 @@ export default function SurgeHandlingMonitor({
             </span>
           </div>
           <p className="text-[11px] text-zinc-400">
-            Vehicles are queued in staggered 4-minute waves so local ring roads never freeze into single-lane traffic jams.
+            Cabs arrive in 4-minute intervals so local ring roads never freeze into single-lane traffic jams.
           </p>
 
           <div className="space-y-2.5 pt-1 text-xs">

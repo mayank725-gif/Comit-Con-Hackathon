@@ -60,6 +60,14 @@ export default function Home() {
   const [incomingRideRequest, setIncomingRideRequest] = useState<RideRequest | null>(null);
   const [activeTrip, setActiveTrip] = useState<RideRequest | null>(null);
 
+  // References to prevent duplicate dispatches, ghost re-alerts on decline, or alerts while on trip
+  const declinedRideIdsRef = React.useRef<Set<string>>(new Set());
+  const activeTripRef = React.useRef<RideRequest | null>(null);
+
+  useEffect(() => {
+    activeTripRef.current = activeTrip;
+  }, [activeTrip]);
+
   // Chat conversation
   const [chatMessages, setChatMessages] = useState<AssistantMessage[]>([
     {
@@ -209,6 +217,7 @@ export default function Home() {
     if (activeTrip || portalMode !== "DRIVER") return;
 
     const interval = setInterval(async () => {
+      if (activeTripRef.current) return; // Never show new dispatch if on active trip
       try {
         const res = await fetch("/api/uber/rides");
         const data = await res.json();
@@ -216,6 +225,7 @@ export default function Home() {
           const active: RideRequest = data.activeRide;
           if (
             (active.status === "REQUESTED" || active.status === "PENDING") &&
+            !declinedRideIdsRef.current.has(active.id) &&
             (!incomingRideRequest || incomingRideRequest.id !== active.id)
           ) {
             setIncomingRideRequest(active);
@@ -258,6 +268,7 @@ export default function Home() {
   const handleAcceptRide = async (request: RideRequest) => {
     setIncomingRideRequest(null);
     setActiveTrip(request);
+    activeTripRef.current = request;
 
     // Fly map to pickup/dropoff
     if (request.pickupCoords) {
@@ -305,25 +316,30 @@ export default function Home() {
   };
 
   const handleDeclineRide = async () => {
-    if (incomingRideRequest) {
-      try {
-        await fetch("/api/uber/rides", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            rideId: incomingRideRequest.id,
-            status: "CANCELLED",
-          }),
-        });
-      } catch (e) {
-        // ignore
-      }
-    }
+    if (!incomingRideRequest) return;
+    const decliningId = incomingRideRequest.id;
+
+    // Permanently remember declined ID in session so it never pops up again
+    declinedRideIdsRef.current.add(decliningId);
     setIncomingRideRequest(null);
+
+    try {
+      await fetch("/api/uber/rides", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rideId: decliningId,
+          status: "CANCELLED",
+        }),
+      });
+    } catch (e) {
+      // ignore
+    }
   };
 
   const handleCompleteTrip = async (trip: RideRequest) => {
     setActiveTrip(null);
+    activeTripRef.current = null;
 
     // Sync in real-time with Cloud Firestore
     updateRideInFirestore(trip.id, "COMPLETED").catch(() => {});
