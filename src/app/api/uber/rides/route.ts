@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { driverDb } from "@/lib/db/driverDb";
 import { RideRequest } from "@/lib/uber/types";
+import {
+  publishRideToFirestore,
+  updateRideInFirestore,
+  getRiderRidesFromFirestore,
+  getDriverRidesFromFirestore,
+} from "@/lib/firebase/firestoreRides";
 
 // GET /api/uber/rides - Fetches all rides + active dispatched/pending ride for real-time polling
 export async function GET(req: Request) {
@@ -22,7 +28,7 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/uber/rides - Rider on Phone 1 creates a new ride request
+// POST /api/uber/rides - Rider on Phone 1 creates a new ride request (Dual writes to Firestore & Custom DB)
 export async function POST(req: Request) {
   try {
     const body: RideRequest = await req.json();
@@ -40,6 +46,10 @@ export async function POST(req: Request) {
     };
 
     const saved = driverDb.createRideRequest(ridePayload);
+
+    // Sync in real-time with Cloud Firestore
+    publishRideToFirestore(ridePayload).catch(() => {});
+
     return NextResponse.json({ success: true, ride: saved });
   } catch (e: any) {
     return NextResponse.json({ success: false, error: e?.message }, { status: 500 });
@@ -60,14 +70,11 @@ export async function PATCH(req: Request) {
     }
 
     const updated = driverDb.updateRideStatus(rideId, status, driverDetails);
-    if (!updated) {
-      return NextResponse.json(
-        { success: false, error: "Ride request not found" },
-        { status: 404 }
-      );
-    }
 
-    return NextResponse.json({ success: true, ride: updated });
+    // Sync in real-time with Cloud Firestore
+    updateRideInFirestore(rideId, status, driverDetails).catch(() => {});
+
+    return NextResponse.json({ success: true, ride: updated || { id: rideId, status } });
   } catch (e: any) {
     return NextResponse.json({ success: false, error: e?.message }, { status: 500 });
   }

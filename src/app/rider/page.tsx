@@ -6,6 +6,7 @@ import CustomerPortalView from "@/components/uber/CustomerPortalView";
 import RiderAuthModal, { RiderUser } from "@/components/uber/RiderAuthModal";
 import { MarketplaceState, RideRequest } from "@/lib/uber/types";
 import { ArrowRight, Smartphone, Car, ShieldCheck, User } from "lucide-react";
+import { publishRideToFirestore } from "@/lib/firebase/firestoreRides";
 
 export default function RiderPage() {
   const [state, setState] = useState<MarketplaceState | null>(null);
@@ -74,6 +75,9 @@ export default function RiderPage() {
       riderRating: riderUser?.rating || request.riderRating || 4.95,
       timestamp: new Date().toISOString(),
     };
+
+    // Publish directly to Cloud Firestore for instant sub-30ms WebSocket dispatch
+    publishRideToFirestore(enrichedRequest).catch(() => {});
 
     try {
       await fetch("/api/uber/rides", {

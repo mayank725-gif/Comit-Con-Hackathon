@@ -22,6 +22,7 @@ import {
 } from "@/lib/uber/types";
 import { UBER_BENCHMARK_DATA } from "@/lib/uber/benchmark";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { updateRideInFirestore } from "@/lib/firebase/firestoreRides";
 
 // Dynamic import with ssr: false for Leaflet real map
 const RealLeafletMap = dynamic(
@@ -323,6 +324,9 @@ export default function Home() {
 
   const handleCompleteTrip = async (trip: RideRequest) => {
     setActiveTrip(null);
+
+    // Sync in real-time with Cloud Firestore
+    updateRideInFirestore(trip.id, "COMPLETED").catch(() => {});
 
     // Sync trip completion back to Rider Phone 1
     try {

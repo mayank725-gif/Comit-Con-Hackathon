@@ -99,18 +99,23 @@ class CustomDriverDatabase {
     const storageDir = process.env.DATA_DIR || (isServerless ? "/tmp" : path.join(process.cwd(), ".data"));
     this.dbFilePath = path.join(storageDir, "uber_driver_database.json");
 
-    this.inMemoryDb = {
-      users: {},
-      profiles: {},
-      sessions: {},
-      riders: {},
-      trips: [],
-      zones: this.getDefaultZones(),
-      drivers: this.getDefaultDrivers(),
-      rides: this.getDefaultRides(),
-      surgeRequests: this.getDefaultSurgeRequests(),
-      marketplaceMetrics: this.getDefaultMetrics(),
-    };
+    if ((globalThis as any).__UBER_IN_MEMORY_DB__) {
+      this.inMemoryDb = (globalThis as any).__UBER_IN_MEMORY_DB__;
+    } else {
+      this.inMemoryDb = {
+        users: {},
+        profiles: {},
+        sessions: {},
+        riders: {},
+        trips: [],
+        zones: this.getDefaultZones(),
+        drivers: this.getDefaultDrivers(),
+        rides: this.getDefaultRides(),
+        surgeRequests: this.getDefaultSurgeRequests(),
+        marketplaceMetrics: this.getDefaultMetrics(),
+      };
+      (globalThis as any).__UBER_IN_MEMORY_DB__ = this.inMemoryDb;
+    }
 
     this.loadFromDisk();
   }
@@ -129,10 +134,11 @@ class CustomDriverDatabase {
             trips: parsed.trips || [],
             zones: parsed.zones && Object.keys(parsed.zones).length > 0 ? parsed.zones : this.getDefaultZones(),
             drivers: parsed.drivers && parsed.drivers.length > 0 ? parsed.drivers : this.getDefaultDrivers(),
-            rides: parsed.rides && parsed.rides.length > 0 ? parsed.rides : this.getDefaultRides(),
+            rides: parsed.rides && parsed.rides.length > 0 ? parsed.rides : (this.inMemoryDb.rides || this.getDefaultRides()),
             surgeRequests: parsed.surgeRequests && parsed.surgeRequests.length > 0 ? parsed.surgeRequests : this.getDefaultSurgeRequests(),
             marketplaceMetrics: parsed.marketplaceMetrics || this.getDefaultMetrics(),
           };
+          (globalThis as any).__UBER_IN_MEMORY_DB__ = this.inMemoryDb;
         }
       } else {
         // Create initial database file immediately
@@ -143,19 +149,16 @@ class CustomDriverDatabase {
     }
   }
 
-  private async persistToDisk() {
-    if (this.isPersisting) return;
-    this.isPersisting = true;
+  private persistToDisk() {
     try {
       const dir = path.dirname(this.dbFilePath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
       fs.writeFileSync(this.dbFilePath, JSON.stringify(this.inMemoryDb, null, 2), "utf-8");
+      (globalThis as any).__UBER_IN_MEMORY_DB__ = this.inMemoryDb;
     } catch (e) {
       console.warn("CustomDriverDatabase: Disk persist note:", e);
-    } finally {
-      this.isPersisting = false;
     }
   }
 
