@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { VehicleType, RideRequest, MarketplaceState } from "@/lib/uber/types";
+import { VehicleType, RideRequest, MarketplaceState, AssistantMessage } from "@/lib/uber/types";
 import SurgeHandlingMonitor from "@/components/uber/SurgeHandlingMonitor";
+import DriverAssistantChat from "@/components/uber/DriverAssistantChat";
 import {
   MapPin,
   Car,
@@ -181,6 +182,46 @@ export default function CustomerPortalView({
 
   // 1,000 Concurrent Ride Stress Test State
   const [isStressTesting, setIsStressTesting] = useState(false);
+
+  // Floating Uber 2.0 AI Assistant State
+  const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiChatMessages, setAiChatMessages] = useState<AssistantMessage[]>([
+    {
+      id: "RIDER_AI_INIT",
+      sender: "ASSISTANT",
+      agentType: "DISPATCH",
+      text: "👋 **नमस्ते! Welcome to Uber 2.0 AI Copilot.**\nI can help you with upfront pricing, vehicle comparisons (Go vs Premier), corporate GST invoicing, or explain live surge shocks. How can I help you?",
+      timestamp: new Date().toISOString(),
+    },
+  ]);
+
+  const handleSendAiMessage = async (query: string) => {
+    setIsAiLoading(true);
+    const userMsg: AssistantMessage = {
+      id: `USER_${Date.now()}`,
+      sender: "DRIVER",
+      text: query,
+      timestamp: new Date().toISOString(),
+    };
+    setAiChatMessages((prev) => [...prev, userMsg]);
+
+    try {
+      const res = await fetch("/api/uber/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      const data = await res.json();
+      if (data.success && data.message) {
+        setAiChatMessages((prev) => [...prev, data.message]);
+      }
+    } catch (e) {
+      console.error("AI Assistant error:", e);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   // Query Backend Smart Routing whenever pickup, dropoff, or vehicle changes
   useEffect(() => {
@@ -1183,6 +1224,42 @@ export default function CustomerPortalView({
                 Send
               </button>
             </form>
+          </div>
+        </div>
+      )}
+      {/* FLOATING ACTION BUTTON: UBER 2.0 AI COPILOT */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          type="button"
+          onClick={() => setIsAiDrawerOpen(!isAiDrawerOpen)}
+          className="flex items-center gap-2 px-4 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs shadow-2xl transition-all border border-zinc-200 ring-4 ring-black/40 group animate-pulse"
+        >
+          <span className="p-1 rounded-full bg-black text-white text-xs">🤖</span>
+          <span>{isAiDrawerOpen ? "Close AI Copilot" : "Ask Uber AI Assistant"}</span>
+        </button>
+      </div>
+
+      {/* FLOATING AI ASSISTANT DRAWER */}
+      {isAiDrawerOpen && (
+        <div className="fixed bottom-20 right-4 sm:right-6 w-[94vw] sm:w-[440px] max-h-[80vh] z-50 rounded-3xl border border-zinc-800 bg-zinc-950/98 shadow-2xl backdrop-blur-2xl overflow-hidden animate-scaleUp flex flex-col">
+          <div className="flex items-center justify-between p-3.5 border-b border-zinc-800 bg-zinc-900/90">
+            <div className="flex items-center gap-2">
+              <span className="p-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold">● Active</span>
+              <span className="font-extrabold text-xs text-white">Uber 2.0 Michelangelo AI Assistant</span>
+            </div>
+            <button
+              onClick={() => setIsAiDrawerOpen(false)}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="p-2 overflow-y-auto max-h-[65vh]">
+            <DriverAssistantChat
+              messages={aiChatMessages}
+              onSendMessage={handleSendAiMessage}
+              isLoading={isAiLoading}
+            />
           </div>
         </div>
       )}

@@ -168,6 +168,171 @@ Instructions:
       };
     }
 
+    // A2. CORPORATE BUSINESS TRAVEL & GST TAX INVOICE AGENT
+    if (
+      q.includes("gst") ||
+      q.includes("tax") ||
+      q.includes("itc") ||
+      q.includes("invoice") ||
+      q.includes("corporate") ||
+      q.includes("business travel") ||
+      q.includes("expense") ||
+      q.includes("जीएसटी") ||
+      q.includes("टैक्स") ||
+      q.includes("रसीद") ||
+      q.includes("बिल")
+    ) {
+      const textEn = `💼 **Uber for Business & GST Compliance**: Corporate rides include 5% GST (2.5% CGST + 2.5% SGST) under HSN/SAC Code **996412** (Passenger Transportation). Enter your company GSTIN (e.g., \`29AABCU9603R1ZM\`) and Expense Code in the Rider Portal to claim full Input Tax Credit (ITC). Detailed GST invoices are generated and printable immediately upon trip completion.`;
+      const textHi = `💼 **उबर बिज़नेस व जीएसटी अनुपालन**: व्यावसायिक यात्राओं पर एचएसएन/एसएसी कोड **996412** के तहत 5% जीएसटी (2.5% CGST + 2.5% SGST) लागू होता है। इनपुट टैक्स क्रेडिट (ITC) प्राप्त करने के लिए राइडर पोर्टल में कंपनी का जीएसटी नंबर और खर्च कोड दर्ज करें। यात्रा पूरी होते ही प्रिंट करने योग्य आधिकारिक जीएसटी टैक्स इनवॉइस उपलब्ध हो जाता है।`;
+
+      return {
+        id,
+        sender: "ASSISTANT",
+        agentType: "EARNINGS",
+        text: isHindi ? textHi : textEn,
+        timestamp,
+        routingTrace: {
+          confidenceScore: 0.994,
+          tokensEvaluated: 145,
+          featuresQueried: ["corporate_gstin_validator", "sac_996412_tax_matrix", "itc_reconciliation_rules"],
+          latencyMs: 4.6,
+        },
+      };
+    }
+
+    // A3. VEHICLE TIERS & FARE COMPARISON AGENT
+    if (
+      q.includes("difference") ||
+      q.includes("premier") ||
+      q.includes("uber go") ||
+      q.includes("auto") ||
+      q.includes("green ev") ||
+      q.includes("vehicle type") ||
+      q.includes("tier") ||
+      q.includes("capacity") ||
+      q.includes("अंतर") ||
+      q.includes("गाड़ी के प्रकार")
+    ) {
+      const textEn = `🚗 **Vehicle Fleet Guidance**:
+- **Uber Go**: Affordable compact sedans (Maruti Dzire) at ₹13.5/km, 4 seats.
+- **Uber Premier**: Executive comfort with top-rated drivers (Honda City, Creta) at ₹21.0/km, 4 seats.
+- **Uber Auto**: Quick doorstep 3-wheeler auto rickshaws at ₹10.0/km, 3 seats.
+- **Uber Green EV**: 100% zero-emission electric cabs (Nexon EV, ZS EV) at ₹15.0/km, 4 seats.`;
+      const textHi = `🚗 **वाहन श्रेणी गाइड**:
+- **उबर गो (Uber Go)**: किफायती कॉम्पैक्ट सेडान (मारुति डिजायर) ₹13.5/किमी, 4 सीटें।
+- **उबर प्रीमियर (Uber Premier)**: आरामदायक सेडान व टॉप ड्राइवर (होंडा सिटी, क्रेटा) ₹21.0/किमी, 4 सीटें।
+- **उबर ऑटो (Uber Auto)**: तेज 3-पहिया ऑटो रिक्शा ₹10.0/किमी, 3 सीटें।
+- **उबर ग्रीन ईवी (Uber Green EV)**: 100% प्रदूषण-मुक्त इलेक्ट्रिक कैब (नेक्सन ईवी) ₹15.0/किमी, 4 सीटें।`;
+
+      return {
+        id,
+        sender: "ASSISTANT",
+        agentType: "DISPATCH",
+        text: isHindi ? textHi : textEn,
+        timestamp,
+        routingTrace: {
+          confidenceScore: 0.991,
+          tokensEvaluated: 155,
+          featuresQueried: ["vehicle_tier_pricing_rules", "fleet_capacity_specs"],
+          latencyMs: 4.8,
+        },
+      };
+    }
+
+    // A4. SAFETY & 4-DIGIT PIN/OTP PROTOCOL
+    if (
+      q.includes("pin") ||
+      q.includes("otp") ||
+      q.includes("safety") ||
+      q.includes("security") ||
+      q.includes("ओटीपी") ||
+      q.includes("पिन") ||
+      q.includes("सुरक्षा")
+    ) {
+      const textEn = `🛡️ **Safety PIN Protocol**: Every ride generates a unique **4-digit Security PIN** on the Rider Portal. To protect passengers and prevent fraudulent pickups, the commercial driver MUST type and verify this PIN in their Driver HUD before the vehicle ignition is unlocked and trip metering begins.`;
+      const textHi = `🛡️ **सुरक्षा पिन/ओटीपी प्रोटोकॉल**: प्रत्येक राइड बुकिंग पर राइडर पोर्टल में एक विशिष्ट **4-अंकों का सुरक्षा पिन** बनता है। सवारी की सुरक्षा सुनिश्चित करने के लिए ड्राइवर को यात्रा शुरू करने से पहले ड्राइवर HUD में यह पिन सत्यापित करना अनिवार्य होता है।`;
+
+      return {
+        id,
+        sender: "ASSISTANT",
+        agentType: "SYSTEM_GUARD",
+        text: isHindi ? textHi : textEn,
+        timestamp,
+        routingTrace: {
+          confidenceScore: 0.997,
+          tokensEvaluated: 138,
+          featuresQueried: ["two_party_otp_handshake", "safety_toolkit_rules"],
+          latencyMs: 3.9,
+        },
+      };
+    }
+
+    // A5. 1,000 CONCURRENT REQUESTS BURST TEST EXPLAINER
+    if (
+      q.includes("1000") ||
+      q.includes("burst") ||
+      q.includes("stress") ||
+      q.includes("shock") ||
+      q.includes("हजार") ||
+      q.includes("शॉक") ||
+      q.includes("तनाव")
+    ) {
+      const textEn = `⚡ **1,000 Request Shock Absorber**: When 1,000 concurrent ride requests strike a single hotspot (e.g., Chinnaswamy Stadium), Michelangelo engages 3 algorithmic defenses:
+1. **Anti-Herd Damping**: Locks 65% of the fleet across other city zones to prevent citywide cab starvation.
+2. **Surge Capped at 3.8x**: Prevents extortionate surge spikes.
+3. **Multi-Gate Wave Dispersal**: Divides 1,000 passengers across 3 dispersal gates in 4 staggered waves over 15 minutes.`;
+      const textHi = `⚡ **1,000 अनुरोध शॉक एब्जॉर्बर**: जब किसी एक स्थान (जैसे चिन्नास्वामी स्टेडियम) से एक साथ 1,000 राइड अनुरोध आते हैं, तो माइकल एंजेलो 3 सुरक्षा उपाय लागू करता है:
+1. **एंटी-हर्ड डैम्पिंग**: पूरे शहर में कैब की कमी न हो, इसके लिए 65% फ्लीट को अन्य इलाकों में सुरक्षित रखता है।
+2. **अधिकतम 3.8x सर्ज कैप**: अत्यधिक किराए की बढ़ोतरी को रोकता है।
+3. **मल्टी-गेट वेव डिस्पर्सल**: 1,000 यात्रियों को 3 निकास द्वारों पर 4 क्रमिक चरणों में विभाजित करता है।`;
+
+      return {
+        id,
+        sender: "ASSISTANT",
+        agentType: "EVENT_INTEL",
+        text: isHindi ? textHi : textEn,
+        timestamp,
+        routingTrace: {
+          confidenceScore: 0.998,
+          tokensEvaluated: 180,
+          featuresQueried: ["anti_herd_lock_ratio", "dispersal_gates_capacity", "surge_cap_clamp"],
+          latencyMs: 4.1,
+        },
+      };
+    }
+
+    // A6. PAYMENTS & INSTANT IMPS CASHOUT
+    if (
+      q.includes("cashout") ||
+      q.includes("payout") ||
+      q.includes("imps") ||
+      q.includes("bank") ||
+      q.includes("भुगतान") ||
+      q.includes("कैशआउट") ||
+      q.includes("बैंक")
+    ) {
+      const textEn = `💳 **Financial Payments & Cashout**:
+- **For Drivers**: One-click **Instant IMPS Cash Out** transfers your net shift earnings (after 20% Uber fee and fuel deduction) directly into your linked bank account (e.g. HDFC Bank).
+- **For Riders**: Supports Google Pay UPI, Uber Cash, Corporate Billing, and Cash to Driver.`;
+      const textHi = `💳 **भुगतान व त्वरित कैशआउट**:
+- **ड्राइवरों के लिए**: एक-क्लिक **त्वरित IMPS कैशआउट** 20% उबर सेवा शुल्क और ईंधन खर्च काटकर आपकी शुद्ध कमाई तुरंत बैंक खाते में जमा कर देता है।
+- **यात्रियों के लिए**: गूगल पे यूपीआई, उबर कैश, कॉर्पोरेट बिलिंग और नकद भुगतान का विकल्प उपलब्ध है।`;
+
+      return {
+        id,
+        sender: "ASSISTANT",
+        agentType: "EARNINGS",
+        text: isHindi ? textHi : textEn,
+        timestamp,
+        routingTrace: {
+          confidenceScore: 0.995,
+          tokensEvaluated: 140,
+          featuresQueried: ["imps_instant_transfer_gateway", "payment_method_router"],
+          latencyMs: 4.3,
+        },
+      };
+    }
+
     // B. REPOSITIONING / DISPATCH AGENT
     if (
       q.includes("where") ||
