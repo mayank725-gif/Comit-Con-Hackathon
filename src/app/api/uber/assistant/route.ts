@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { getUberEngine } from "@/lib/uber/simulation";
-import { driverCopilot } from "@/lib/uber/agent";
+import { llmReasoningEngine } from "@/lib/uber/llmEngine";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { query, driverProfile } = body;
+    const query = body.query || body.message || "";
+    const { driverProfile, history, apiKey } = body;
 
     if (!query) {
       return NextResponse.json({ success: false, error: "query is required" }, { status: 400 });
@@ -13,7 +14,13 @@ export async function POST(req: Request) {
 
     const engine = getUberEngine();
     const state = engine.getState();
-    const answer = await driverCopilot.answerDriverQuery(query, state, driverProfile);
+    const answer = await llmReasoningEngine.generateResponse(
+      query,
+      state,
+      driverProfile,
+      history || [],
+      apiKey
+    );
 
     return NextResponse.json({
       success: true,

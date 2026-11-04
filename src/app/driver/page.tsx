@@ -428,11 +428,16 @@ export default function DriverPage() {
     setIsChatLoading(true);
 
     try {
+      const userKey = typeof window !== "undefined" ? localStorage.getItem("uber_gemini_key") || "" : "";
       const res = await fetch("/api/uber/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          query: text,
           message: text,
+          driverProfile: currentProfile,
+          history: chatMessages.slice(-6),
+          apiKey: userKey,
           context: {
             currentZone: selectedZone,
             activeScenario: state?.activeScenario?.type,
@@ -442,8 +447,9 @@ export default function DriverPage() {
         }),
       });
       const data = await res.json();
-      if (data.reply) {
-        setChatMessages((prev) => [...prev, data.reply]);
+      const msg = data.message || data.reply;
+      if (msg) {
+        setChatMessages((prev) => [...prev, msg]);
       }
     } catch (e) {
       console.error("Chat error:", e);

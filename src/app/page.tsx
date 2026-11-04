@@ -463,12 +463,15 @@ export default function Home() {
     setChatMessages((prev) => [...prev, userMsg]);
 
     try {
+      const userKey = typeof window !== "undefined" ? localStorage.getItem("uber_gemini_key") || "" : "";
       const res = await fetch("/api/uber/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query,
           driverProfile: currentProfile,
+          history: chatMessages.slice(-6),
+          apiKey: userKey,
         }),
       });
 

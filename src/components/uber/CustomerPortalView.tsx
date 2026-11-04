@@ -247,10 +247,15 @@ export default function CustomerPortalView({
     setAiChatMessages((prev) => [...prev, userMsg]);
 
     try {
+      const userKey = typeof window !== "undefined" ? localStorage.getItem("uber_gemini_key") || "" : "";
       const res = await fetch("/api/uber/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({
+          query,
+          history: aiChatMessages.slice(-6),
+          apiKey: userKey,
+        }),
       });
       const data = await res.json();
       if (data.success && data.message) {
