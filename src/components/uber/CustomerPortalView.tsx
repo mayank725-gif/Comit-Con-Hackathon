@@ -20,6 +20,17 @@ import {
   AlertTriangle,
   Sparkles,
   Search,
+  ArrowUpDown,
+  Briefcase,
+  User,
+  Calendar,
+  Phone,
+  MessageSquare,
+  Share2,
+  Star,
+  FileText,
+  Printer,
+  ChevronRight,
 } from "lucide-react";
 
 // Dynamic import of Leaflet map for customer view
@@ -56,7 +67,7 @@ const VEHICLE_TIERS = [
   {
     type: "UBER_GO" as VehicleType,
     name: "Uber Go",
-    desc: "Affordable, compact rides",
+    desc: "Affordable compact sedans",
     ratePerKm: 13.5,
     icon: "🚗",
     capacity: "4",
@@ -65,7 +76,7 @@ const VEHICLE_TIERS = [
   {
     type: "UBER_PREMIER" as VehicleType,
     name: "Uber Premier",
-    desc: "Top sedans & legroom",
+    desc: "Executive sedans & top drivers",
     ratePerKm: 21.0,
     icon: "🚘",
     capacity: "4",
@@ -74,7 +85,7 @@ const VEHICLE_TIERS = [
   {
     type: "UBER_AUTO" as VehicleType,
     name: "Uber Auto",
-    desc: "Quick 3-wheeler doorstep",
+    desc: "Doorstep auto rickshaw",
     ratePerKm: 10.0,
     icon: "🛺",
     capacity: "3",
@@ -83,7 +94,7 @@ const VEHICLE_TIERS = [
   {
     type: "UBER_GREEN_EV" as VehicleType,
     name: "Uber Green EV",
-    desc: "Zero-emission electric",
+    desc: "Zero-emission electric cab",
     ratePerKm: 15.0,
     icon: "⚡",
     capacity: "4",
@@ -96,8 +107,8 @@ const POPULAR_CHIPS = [
   { name: "Kempegowda Airport BLR T2", lat: 13.1986, lng: 77.7066 },
   { name: "Indiranagar 100ft Road", lat: 12.9784, lng: 77.6408 },
   { name: "Bandra Kurla Complex (BKC)", lat: 19.0657, lng: 72.8688 },
-  { name: "Taj Mahal, Agra", lat: 27.1751, lng: 78.0421 },
   { name: "DLF Cyber Hub, Gurugram", lat: 28.4950, lng: 77.0895 },
+  { name: "HITEC City Cyber Towers", lat: 17.4474, lng: 78.3762 },
 ];
 
 export default function CustomerPortalView({
@@ -107,6 +118,15 @@ export default function CustomerPortalView({
 }: CustomerPortalViewProps) {
   // Navigation Sub-tab inside Customer Portal
   const [activeTab, setActiveTab] = useState<"BOOK" | "SURGE_STREAM">("BOOK");
+
+  // Corporate vs Personal Profile Toggle
+  const [travelProfile, setTravelProfile] = useState<"PERSONAL" | "BUSINESS">("PERSONAL");
+  const [corporateGstin, setCorporateGstin] = useState("29AABCU9603R1ZM");
+  const [expenseCode, setExpenseCode] = useState("CORP-SALES-Q4");
+
+  // Ride Scheduling (Now vs Later)
+  const [scheduleMode, setScheduleMode] = useState<"NOW" | "LATER">("NOW");
+  const [scheduledTime, setScheduledTime] = useState("Today at 10:30 AM");
 
   // Pickup & Destination State
   const [pickupQuery, setPickupQuery] = useState("M. Chinnaswamy Stadium, Bengaluru");
@@ -122,7 +142,7 @@ export default function CustomerPortalView({
 
   // Selected vehicle & payment
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleType>("UBER_GO");
-  const [paymentMode, setPaymentMode] = useState<"GOOGLE_PAY_UPI" | "CASH" | "UBER_CASH">("GOOGLE_PAY_UPI");
+  const [paymentMode, setPaymentMode] = useState<"GOOGLE_PAY_UPI" | "CASH" | "UBER_CASH" | "CORPORATE_CARD">("GOOGLE_PAY_UPI");
 
   // Dynamic Routing Result from Backend
   const [routeData, setRouteData] = useState<{
@@ -143,13 +163,24 @@ export default function CustomerPortalView({
     surgeMultiplier: 1.4,
   });
 
-  // Booking confirmed banner
+  // Ride Lifecycle State (Realistic Production Matching)
+  const [tripState, setTripState] = useState<"IDLE" | "SEARCHING" | "ASSIGNED" | "ON_TRIP" | "COMPLETED">("IDLE");
+  const [assignedDriver, setAssignedDriver] = useState<any | null>(null);
+  const [rideOtp, setRideOtp] = useState<string>("5829");
+  const [driverEtaMin, setDriverEtaMin] = useState<number>(3);
+  const [liveTripSpeed, setLiveTripSpeed] = useState<number>(46);
   const [confirmedRide, setConfirmedRide] = useState<RideRequest | null>(null);
+
+  // Interactive Caller / Message Dialogs
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [driverMessageText, setDriverMessageText] = useState("");
+  const [riderDriverMessages, setRiderDriverMessages] = useState<Array<{ sender: "RIDER" | "DRIVER"; text: string; time: string }>>([
+    { sender: "DRIVER", text: "Hello! I am on my way to your pickup location.", time: "Just now" },
+  ]);
 
   // 1,000 Concurrent Ride Stress Test State
   const [isStressTesting, setIsStressTesting] = useState(false);
-  const [stressTestResult, setStressTestResult] = useState<any | null>(null);
-  const [isStressModalOpen, setIsStressModalOpen] = useState(false);
 
   // Query Backend Smart Routing whenever pickup, dropoff, or vehicle changes
   useEffect(() => {
@@ -184,6 +215,16 @@ export default function CustomerPortalView({
       isCancelled = true;
     };
   }, [pickupCoords, dropoffCoords, selectedVehicle, state.metrics.cityAvgSurge]);
+
+  // Swap Pickup & Dropoff
+  const handleSwapLocations = () => {
+    const tempQuery = pickupQuery;
+    const tempCoords = pickupCoords;
+    setPickupQuery(dropoffQuery);
+    setPickupCoords(dropoffCoords);
+    setDropoffQuery(tempQuery);
+    setDropoffCoords(tempCoords);
+  };
 
   // Live Location Search (OpenStreetMap Nominatim + India Database)
   const handleLocationSearch = async (text: string, field: "pickup" | "dropoff") => {
@@ -226,11 +267,24 @@ export default function CustomerPortalView({
     setSearchResults([]);
   };
 
-  // Submit Ride Request (Two-Sided Dispatch)
+  // Submit Ride Request (Two-Sided Dispatch & Realistic Lifecycle)
   const handleConfirmBooking = () => {
+    // Generate realistic 4-digit ride OTP
+    const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+    setRideOtp(generatedOtp);
+
+    // Pick real commercial driver from state or DB catalog
+    const fleetDriver = state.drivers[0] || {
+      name: "Ramesh Kumar",
+      rating: 4.93,
+      vehicleModel: "Maruti Suzuki Dzire",
+      licensePlate: "KA 01 MJ 1042",
+      tripsCompleted: 2840,
+    };
+
     const newRide: RideRequest = {
       id: `RIDE_${Date.now().toString().slice(-6)}`,
-      riderName: "Aman Gupta",
+      riderName: travelProfile === "BUSINESS" ? "Aman Gupta (Corp Travel)" : "Aman Gupta",
       riderRating: 4.95,
       pickupAddress: pickupQuery,
       pickupCoords,
@@ -244,11 +298,59 @@ export default function CustomerPortalView({
       surgeBonusInr: routeData.surgeBonusInr,
       timestamp: new Date().toISOString(),
       status: "REQUESTED",
-      paymentMode,
+      paymentMode: travelProfile === "BUSINESS" ? "GOOGLE_PAY_UPI" : paymentMode,
     };
 
     setConfirmedRide(newRide);
     onBookRide(newRide);
+
+    // Realistic matching radar animation (3.2 seconds)
+    setTripState("SEARCHING");
+    setTimeout(() => {
+      setAssignedDriver({
+        name: fleetDriver.name,
+        rating: fleetDriver.rating || 4.93,
+        vehicleModel: fleetDriver.vehicleModel || "Maruti Suzuki Dzire",
+        licensePlate: fleetDriver.licensePlate || "KA 01 MJ 1042",
+        tripsCompleted: fleetDriver.tripsCompleted || 2840,
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+        phone: "+91 98450 12890",
+      });
+      setDriverEtaMin(3);
+      setTripState("ASSIGNED");
+    }, 3200);
+  };
+
+  // Advance Trip Lifecycle for Demo & Testing
+  const handleSimulateTripProgress = (nextState: "ON_TRIP" | "COMPLETED") => {
+    setTripState(nextState);
+  };
+
+  const handleCancelBooking = () => {
+    setTripState("IDLE");
+    setConfirmedRide(null);
+    setAssignedDriver(null);
+  };
+
+  const handleSendMessageToDriver = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!driverMessageText.trim()) return;
+
+    setRiderDriverMessages((prev) => [
+      ...prev,
+      { sender: "RIDER", text: driverMessageText, time: "Just now" },
+    ]);
+    const replyText = driverMessageText.toLowerCase().includes("gate")
+      ? "Understood! Arriving at the gate in 2 minutes."
+      : "Noted sir, will call once I arrive at pickup point.";
+    setDriverMessageText("");
+
+    setTimeout(() => {
+      setRiderDriverMessages((prev) => [
+        ...prev,
+        { sender: "DRIVER", text: replyText, time: "Just now" },
+      ]);
+    }, 1200);
   };
 
   // 1,000 Concurrent Ride Request Shock Stress Test
@@ -268,8 +370,6 @@ export default function CustomerPortalView({
 
       const data = await res.json();
       if (data.success) {
-        setStressTestResult(data);
-        // Switch directly to the Live Surge Requests Stream so user sees all 1,000 requests stream in!
         setActiveTab("SURGE_STREAM");
         return data;
       }
@@ -279,6 +379,13 @@ export default function CustomerPortalView({
       setIsStressTesting(false);
     }
   };
+
+  // Calculate GST Tax for Business Travel
+  const gstRate = 0.05; // 5% GST for passenger transport
+  const basePreTaxFare = Math.round(routeData.finalFareInr / (1 + gstRate));
+  const gstAmount = routeData.finalFareInr - basePreTaxFare;
+  const cgst = +(gstAmount / 2).toFixed(1);
+  const sgst = +(gstAmount / 2).toFixed(1);
 
   return (
     <div className="space-y-6">
@@ -315,11 +422,33 @@ export default function CustomerPortalView({
           </button>
         </div>
 
-        {/* Center: Custom Database Status Pill */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-300">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="font-bold text-white">Custom Database:</span>
-          <span className="text-emerald-400">15 Zones &bull; 24 Drivers Active &bull; Synced</span>
+        {/* Center: Travel Profile Badge (Personal vs Business GST) */}
+        <div className="flex items-center rounded-2xl border border-zinc-800 bg-zinc-900/90 p-1 text-xs">
+          <button
+            type="button"
+            onClick={() => setTravelProfile("PERSONAL")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+              travelProfile === "PERSONAL"
+                ? "bg-white text-black shadow-sm font-extrabold"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            <User className="h-3.5 w-3.5" />
+            <span>Personal</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTravelProfile("BUSINESS")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+              travelProfile === "BUSINESS"
+                ? "bg-white text-black shadow-sm font-extrabold"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            <Briefcase className="h-3.5 w-3.5" />
+            <span>Business (GST)</span>
+          </button>
         </div>
 
         {/* Right: Quick 1,000 Requests Test Button & Driver Portal Switch */}
@@ -338,7 +467,7 @@ export default function CustomerPortalView({
             onClick={onSwitchToDriver}
             className="px-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold text-xs transition-all flex items-center gap-1.5 shrink-0"
           >
-            <span>Switch to Driver</span>
+            <span>Driver Portal</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -350,18 +479,76 @@ export default function CustomerPortalView({
           {/* LEFT 5 COLS: Iconic Floating Uber "Request a ride" Card */}
           <div className="lg:col-span-5 space-y-4">
             <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-7 shadow-2xl space-y-5">
-              {/* Header Title */}
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                  Request a ride
-                </h1>
-                <p className="text-xs text-zinc-400 mt-1">
-                  Guaranteed upfront pricing &bull; Pan-India real-time dispatch
-                </p>
+              {/* Header Title & Schedule Toggle */}
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Request a ride
+                  </h1>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Guaranteed upfront pricing &bull; Pan-India real-time dispatch
+                  </p>
+                </div>
+
+                {/* Schedule Picker */}
+                <div className="flex items-center p-1 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setScheduleMode("NOW")}
+                    className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                      scheduleMode === "NOW" ? "bg-white text-black" : "text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    Now
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setScheduleMode("LATER")}
+                    className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                      scheduleMode === "LATER" ? "bg-white text-black" : "text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    <Clock className="h-3 w-3 inline mr-1" />
+                    Later
+                  </button>
+                </div>
               </div>
 
-              {/* The Iconic Uber Route Timeline (Dot -> Connecting Bar -> Square) */}
-              <div className="space-y-3 relative">
+              {/* Business Travel Billing Callout (When Business Profile is active) */}
+              {travelProfile === "BUSINESS" && (
+                <div className="rounded-2xl border border-zinc-700 bg-zinc-900/90 p-3.5 space-y-2 text-xs animate-fadeIn">
+                  <div className="flex items-center justify-between text-white font-bold">
+                    <span className="flex items-center gap-1.5">
+                      <Briefcase className="h-4 w-4 text-emerald-400" />
+                      <span>Uber for Business &bull; GST Input Tax Credit</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400">ITC Eligible</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div>
+                      <span className="text-zinc-400 block text-[10px]">Company GSTIN</span>
+                      <input
+                        type="text"
+                        value={corporateGstin}
+                        onChange={(e) => setCorporateGstin(e.target.value.toUpperCase())}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-white font-mono uppercase text-xs"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-zinc-400 block text-[10px]">Expense Code / Project</span>
+                      <input
+                        type="text"
+                        value={expenseCode}
+                        onChange={(e) => setExpenseCode(e.target.value.toUpperCase())}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-white font-mono uppercase text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* The Iconic Uber Route Timeline with Swap Button (Dot -> Connecting Bar -> Square) */}
+              <div className="space-y-2 relative">
                 {/* Pickup Field */}
                 <div className="relative">
                   <div className="flex items-center gap-3">
@@ -375,7 +562,7 @@ export default function CustomerPortalView({
                           setActiveSearchField("pickup");
                           setIsSearchingPickup(true);
                         }}
-                        placeholder="Pickup location (street, station, airport)..."
+                        placeholder="Pickup location..."
                         className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-white rounded-xl px-3.5 py-3 text-xs text-white placeholder-zinc-500 font-medium transition-all focus:outline-none"
                       />
                       {pickupQuery && (
@@ -410,8 +597,18 @@ export default function CustomerPortalView({
                   )}
                 </div>
 
-                {/* Vertical Line Connector */}
-                <div className="ml-[5px] h-3 border-l-2 border-zinc-700" />
+                {/* Connecting Line with Swap Button */}
+                <div className="flex items-center justify-between pl-[5px] pr-2 py-0.5">
+                  <div className="h-4 border-l-2 border-zinc-700" />
+                  <button
+                    type="button"
+                    onClick={handleSwapLocations}
+                    title="Swap pickup and destination"
+                    className="p-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors"
+                  >
+                    <ArrowUpDown className="h-3.5 w-3.5" />
+                  </button>
+                </div>
 
                 {/* Dropoff Field */}
                 <div className="relative">
@@ -426,7 +623,7 @@ export default function CustomerPortalView({
                           setActiveSearchField("dropoff");
                           setIsSearchingDropoff(true);
                         }}
-                        placeholder="Where to? (Attraction, locality, office)..."
+                        placeholder="Where to? (Destination)..."
                         className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-white rounded-xl px-3.5 py-3 text-xs text-white placeholder-zinc-500 font-medium transition-all focus:outline-none"
                       />
                       {dropoffQuery && (
@@ -465,7 +662,7 @@ export default function CustomerPortalView({
               {/* Quick Popular Destination Chips */}
               <div className="space-y-1.5 pt-1">
                 <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">
-                  Quick Select Locations:
+                  Popular High-Yield Routes:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {POPULAR_CHIPS.map((chip) => (
@@ -490,24 +687,24 @@ export default function CustomerPortalView({
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-amber-400 font-extrabold text-xs">
                       <Flame className="h-4 w-4 shrink-0" />
-                      <span>{routeData.surgeMultiplier}x Demand Surge Active at Location</span>
+                      <span>{routeData.surgeMultiplier}x Demand Surge Active</span>
                     </span>
                     <button
                       type="button"
                       onClick={() => setActiveTab("SURGE_STREAM")}
                       className="text-[10px] font-bold text-amber-300 hover:underline flex items-center gap-1"
                     >
-                      <span>View Live Requests</span>
+                      <span>View Live Stream</span>
                       <ArrowRight className="h-3 w-3" />
                     </button>
                   </div>
                   <p className="text-[11px] text-zinc-300 leading-snug">
-                    Michelangelo dynamic surge engine is balancing demand: +₹{routeData.surgeBonusInr} included in fare. Anti-herd damping locks 65% fleet for other city zones.
+                    Surge shock protection enabled: +₹{routeData.surgeBonusInr} included. Anti-herd damping locks 65% fleet for surrounding city zones.
                   </p>
                 </div>
               )}
 
-              {/* VEHICLE TIER LIST (AUTHENTIC UBER ROWS) */}
+              {/* VEHICLE TIER LIST (AUTHENTIC PRODUCTION UBER ROWS) */}
               <div className="space-y-2">
                 <span className="text-xs font-black text-white block">Suggested Rides</span>
                 <div className="space-y-2">
@@ -559,7 +756,7 @@ export default function CustomerPortalView({
                 </div>
               </div>
 
-              {/* FARE BREAKDOWN & TRIP ETA */}
+              {/* FARE BREAKDOWN & GST TAX DETAILS */}
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-3.5 space-y-2 text-xs">
                 <div className="flex items-center justify-between text-zinc-400">
                   <span>Trip Route &amp; Travel Time:</span>
@@ -575,6 +772,13 @@ export default function CustomerPortalView({
                       Dynamic Surge ({routeData.surgeMultiplier}x):
                     </span>
                     <span className="font-mono">+₹{routeData.surgeBonusInr} included</span>
+                  </div>
+                )}
+
+                {travelProfile === "BUSINESS" && (
+                  <div className="flex items-center justify-between text-zinc-400 text-[11px] border-t border-zinc-800/80 pt-1.5">
+                    <span>GST (5% ITC Claimable):</span>
+                    <span className="font-mono">CGST: ₹{cgst} + SGST: ₹{sgst} (₹{gstAmount})</span>
                   </div>
                 )}
 
@@ -609,30 +813,245 @@ export default function CustomerPortalView({
               </div>
 
               {/* FULL-WIDTH UBER REQUEST BUTTON */}
-              <button
-                type="button"
-                onClick={handleConfirmBooking}
-                className="w-full py-4 rounded-2xl bg-white hover:bg-zinc-200 text-black font-black text-sm transition-all shadow-xl flex items-center justify-center gap-2"
-              >
-                <span>Request {VEHICLE_TIERS.find((v) => v.type === selectedVehicle)?.name}</span>
-                <span className="text-xs font-mono font-bold text-zinc-700">&bull; ₹{routeData.finalFareInr}</span>
-              </button>
+              {tripState === "IDLE" && (
+                <button
+                  type="button"
+                  onClick={handleConfirmBooking}
+                  className="w-full py-4 rounded-2xl bg-white hover:bg-zinc-200 text-black font-black text-sm transition-all shadow-xl flex items-center justify-center gap-2"
+                >
+                  <span>Request {VEHICLE_TIERS.find((v) => v.type === selectedVehicle)?.name}</span>
+                  <span className="text-xs font-mono font-bold text-zinc-700">&bull; ₹{routeData.finalFareInr}</span>
+                </button>
+              )}
             </div>
 
-            {/* Booking Confirmation Notice */}
-            {confirmedRide && (
-              <div className="rounded-2xl border border-emerald-500/50 bg-emerald-950/40 p-4 shadow-xl text-xs space-y-1.5 animate-fadeIn">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>RIDE REQUEST DISPATCHED TO NEARBY DRIVERS!</span>
+            {/* REALISTIC RIDE LIFECYCLE CARDS (THE MISSING HERO EXPERIENCE) */}
+            {/* STATE 1: MATCHING RADAR */}
+            {tripState === "SEARCHING" && (
+              <div className="rounded-3xl border border-zinc-700 bg-zinc-950 p-6 shadow-2xl space-y-4 animate-fadeIn text-center">
+                <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
+                  <div className="relative w-14 h-14 rounded-full bg-zinc-900 border border-emerald-400 flex items-center justify-center text-white">
+                    <Car className="h-7 w-7 text-emerald-400 animate-pulse" />
+                  </div>
                 </div>
-                <p className="text-zinc-300">
-                  Driver dispatch notification sent to {confirmedRide.pickupAddress}. Your guaranteed fare is <strong>₹{confirmedRide.fareInr}</strong>.
-                </p>
-                <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400/90 pt-1 border-t border-emerald-500/20">
-                  <span>🗄️ Record Persisted in Custom Database</span>
-                  <span>&bull;</span>
-                  <span>ID: {confirmedRide.id}</span>
+
+                <div>
+                  <h3 className="text-base font-extrabold text-white">Connecting with Nearby Drivers...</h3>
+                  <p className="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">
+                    Searching commercial fleet near {pickupQuery.split(",")[0]}. Price is locked at <strong>₹{routeData.finalFareInr}</strong>.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 text-[11px] font-mono text-emerald-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Anti-herd damping engaged &bull; Dispersal wave 1</span>
+                </div>
+              </div>
+            )}
+
+            {/* STATE 2: DRIVER ASSIGNED & EN ROUTE */}
+            {tripState === "ASSIGNED" && assignedDriver && (
+              <div className="rounded-3xl border-2 border-emerald-500/60 bg-zinc-950 p-6 shadow-2xl space-y-5 animate-scaleUp">
+                {/* Header with OTP & ETA */}
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block font-mono">
+                      ● DRIVER EN ROUTE
+                    </span>
+                    <h3 className="text-xl font-black text-white mt-0.5">
+                      Arriving in {driverEtaMin} mins
+                    </h3>
+                  </div>
+
+                  {/* 4-Digit Security PIN */}
+                  <div className="text-right">
+                    <span className="text-[10px] text-zinc-400 block font-mono">YOUR SAFETY PIN</span>
+                    <div className="px-3 py-1 rounded-xl bg-white text-black font-black text-lg tracking-widest font-mono shadow-md">
+                      {rideOtp}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Driver & Vehicle Details Card */}
+                <div className="flex items-center justify-between bg-zinc-900/90 rounded-2xl border border-zinc-800 p-4">
+                  <div className="flex items-center gap-3.5">
+                    <img
+                      src={assignedDriver.avatar}
+                      alt={assignedDriver.name}
+                      className="w-12 h-12 rounded-2xl object-cover border border-emerald-400 shadow-md"
+                    />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-white text-sm">{assignedDriver.name}</span>
+                        <span className="text-[10px] text-amber-400 font-bold">★ {assignedDriver.rating}</span>
+                      </div>
+                      <span className="text-xs text-zinc-300 font-medium block">
+                        {assignedDriver.vehicleModel}
+                      </span>
+                      <span className="text-[11px] text-zinc-500 font-mono">
+                        {assignedDriver.tripsCompleted} commercial trips completed
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Indian Yellow Commercial Number Plate */}
+                  <div className="rounded-lg bg-amber-400 text-black font-mono font-black text-xs px-2.5 py-1.5 border border-black/40 shadow-inner tracking-wider">
+                    {assignedDriver.licensePlate}
+                  </div>
+                </div>
+
+                {/* Action Controls: Call, Message, Share */}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsCallModalOpen(true)}
+                    className="p-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Phone className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Call</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsChatModalOpen(true)}
+                    className="p-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5 text-zinc-300" />
+                    <span>Chat</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCancelBooking}
+                    className="p-2.5 rounded-xl bg-rose-950/30 hover:bg-rose-950/60 text-rose-300 border border-rose-500/30 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    <span>Cancel</span>
+                  </button>
+                </div>
+
+                {/* Demo Fast-Forward Controls */}
+                <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-xs">
+                  <span className="text-[10px] text-zinc-400 font-mono">Demo Controls:</span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSimulateTripProgress("ON_TRIP")}
+                      className="px-3 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-[11px]"
+                    >
+                      Start Ride &rarr;
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STATE 3: ON TRIP IN PROGRESS */}
+            {tripState === "ON_TRIP" && (
+              <div className="rounded-3xl border-2 border-emerald-500 bg-zinc-950 p-6 shadow-2xl space-y-4 animate-fadeIn">
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="font-extrabold text-xs text-emerald-400 font-mono uppercase">
+                      TRIP IN PROGRESS
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono text-zinc-300">{liveTripSpeed} km/h</span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] text-zinc-400 block font-mono">HEADING TO DROPOFF</span>
+                  <h4 className="text-base font-extrabold text-white mt-0.5">{dropoffQuery}</h4>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    ETA: ~{routeData.travelTimeMin} mins &bull; {routeData.distanceKm} km remaining
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleSimulateTripProgress("COMPLETED")}
+                  className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Arrived &bull; Complete Trip &amp; View Tax Invoice</span>
+                </button>
+              </div>
+            )}
+
+            {/* STATE 4: TRIP COMPLETED & ENTERPRISE GST TAX INVOICE */}
+            {tripState === "COMPLETED" && (
+              <div className="rounded-3xl border border-zinc-700 bg-zinc-950 p-6 shadow-2xl space-y-4 animate-scaleUp">
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span>TRIP COMPLETED &bull; PAID ₹{routeData.finalFareInr}</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-400">
+                    SAC: 996412
+                  </span>
+                </div>
+
+                {/* Printable Business Tax Invoice Summary */}
+                <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4 space-y-2.5 text-xs">
+                  <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                    <span className="font-bold text-white">Official Tax Invoice</span>
+                    <span className="font-mono text-zinc-400 text-[10px]">INV-2026-90412</span>
+                  </div>
+
+                  <div className="space-y-1 text-zinc-300 text-[11px]">
+                    <div className="flex justify-between">
+                      <span className="text-zinc-400">Pickup:</span>
+                      <span className="truncate max-w-[200px] text-right">{pickupQuery}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-400">Dropoff:</span>
+                      <span className="truncate max-w-[200px] text-right">{dropoffQuery}</span>
+                    </div>
+                    {travelProfile === "BUSINESS" && (
+                      <div className="flex justify-between font-mono text-[10px] text-emerald-400">
+                        <span>Corporate GSTIN:</span>
+                        <span>{corporateGstin}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t border-zinc-800 pt-2 space-y-1 font-mono text-[11px]">
+                    <div className="flex justify-between text-zinc-400">
+                      <span>Base Fare &amp; Distance:</span>
+                      <span>₹{routeData.baseFareInr}</span>
+                    </div>
+                    {routeData.surgeBonusInr > 0 && (
+                      <div className="flex justify-between text-amber-400">
+                        <span>Dynamic Surge Multiplier ({routeData.surgeMultiplier}x):</span>
+                        <span>+₹{routeData.surgeBonusInr}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-white font-bold text-xs pt-1 border-t border-zinc-800">
+                      <span>Total Paid:</span>
+                      <span>₹{routeData.finalFareInr}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons: Print Invoice / Book Another */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="py-2.5 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Printer className="h-3.5 w-3.5 text-zinc-400" />
+                    <span>Print Invoice</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTripState("IDLE")}
+                    className="py-2.5 px-3 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-black transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>Book Another Ride</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -671,12 +1090,101 @@ export default function CustomerPortalView({
         </div>
       )}
 
-      {/* VIEW 2: DEDICATED LIVE SURGE HANDLING REQUESTS MONITOR (THE MISSING HERO SCREEN) */}
+      {/* VIEW 2: DEDICATED LIVE SURGE HANDLING REQUESTS MONITOR */}
       {activeTab === "SURGE_STREAM" && (
         <SurgeHandlingMonitor
           state={state}
           onTrigger1000Burst={handleTrigger1000BurstTest}
         />
+      )}
+
+      {/* CALL DRIVER MODAL */}
+      {isCallModalOpen && assignedDriver && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-sm rounded-3xl border border-zinc-700 bg-zinc-950 p-6 text-center space-y-4 shadow-2xl">
+            <img
+              src={assignedDriver.avatar}
+              alt={assignedDriver.name}
+              className="w-20 h-20 rounded-full mx-auto object-cover border-2 border-emerald-400 shadow-xl"
+            />
+            <div>
+              <h4 className="text-lg font-black text-white">{assignedDriver.name}</h4>
+              <p className="text-xs text-zinc-400">{assignedDriver.vehicleModel} &bull; {assignedDriver.licensePlate}</p>
+              <p className="text-sm font-mono text-emerald-400 font-bold mt-2">Calling: {assignedDriver.phone}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsCallModalOpen(false)}
+              className="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs"
+            >
+              End Call
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* CHAT WITH DRIVER MODAL */}
+      {isChatModalOpen && assignedDriver && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-md rounded-3xl border border-zinc-700 bg-zinc-950 p-5 space-y-3 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div className="flex items-center gap-2">
+                <img
+                  src={assignedDriver.avatar}
+                  alt={assignedDriver.name}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <div>
+                  <h4 className="text-xs font-bold text-white">{assignedDriver.name}</h4>
+                  <span className="text-[10px] text-zinc-400">Driver Partner</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsChatModalOpen(false)}
+                className="text-zinc-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-52 overflow-y-auto p-1">
+              {riderDriverMessages.map((m, idx) => (
+                <div
+                  key={idx}
+                  className={`flex ${m.sender === "RIDER" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[75%] rounded-2xl px-3 py-2 text-xs ${
+                      m.sender === "RIDER"
+                        ? "bg-white text-black font-medium"
+                        : "bg-zinc-800 text-white"
+                    }`}
+                  >
+                    <p>{m.text}</p>
+                    <span className="text-[9px] opacity-60 block mt-0.5">{m.time}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={handleSendMessageToDriver} className="flex gap-2 pt-2 border-t border-zinc-800">
+              <input
+                type="text"
+                value={driverMessageText}
+                onChange={(e) => setDriverMessageText(e.target.value)}
+                placeholder="Message driver (e.g. I am at Gate 1)..."
+                className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-xl bg-white text-black font-extrabold text-xs"
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

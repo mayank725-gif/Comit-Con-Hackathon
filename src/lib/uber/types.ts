@@ -147,7 +147,7 @@ export interface RideRequest {
   surgeBonusInr: number;
   timestamp: string;
   status: "REQUESTED" | "DISPATCHED" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
-  paymentMode: "GOOGLE_PAY_UPI" | "CASH" | "UBER_CASH";
+  paymentMode: "GOOGLE_PAY_UPI" | "CASH" | "UBER_CASH" | "CORPORATE_CARD";
 }
 
 export interface AssistantMessage {

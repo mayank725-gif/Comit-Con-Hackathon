@@ -200,8 +200,7 @@ export default function Home() {
     } catch (e) {
       console.error("Failed to persist ride to custom database:", e);
     }
-    // Switch to Driver Partner view so the incoming dispatch alert chimes and can be accepted
-    setPortalMode("DRIVER");
+    // Ride request is persisted to custom database and queued for driver dispatch
   };
 
   const handleSimulateDispatch = () => {
