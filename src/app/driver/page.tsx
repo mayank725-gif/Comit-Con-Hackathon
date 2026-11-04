@@ -407,34 +407,6 @@ export default function DriverPage() {
     ]);
   };
 
-  // Simulate incoming dispatch for testing without second phone
-  const handleSimulateDispatch = () => {
-    const cityName = currentProfile?.cityName || "Bengaluru";
-    const primaryZoneName = currentProfile?.primaryZoneName?.split("&")[0].trim() || "M. Chinnaswamy Stadium";
-
-    const simRequest: RideRequest = {
-      id: `DISPATCH_${Date.now().toString().slice(-5)}`,
-      riderName: "Rahul Verma",
-      riderRating: 4.96,
-      pickupAddress: `${primaryZoneName}, ${cityName}`,
-      pickupCoords: currentProfile?.assignedCoordinates || [12.9788, 77.5980],
-      dropoffAddress: `Kempegowda International Airport (BLR T2), ${cityName}`,
-      dropoffCoords: [13.1986, 77.7066],
-      vehicleType: currentProfile?.vehicleType || "UBER_GO",
-      distanceKm: 32,
-      durationMin: 45,
-      fareInr: 780,
-      surgeMultiplier: sectorTelemetry?.surgeMultiplier || 3.2,
-      surgeBonusInr: 320,
-      timestamp: new Date().toISOString(),
-      status: "REQUESTED",
-      paymentMode: "GOOGLE_PAY_UPI",
-      otp: "4829",
-    };
-
-    setIncomingRideRequest(simRequest);
-  };
-
   const handleSendMessage = async (text: string) => {
     const userMsg: AssistantMessage = {
       id: `USER_${Date.now()}`,
@@ -625,7 +597,6 @@ export default function DriverPage() {
               sectorTelemetry={sectorTelemetry}
               onFlyToMySector={handleFlyToMySector}
               onOpenTerritoryModal={() => setIsAuthModalOpen(true)}
-              onSimulateDispatch={handleSimulateDispatch}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">

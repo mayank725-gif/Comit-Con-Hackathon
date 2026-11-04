@@ -239,32 +239,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [activeTrip, incomingRideRequest, portalMode]);
 
-  const handleSimulateDispatch = () => {
-    const cityName = currentProfile?.cityName || "Bengaluru";
-    const primaryZoneName = currentProfile?.primaryZoneName?.split("&")[0].trim() || "M. Chinnaswamy Stadium";
-
-    const simRequest: RideRequest = {
-      id: `DISPATCH_${Date.now().toString().slice(-5)}`,
-      riderName: "Rahul Verma",
-      riderRating: 4.96,
-      pickupAddress: `${primaryZoneName}, ${cityName}`,
-      pickupCoords: currentProfile?.assignedCoordinates || [12.9788, 77.5980],
-      dropoffAddress: `Kempegowda International Airport (BLR T2), ${cityName}`,
-      dropoffCoords: [13.1986, 77.7066],
-      vehicleType: currentProfile?.vehicleType || "UBER_GO",
-      distanceKm: 32,
-      durationMin: 45,
-      fareInr: 780,
-      surgeMultiplier: sectorTelemetry?.surgeMultiplier || 2.8,
-      surgeBonusInr: 280,
-      timestamp: new Date().toISOString(),
-      status: "REQUESTED",
-      paymentMode: "GOOGLE_PAY_UPI",
-    };
-
-    setIncomingRideRequest(simRequest);
-  };
-
   const handleAcceptRide = async (request: RideRequest) => {
     setIncomingRideRequest(null);
     setActiveTrip(request);
@@ -741,7 +715,6 @@ export default function Home() {
                   sectorTelemetry={sectorTelemetry}
                   onFlyToMySector={handleFlyToMySector}
                   onOpenTerritoryModal={() => setIsAuthModalOpen(true)}
-                  onSimulateDispatch={handleSimulateDispatch}
                 />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">

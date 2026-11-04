@@ -141,6 +141,23 @@ export async function PATCH(req: Request) {
 
     const updated = driverDb.updateRideStatus(rideId, status, driverDetails);
 
+    // If this serverless container doesn't have the ride in local memory, reconstruct it from shared cloud state
+    let cloudRide: any = null;
+    try {
+      const currentCloud = await getCloudState();
+      if (currentCloud && currentCloud.activeRide) {
+        cloudRide = {
+          ...currentCloud.activeRide,
+          status,
+          ...(driverDetails || {}),
+        };
+      }
+    } catch {
+      // ignore
+    }
+
+    const resolvedRide = updated || cloudRide || { id: rideId, status, ...(driverDetails || {}) };
+
     // 1. Ultra-Low-Latency SSE Broadcast (<50ms trigger to Rider Phone 1)
     broadcastRideStatus(rideId, status, driverDetails).catch(() => {});
 
@@ -154,11 +171,11 @@ export async function PATCH(req: Request) {
       rideId: isFinished ? null : rideId,
       status,
       driverDetails: driverDetails || null,
-      activeRide: isFinished ? null : (updated || null),
+      activeRide: isFinished ? null : resolvedRide,
       updatedAt: Date.now(),
     }).catch(() => {});
 
-    return NextResponse.json({ success: true, ride: updated || { id: rideId, status } });
+    return NextResponse.json({ success: true, ride: resolvedRide });
   } catch (e: any) {
     return NextResponse.json({ success: false, error: e?.message }, { status: 500 });
   }
