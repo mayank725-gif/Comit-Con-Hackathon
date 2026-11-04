@@ -184,6 +184,7 @@ export default function CustomerPortalView({
 
   // 1,000 Concurrent Ride Stress Test State
   const [isStressTesting, setIsStressTesting] = useState(false);
+  const [latestStressData, setLatestStressData] = useState<any>(null);
 
   // Floating Uber 2.0 AI Assistant State
   const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
@@ -413,6 +414,7 @@ export default function CustomerPortalView({
 
       const data = await res.json();
       if (data.success) {
+        setLatestStressData(data);
         setActiveTab("SURGE_STREAM");
         return data;
       }
@@ -457,9 +459,13 @@ export default function CustomerPortalView({
                 : "text-zinc-400 hover:text-white"
             }`}
           >
-            <Flame className="h-3.5 w-3.5 text-amber-400" />
+            <Flame className={`h-3.5 w-3.5 ${activeTab === "SURGE_STREAM" ? "text-black fill-black" : "text-amber-400"}`} />
             <span>⚡ Live Surge Requests</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] font-extrabold border border-amber-500/30">
+            <span className={`px-1.5 py-0.2 rounded-full font-mono text-[10px] font-extrabold border ${
+              activeTab === "SURGE_STREAM"
+                ? "bg-black/20 text-black border-black/30"
+                : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+            }`}>
               {routeData.surgeMultiplier}x Active
             </span>
           </button>
@@ -1139,6 +1145,7 @@ export default function CustomerPortalView({
           state={state}
           onTriggerScenario={onTriggerScenario}
           onTrigger1000Burst={handleTrigger1000BurstTest}
+          initialStressData={latestStressData}
         />
       )}
 
