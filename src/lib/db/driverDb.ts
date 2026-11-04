@@ -276,8 +276,8 @@ class CustomDriverDatabase {
     const q = query.toLowerCase();
     return rides.filter(
       (r) =>
-        r.riderName.toLowerCase().includes(q) ||
-        r.id.toLowerCase().includes(q) ||
+        (r.riderName && r.riderName.toLowerCase().includes(q)) ||
+        (r.id && r.id.toLowerCase().includes(q)) ||
         (r.pickupAddress && r.pickupAddress.toLowerCase().includes(q))
     );
   }

@@ -61,24 +61,26 @@ export async function GET(req: Request) {
           if (cloud.driverDetails) {
             Object.assign(found, cloud.driverDetails);
           }
-        } else if (cloud.activeRide) {
+        } else if (cloud.activeRide && cloud.status !== "COMPLETED" && cloud.status !== "CANCELLED") {
           rides.unshift({
             ...cloud.activeRide,
             status: cloud.status,
             ...(cloud.driverDetails || {}),
           });
         }
-
-        if (activeRide && activeRide.id === cloud.rideId) {
-          activeRide.status = cloud.status;
-          if (cloud.status === "COMPLETED" || cloud.status === "CANCELLED") {
-            activeRide = null;
-          }
-        }
       }
     } catch {
       // fallback to memory
     }
+
+    // Recompute latest active pending/accepted/in_progress ride
+    activeRide = rides.find(
+      (r) =>
+        r.status === "REQUESTED" ||
+        r.status === "PENDING" ||
+        r.status === "ACCEPTED" ||
+        r.status === "IN_PROGRESS"
+    ) || null;
 
     return NextResponse.json({ success: true, rides, activeRide });
   } catch (e: any) {
