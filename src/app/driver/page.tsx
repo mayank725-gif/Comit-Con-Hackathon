@@ -30,6 +30,11 @@ import {
   Activity,
   User,
   ShieldCheck,
+  FileText,
+  DollarSign,
+  TrendingUp,
+  CheckCircle2,
+  RefreshCw,
 } from "lucide-react";
 
 // Dynamic Leaflet Real Map import
@@ -47,7 +52,7 @@ const RealLeafletMap = dynamic(
 );
 
 export default function DriverPage() {
-  const [activeTab, setActiveTab] = useState<"map" | "telemetry" | "benchmarks">("map");
+  const [activeTab, setActiveTab] = useState<"map" | "telemetry" | "benchmarks" | "trips">("map");
   const [state, setState] = useState<MarketplaceState | null>(null);
   const [selectedZone, setSelectedZone] = useState<ZoneId | null>("STADIUM");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -63,6 +68,8 @@ export default function DriverPage() {
   // Active Two-Way Dispatch State
   const [incomingRideRequest, setIncomingRideRequest] = useState<RideRequest | null>(null);
   const [activeTrip, setActiveTrip] = useState<RideRequest | null>(null);
+  const [driverTrips, setDriverTrips] = useState<RideRequest[]>([]);
+  const [isLoadingTrips, setIsLoadingTrips] = useState(false);
 
   // AI Chat messages
   const [chatMessages, setChatMessages] = useState<AssistantMessage[]>([
@@ -70,7 +77,7 @@ export default function DriverPage() {
       id: "INIT_DRIVER_1",
       sender: "ASSISTANT",
       agentType: "DISPATCH",
-      text: "👋 नमस्ते राजेश जी! उबर पार्टनर पोर्टल सक्रिय है। चिन्नास्वामी स्टेडियम और एमजी रोड में 3.5x सर्ज चल रहा है। जैसे ही कोई राइडर बुक करेगा, आपको तुरंत अलर्ट मिलेगा!",
+      text: "👋 नमस्ते पार्टनर जी! उबर पार्टनर पोर्टल सक्रिय है। चिन्नास्वामी स्टेडियम और एमजी रोड में 3.5x सर्ज चल रहा है। जैसे ही कोई राइडर बुक करेगा, आपको तुरंत अलर्ट मिलेगा!",
       timestamp: "2026-11-04T00:00:00.000Z",
       actionableRecommendation: {
         suggestedZone: "STADIUM",
@@ -133,6 +140,13 @@ export default function DriverPage() {
     return () => clearInterval(dispatchInterval);
   }, [activeTrip, incomingRideRequest]);
 
+  // Fetch driver trip log whenever current profile is ready or tab switches
+  useEffect(() => {
+    if (activeTab === "trips" || currentProfile) {
+      fetchDriverTrips();
+    }
+  }, [activeTab, currentProfile?.driverName]);
+
   const fetchState = async () => {
     try {
       const res = await fetch("/api/uber/state");
@@ -153,9 +167,29 @@ export default function DriverPage() {
         setCurrentUser(data.user);
         setCurrentProfile(data.profile);
         setSectorTelemetry(data.sectorTelemetry);
+      } else {
+        // Enforce mandatory driver login
+        setIsAuthModalOpen(true);
       }
     } catch (e) {
       console.error("Failed to fetch driver session:", e);
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  const fetchDriverTrips = async () => {
+    setIsLoadingTrips(true);
+    try {
+      const driverParam = currentProfile?.driverName ? `?driver=${encodeURIComponent(currentProfile.driverName)}` : "";
+      const res = await fetch(`/api/uber/rides${driverParam}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.rides)) {
+        setDriverTrips(data.rides);
+      }
+    } catch (e) {
+      console.error("Failed to fetch driver trip logs:", e);
+    } finally {
+      setIsLoadingTrips(false);
     }
   };
 
@@ -169,6 +203,7 @@ export default function DriverPage() {
   const handleAuthSuccess = (user: DriverUser, profile: DriverWorkProfile) => {
     setCurrentUser(user);
     setCurrentProfile(profile);
+    setIsAuthModalOpen(false);
     if (profile.assignedCoordinates) {
       setMapFlyToCoords([...profile.assignedCoordinates]);
     }
@@ -176,6 +211,7 @@ export default function DriverPage() {
       setSelectedZone(profile.primaryZone as ZoneId);
     }
     fetchDriverSession();
+    fetchDriverTrips();
   };
 
   // Accept Ride (Synced back to Rider Phone 1)
@@ -258,13 +294,24 @@ export default function DriverPage() {
       console.error("Failed to sync complete ride:", e);
     }
 
+    // Add completed trip to local driver trips log
+    const completedLogItem: RideRequest = {
+      ...trip,
+      status: "COMPLETED",
+      driverName: currentProfile?.driverName || "Rajesh Kumar",
+      timestamp: "Just now",
+    };
+    setDriverTrips((prev) => [completedLogItem, ...prev]);
+
     // Update earnings in current profile & persist into custom database
     const newEarnings = (currentProfile?.currentEarnings || 2070) + trip.fareInr;
+    const newTripsCount = (currentProfile?.completedTrips || 5) + 1;
 
     if (currentUser && currentProfile) {
       const updatedProfile: DriverWorkProfile = {
         ...currentProfile,
         currentEarnings: newEarnings,
+        completedTrips: newTripsCount,
       };
       setCurrentProfile(updatedProfile);
 
@@ -290,10 +337,10 @@ export default function DriverPage() {
     setChatMessages((prev) => [
       ...prev,
       {
-        id: `FINISH_${Date.now()}`,
+        id: `COMPLETE_${Date.now()}`,
         sender: "ASSISTANT",
-        agentType: "EARNINGS",
-        text: `🎉 **यात्रा सफलतापूर्वक पूरी हुई!**\n💰 आपने इस ट्रिप से **₹${trip.fareInr}** कमाए।\nआज की कुल कमाई: **₹${newEarnings}**!`,
+        agentType: "DISPATCH",
+        text: `🎉 **यात्रा सफलतापूर्वक पूर्ण!**\nकिराया: **₹${trip.fareInr}** आपके वॉलेट में जोड़ दिया गया है।\nकुल आज की कमाई: **₹${newEarnings}** (${newTripsCount} राइड्स).\n\nअगली राइड के लिए तैयार रहें!`,
         timestamp: new Date().toISOString(),
       },
     ]);
@@ -419,6 +466,20 @@ export default function DriverPage() {
               </button>
               <button
                 type="button"
+                onClick={() => setActiveTab("trips")}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+                  activeTab === "trips" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <span>📋 Trip Log</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
+                  activeTab === "trips" ? "bg-black/20 text-black" : "bg-zinc-800 text-zinc-300"
+                }`}>
+                  {driverTrips.length}
+                </span>
+              </button>
+              <button
+                type="button"
                 onClick={() => setActiveTab("telemetry")}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
                   activeTab === "telemetry" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
@@ -448,6 +509,47 @@ export default function DriverPage() {
               <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
             </Link>
           </div>
+        </div>
+
+        {/* Mobile Horizontal Sub-Tab Bar */}
+        <div className="flex md:hidden items-center gap-1.5 pt-2.5 overflow-x-auto text-xs border-t border-zinc-900 mt-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("map")}
+            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all ${
+              activeTab === "map" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            }`}
+          >
+            🗺️ Map
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("trips")}
+            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all flex items-center gap-1 ${
+              activeTab === "trips" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            }`}
+          >
+            <span>📋 Trip Log</span>
+            <span className="text-[10px] font-mono font-bold">({driverTrips.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("telemetry")}
+            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all ${
+              activeTab === "telemetry" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            }`}
+          >
+            📊 Telemetry
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("benchmarks")}
+            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all ${
+              activeTab === "benchmarks" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            }`}
+          >
+            🏆 Benchmarks
+          </button>
         </div>
       </header>
 
@@ -521,7 +623,149 @@ export default function DriverPage() {
           </div>
         )}
 
-        {/* Tab 2: Michelangelo ML Telemetry */}
+        {/* Tab 2: Driver Shift Trip Log & Earnings History */}
+        {activeTab === "trips" && (
+          <div className="space-y-5 animate-fadeIn">
+            {/* Shift Earnings Top Summary Card */}
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-zinc-800 pb-5">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono font-bold">
+                      ACTIVE SHIFT
+                    </span>
+                    <span className="text-xs text-zinc-400">
+                      Driver: <strong className="text-white">{currentProfile?.driverName || "Rajesh Kumar"}</strong>
+                    </span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Shift Trip Log &amp; Payouts
+                  </h2>
+                  <p className="text-xs text-zinc-400">
+                    Real-time transaction history, guaranteed fares, and surge multipliers synced from self-hosted custom DB.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={fetchDriverTrips}
+                  className="px-3.5 py-2 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 text-emerald-400 ${isLoadingTrips ? "animate-spin" : ""}`} />
+                  <span>Refresh Trip Log</span>
+                </button>
+              </div>
+
+              {/* Key Driver Metrics Strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-5">
+                <div className="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/50">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                    TOTAL SHIFT EARNINGS
+                  </span>
+                  <span className="text-2xl font-black text-emerald-400 font-mono mt-1 block">
+                    ₹{currentProfile?.currentEarnings || 2070}
+                  </span>
+                  <span className="text-[10px] text-zinc-500">Target: ₹{currentProfile?.dailyEarningsTarget || 3200}</span>
+                </div>
+
+                <div className="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/50">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                    COMPLETED TRIPS
+                  </span>
+                  <span className="text-2xl font-black text-white font-mono mt-1 block">
+                    {driverTrips.length}
+                  </span>
+                  <span className="text-[10px] text-emerald-400">100% Acceptance Rate</span>
+                </div>
+
+                <div className="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/50">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                    AVG. FARE PER TRIP
+                  </span>
+                  <span className="text-2xl font-black text-white font-mono mt-1 block">
+                    ₹{driverTrips.length > 0 ? Math.round(driverTrips.reduce((acc, t) => acc + (t.fareInr || 0), 0) / driverTrips.length) : 480}
+                  </span>
+                  <span className="text-[10px] text-amber-300">Boosted by Michelangelo surge</span>
+                </div>
+
+                <div className="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/50">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                    PARTNER RATING
+                  </span>
+                  <span className="text-2xl font-black text-amber-400 font-mono mt-1 block">
+                    ★ 4.96
+                  </span>
+                  <span className="text-[10px] text-zinc-400">Based on 2,840 trips</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Trip Cards List */}
+            <div className="space-y-3">
+              {driverTrips.length === 0 ? (
+                <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-12 text-center space-y-2">
+                  <Car className="h-10 w-10 text-zinc-600 mx-auto" />
+                  <h4 className="text-sm font-bold text-zinc-300">No completed trips yet this shift</h4>
+                  <p className="text-xs text-zinc-500">
+                    Switch to &apos;Driver Map&apos; and accept incoming dispatches from Phone 1 to log trips here!
+                  </p>
+                </div>
+              ) : (
+                driverTrips.map((trip) => (
+                  <div
+                    key={trip.id}
+                    className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 sm:p-5 hover:border-zinc-700 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 font-bold">
+                          {trip.id}
+                        </span>
+                        <span className="text-xs font-bold text-white">{trip.timestamp}</span>
+                        <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 text-[10px] font-bold">
+                          {trip.vehicleType ? trip.vehicleType.replace("UBER_", "Uber ") : "Uber Cab"}
+                        </span>
+                        {trip.surgeMultiplier > 1.0 && (
+                          <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/30">
+                            ⚡ {trip.surgeMultiplier}x Surge (+₹{trip.surgeBonusInr || Math.round(trip.fareInr * 0.3)})
+                          </span>
+                        )}
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold border border-emerald-500/30">
+                          ✓ Settled &bull; Cash Collected
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-xs text-zinc-300 pt-1 truncate">
+                        <span className="text-zinc-400 truncate">{trip.pickupAddress}</span>
+                        <ArrowRight className="h-3 w-3 text-zinc-500 shrink-0" />
+                        <span className="text-white font-semibold truncate">{trip.dropoffAddress}</span>
+                      </div>
+
+                      <div className="text-[11px] text-zinc-400 flex items-center gap-2 pt-0.5">
+                        <span>Passenger: <strong className="text-zinc-200">{trip.riderName || "Passenger"}</strong></span>
+                        <span>&bull;</span>
+                        <span>Payment: {trip.paymentMode || "UPI / Digital"}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 shrink-0 self-end md:self-center">
+                      <div className="text-right">
+                        <span className="text-xl font-black text-emerald-400 font-mono block">
+                          ₹{trip.fareInr}
+                        </span>
+                        <span className="text-[10px] text-zinc-400 block font-mono">
+                          Net Payout Credited
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Michelangelo ML Telemetry */}
         {activeTab === "telemetry" && state && (
           <MichelangeloTelemetryView
             state={state}
@@ -530,7 +774,7 @@ export default function DriverPage() {
           />
         )}
 
-        {/* Tab 3: System Benchmarks */}
+        {/* Tab 4: System Benchmarks */}
         {activeTab === "benchmarks" && (
           <UberBenchmarkView stats={UBER_BENCHMARK_DATA} />
         )}
@@ -553,8 +797,9 @@ export default function DriverPage() {
         onLogout={() => {
           setCurrentUser(null);
           setCurrentProfile(null);
-          setIsAuthModalOpen(false);
+          setIsAuthModalOpen(true);
         }}
+        canClose={Boolean(currentUser)}
       />
     </div>
   );

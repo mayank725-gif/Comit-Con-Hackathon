@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import UberNavbar, { UberTab, PortalMode } from "@/components/uber/UberNavbar";
 import CustomerPortalView from "@/components/uber/CustomerPortalView";
 import DriverAssistantChat from "@/components/uber/DriverAssistantChat";
@@ -20,7 +21,7 @@ import {
   RideRequest,
 } from "@/lib/uber/types";
 import { UBER_BENCHMARK_DATA } from "@/lib/uber/benchmark";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 // Dynamic import with ssr: false for Leaflet real map
 const RealLeafletMap = dynamic(
@@ -39,6 +40,7 @@ const RealLeafletMap = dynamic(
 );
 
 export default function Home() {
+  const [gatewayView, setGatewayView] = useState<"CHOICE" | "WORKSPACE">("CHOICE");
   const [portalMode, setPortalMode] = useState<PortalMode>("CUSTOMER");
   const [activeTab, setActiveTab] = useState<UberTab>("map");
   const [state, setState] = useState<MarketplaceState | null>(null);
@@ -479,6 +481,163 @@ export default function Home() {
 
   const focusedZone = selectedZone ? state.zones[selectedZone] : null;
 
+  // Primary Role Selection Gateway Flow: "Are you riding or driving today?"
+  if (gatewayView === "CHOICE") {
+    return (
+      <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
+        {/* Gateway Minimal Brand Header */}
+        <header className="w-full border-b border-zinc-800 bg-black/95 px-4 py-3 sm:px-6">
+          <div className="mx-auto flex max-w-7xl items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl font-black tracking-tighter text-white">Uber</span>
+              <span className="rounded-md bg-white text-black px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
+                Michelangelo
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-xs font-mono text-zinc-400 font-bold hidden sm:inline">
+                Marketplace Live &bull; Custom DB Synced
+              </span>
+            </div>
+          </div>
+        </header>
+
+        {/* Hero Role Selection Gateway */}
+        <main className="flex-1 flex flex-col justify-center items-center py-10 px-4 sm:px-6 max-w-5xl mx-auto w-full space-y-8 animate-fadeIn">
+          {/* Header Title */}
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>ROLE SELECTION GATEWAY</span>
+            </div>
+            <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              Are you riding or driving today?
+            </h1>
+            <p className="text-sm sm:text-base text-zinc-400 max-w-xl mx-auto">
+              Select your role to access your dedicated mobile portal with mandatory authentication, live two-way synchronization, and persistent ride history.
+            </p>
+          </div>
+
+          {/* Two Massive Interactive Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            {/* Card 1: Rider */}
+            <Link
+              href="/rider"
+              className="group relative rounded-3xl border-2 border-zinc-800 bg-zinc-950 p-7 hover:border-white transition-all duration-300 shadow-2xl flex flex-col justify-between space-y-6 hover:scale-[1.01]"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-14 h-14 rounded-2xl bg-white text-black flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform">
+                    🚖
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-mono font-bold text-zinc-300">
+                    Phone 1 Portal
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black text-white group-hover:text-emerald-400 transition-colors">
+                    I am a Rider
+                  </h2>
+                  <p className="text-xs text-zinc-400">
+                    Book cabs, monitor live surge handling, track driver ETA, and view trip tax invoices.
+                  </p>
+                </div>
+
+                <ul className="space-y-2 text-xs text-zinc-300 border-t border-zinc-800/80 pt-4 font-medium">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <span>Mandatory Rider sign-in with 1-click profiles</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <span>Guaranteed upfront fare &amp; 3.8x anti-gouging surge cap</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <span>Multi-arterial crowd dispersal &amp; staggered waves</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <span>Persistent &apos;My Trips&apos; history &amp; GST tax invoices</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="w-full py-3.5 px-4 rounded-2xl bg-white group-hover:bg-zinc-200 text-black font-black text-sm flex items-center justify-center gap-2 transition-all shadow-lg">
+                <span>Continue as Rider</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Card 2: Driver */}
+            <Link
+              href="/driver"
+              className="group relative rounded-3xl border-2 border-zinc-800 bg-zinc-950 p-7 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col justify-between space-y-6 hover:scale-[1.01]"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-400 text-black flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform">
+                    🚗
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-mono font-bold text-amber-300">
+                    Phone 2 Portal
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors">
+                    I am a Driver Partner
+                  </h2>
+                  <p className="text-xs text-zinc-400">
+                    Receive incoming dispatches, verify passenger OTP, pace shift earnings, and view trip logs.
+                  </p>
+                </div>
+
+                <ul className="space-y-2 text-xs text-zinc-300 border-t border-zinc-800/80 pt-4 font-medium">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
+                    <span>Mandatory Driver sign-in &amp; work territory setup</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
+                    <span>Real-time dispatch alerts with audio ring chime</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
+                    <span>Live GPS navigation HUD &amp; OTP safety verification</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
+                    <span>Shift Trip Log with automated gross &amp; net payouts</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="w-full py-3.5 px-4 rounded-2xl bg-amber-400 group-hover:bg-amber-300 text-black font-black text-sm flex items-center justify-center gap-2 transition-all shadow-lg">
+                <span>Continue as Driver Partner</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          </div>
+
+          {/* Desktop Dual Console Trigger */}
+          <div className="pt-2 text-center">
+            <button
+              type="button"
+              onClick={() => setGatewayView("WORKSPACE")}
+              className="text-xs text-zinc-400 hover:text-white underline underline-offset-4 font-medium transition-colors cursor-pointer"
+            >
+              💻 Testing on a single laptop? Open Dual Desktop Workspace Console &rarr;
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
       <UberNavbar
@@ -496,6 +655,17 @@ export default function Home() {
       />
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+        {/* Switch Role Back to Gateway */}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setGatewayView("CHOICE")}
+            className="px-3.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>&larr; Switch Role / Back to Gateway</span>
+          </button>
+        </div>
+
         {/* TWO-PHONE LIVE DEMO PRESENTATION BANNER */}
         <div className="rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 p-4 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <div className="space-y-0.5">

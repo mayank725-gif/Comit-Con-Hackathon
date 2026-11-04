@@ -3,15 +3,33 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CustomerPortalView from "@/components/uber/CustomerPortalView";
+import RiderAuthModal, { RiderUser } from "@/components/uber/RiderAuthModal";
 import { MarketplaceState, RideRequest } from "@/lib/uber/types";
-import { ArrowRight, Smartphone, Car, ShieldCheck } from "lucide-react";
+import { ArrowRight, Smartphone, Car, ShieldCheck, User } from "lucide-react";
 
 export default function RiderPage() {
   const [state, setState] = useState<MarketplaceState | null>(null);
+  const [riderUser, setRiderUser] = useState<RiderUser | null>(null);
+  const [isRiderAuthOpen, setIsRiderAuthOpen] = useState(false);
 
-  // Initial load
+  // Initial load: fetch state & check mandatory Rider session
   useEffect(() => {
     fetchState();
+
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("uber_rider_user");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setRiderUser(parsed);
+        } catch (e) {
+          setIsRiderAuthOpen(true);
+        }
+      } else {
+        // Enforce mandatory login on entry
+        setIsRiderAuthOpen(true);
+      }
+    }
   }, []);
 
   // Live simulation ticker for real-time demand & surge stream
@@ -49,11 +67,19 @@ export default function RiderPage() {
   };
 
   const handleRequestRide = async (request: RideRequest) => {
+    // Attach logged in rider identity to the ride payload
+    const enrichedRequest: RideRequest = {
+      ...request,
+      riderName: riderUser?.name || request.riderName || "Aman Gupta",
+      riderRating: riderUser?.rating || request.riderRating || 4.95,
+      timestamp: new Date().toISOString(),
+    };
+
     try {
       await fetch("/api/uber/rides", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(request),
+        body: JSON.stringify(enrichedRequest),
       });
     } catch (e) {
       console.error("Failed to persist ride to custom database:", e);
@@ -76,12 +102,20 @@ export default function RiderPage() {
     }
   };
 
+  const handleLogoutRider = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("uber_rider_user");
+    }
+    setRiderUser(null);
+    setIsRiderAuthOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
       {/* Standalone Rider Navigation Bar */}
       <header className="sticky top-0 z-40 w-full border-b border-zinc-800 bg-black/95 backdrop-blur-xl px-4 py-3 sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-          {/* Brand Logo */}
+          {/* Brand Logo & Mode Indicator */}
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
               <span className="text-xl sm:text-2xl font-black tracking-tighter text-white">
@@ -98,8 +132,25 @@ export default function RiderPage() {
             </div>
           </div>
 
-          {/* Quick Switch to Driver Portal for Phone 2 or presentation */}
+          {/* User Profile & Quick Switch to Driver Portal */}
           <div className="flex items-center gap-2">
+            {riderUser && (
+              <button
+                type="button"
+                onClick={() => setIsRiderAuthOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-xs transition-all"
+                title="Click to view or switch rider profile"
+              >
+                <img
+                  src={riderUser.avatar}
+                  alt={riderUser.name}
+                  className="w-5 h-5 rounded-full object-cover border border-emerald-400"
+                />
+                <span className="font-bold text-white hidden md:inline">{riderUser.name}</span>
+                <span className="text-[10px] text-zinc-400 font-mono">★ {riderUser.rating}</span>
+              </button>
+            )}
+
             <div className="sm:hidden flex items-center gap-1 text-[10px] font-mono text-emerald-400 font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>Rider Phone</span>
@@ -129,6 +180,9 @@ export default function RiderPage() {
               window.location.href = "/driver";
             }}
             onTriggerScenario={handleTriggerScenario}
+            riderUser={riderUser}
+            onOpenRiderAuth={() => setIsRiderAuthOpen(true)}
+            onLogoutRider={handleLogoutRider}
           />
         ) : (
           <div className="w-full h-96 rounded-3xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center space-y-3">
@@ -137,6 +191,18 @@ export default function RiderPage() {
           </div>
         )}
       </main>
+
+      {/* Mandatory Rider Authentication Modal */}
+      <RiderAuthModal
+        isOpen={isRiderAuthOpen}
+        onClose={() => setIsRiderAuthOpen(false)}
+        currentRider={riderUser}
+        onAuthSuccess={(rider) => {
+          setRiderUser(rider);
+          setIsRiderAuthOpen(false);
+        }}
+        canClose={Boolean(riderUser)}
+      />
     </div>
   );
 }

@@ -50,13 +50,27 @@ export default function ActiveTripHUD({
     setPhase("VERIFY_OTP");
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     // Allow any 4-digit number for seamless testing
     if (enteredOtp.length === 4) {
       setOtpError(false);
       setPhase("IN_TRANSIT");
       uberAudio.playDispatchAlert();
+
+      // Sync status with Custom Database so Rider Phone 1 instantly updates to ON_TRIP / En Route
+      try {
+        await fetch("/api/uber/rides", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            rideId: trip.id,
+            status: "IN_PROGRESS",
+          }),
+        });
+      } catch (e) {
+        console.warn("Failed to sync IN_PROGRESS status:", e);
+      }
     } else {
       setOtpError(true);
     }

@@ -3,9 +3,18 @@ import { driverDb } from "@/lib/db/driverDb";
 import { RideRequest } from "@/lib/uber/types";
 
 // GET /api/uber/rides - Fetches all rides + active dispatched/pending ride for real-time polling
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const rides = driverDb.getRides();
+    const url = new URL(req.url);
+    const rider = url.searchParams.get("rider");
+    const driver = url.searchParams.get("driver");
+
+    const rides = driver
+      ? driverDb.getDriverRides(driver)
+      : rider
+      ? driverDb.getRiderRides(rider)
+      : driverDb.getRides();
+
     const activeRide = driverDb.getLatestActiveRide();
     return NextResponse.json({ success: true, rides, activeRide });
   } catch (e: any) {

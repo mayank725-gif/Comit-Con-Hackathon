@@ -27,6 +27,7 @@ interface DriverAuthModalProps {
   currentProfile: DriverWorkProfile | null;
   onAuthSuccess: (user: DriverUser, profile: DriverWorkProfile) => void;
   onLogout: () => void;
+  canClose?: boolean;
 }
 
 const METRO_ZONES = {
@@ -106,6 +107,7 @@ export default function DriverAuthModal({
   currentProfile,
   onAuthSuccess,
   onLogout,
+  canClose = true,
 }: DriverAuthModalProps) {
   const [step, setStep] = useState<"LOGIN" | "TERRITORY">("LOGIN");
   const [isLoading, setIsLoading] = useState(false);
@@ -267,12 +269,18 @@ export default function DriverAuthModal({
             </h2>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          {canClose ? (
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          ) : (
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">
+              Mandatory Sign In
+            </span>
+          )}
         </div>
 
         {/* STEP 1: AUTHENTICATION */}

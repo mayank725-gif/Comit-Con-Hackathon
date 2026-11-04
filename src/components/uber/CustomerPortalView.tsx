@@ -50,9 +50,12 @@ const RealLeafletMap = dynamic(
 
 interface CustomerPortalViewProps {
   state: MarketplaceState;
-  onBookRide: (ride: RideRequest) => void;
-  onSwitchToDriver: () => void;
+  onBookRide?: (ride: RideRequest) => void;
+  onSwitchToDriver?: () => void;
   onTriggerScenario?: (type: any) => Promise<void>;
+  riderUser?: any;
+  onOpenRiderAuth?: () => void;
+  onLogoutRider?: () => void;
 }
 
 interface LocationItem {
@@ -118,9 +121,27 @@ export default function CustomerPortalView({
   onBookRide,
   onSwitchToDriver,
   onTriggerScenario,
+  riderUser,
+  onOpenRiderAuth,
+  onLogoutRider,
 }: CustomerPortalViewProps) {
-  // Navigation Sub-tab inside Customer Portal
-  const [activeTab, setActiveTab] = useState<"BOOK" | "SURGE_STREAM">("BOOK");
+  // Navigation Sub-tab inside Customer Portal (Book, Live Surge Balancer, or My Trips)
+  const [activeTab, setActiveTab] = useState<"BOOK" | "SURGE_STREAM" | "HISTORY">("BOOK");
+  const [rideHistory, setRideHistory] = useState<RideRequest[]>([]);
+  const [selectedHistoryRide, setSelectedHistoryRide] = useState<RideRequest | null>(null);
+
+  // Fetch rider trip history from Custom DB
+  const fetchRideHistory = async () => {
+    try {
+      const res = await fetch("/api/uber/rides");
+      const data = await res.json();
+      if (data.success && data.rides) {
+        setRideHistory(data.rides.filter((r: RideRequest) => r.status === "COMPLETED"));
+      }
+    } catch (e) {
+      console.warn("Failed to fetch ride history:", e);
+    }
+  };
 
   // Corporate vs Personal Profile Toggle
   const [travelProfile, setTravelProfile] = useState<"PERSONAL" | "BUSINESS">("PERSONAL");
@@ -173,6 +194,10 @@ export default function CustomerPortalView({
   const [driverEtaMin, setDriverEtaMin] = useState<number>(3);
   const [liveTripSpeed, setLiveTripSpeed] = useState<number>(46);
   const [confirmedRide, setConfirmedRide] = useState<RideRequest | null>(null);
+
+  useEffect(() => {
+    fetchRideHistory();
+  }, [tripState]);
 
   // Interactive Caller / Message Dialogs
   const [isCallModalOpen, setIsCallModalOpen] = useState(false);
@@ -356,47 +381,8 @@ export default function CustomerPortalView({
       }).catch(console.error);
     }
 
-    // Realistic matching radar animation
+    // Realistic matching radar animation (Listens in real-time for Driver on Phone 2 to accept)
     setTripState("SEARCHING");
-
-    // Standalone fallback: auto-assign driver after 18s only if not accepted by another device
-    setTimeout(() => {
-      setAssignedDriver((current: any) => {
-        if (current) return current;
-        return {
-          name: fleetDriver.name,
-          rating: fleetDriver.rating || 4.93,
-          vehicleModel: fleetDriver.vehicleModel || "Maruti Suzuki Dzire",
-          licensePlate: fleetDriver.licensePlate || "KA 01 MJ 1042",
-          tripsCompleted: fleetDriver.tripsCompleted || 2840,
-          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-          phone: "+91 98450 12890",
-        };
-      });
-      setDriverEtaMin(3);
-      setTripState((st) => (st === "SEARCHING" ? "ASSIGNED" : st));
-    }, 18000);
-  };
-
-  const handleForceDriverAccept = () => {
-    const fleetDriver = state.drivers[0] || {
-      name: "Rajesh Kumar",
-      rating: 4.96,
-      vehicleModel: "Maruti Suzuki Dzire",
-      licensePlate: "KA 01 MJ 4829",
-      tripsCompleted: 2840,
-    };
-    setAssignedDriver({
-      name: fleetDriver.name,
-      rating: fleetDriver.rating || 4.96,
-      vehicleModel: fleetDriver.vehicleModel || "Maruti Suzuki Dzire",
-      licensePlate: fleetDriver.licensePlate || "KA 01 MJ 4829",
-      tripsCompleted: 2840,
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-      phone: "+91 98450 12890",
-    });
-    setDriverEtaMin(3);
-    setTripState("ASSIGNED");
   };
 
   // Real-Time 2-Phone Synchronization via Custom Database
@@ -440,11 +426,6 @@ export default function CustomerPortalView({
 
     return () => clearInterval(pollInterval);
   }, [confirmedRide?.id, tripState]);
-
-  // Advance Trip Lifecycle for Demo & Testing
-  const handleSimulateTripProgress = (nextState: "ON_TRIP" | "COMPLETED") => {
-    setTripState(nextState);
-  };
 
   const handleCancelBooking = async () => {
     if (confirmedRide?.id) {
@@ -559,6 +540,30 @@ export default function CustomerPortalView({
               {routeData.surgeMultiplier}x Active
             </span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("HISTORY");
+              fetchRideHistory();
+            }}
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-black text-xs transition-all ${
+              activeTab === "HISTORY"
+                ? "bg-white text-black shadow-lg"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            <span>📁 My Trips</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full font-mono text-[10px] font-extrabold border ${
+                activeTab === "HISTORY"
+                  ? "bg-black/20 text-black border-black/30"
+                  : "bg-zinc-800 text-zinc-300 border-zinc-700"
+              }`}
+            >
+              {rideHistory.length}
+            </span>
+          </button>
         </div>
 
         {/* Center: Travel Profile Badge (Personal vs Business GST) */}
@@ -590,21 +595,36 @@ export default function CustomerPortalView({
           </button>
         </div>
 
-        {/* Right: Quick 1,000 Requests Test Button & Driver Portal Switch */}
-        <div className="flex items-center gap-2.5 w-full md:w-auto">
-          <button
-            type="button"
-            onClick={() => handleTrigger1000BurstTest()}
-            disabled={isStressTesting}
-            className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition-all shadow-lg flex items-center justify-center gap-1.5 disabled:opacity-50"
-          >
-            <span>{isStressTesting ? "⚡ Ingesting 1,000 Requests..." : "💥 Ingest 1,000 Requests Shock"}</span>
-          </button>
+        {/* Right: Logged-in Rider Profile & Switch to Driver */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          {riderUser && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900/90 text-xs">
+              <img
+                src={riderUser.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
+                alt={riderUser.name}
+                className="w-6 h-6 rounded-full object-cover border border-emerald-400"
+              />
+              <div className="text-left">
+                <span className="font-bold text-white block text-xs leading-none">{riderUser.name}</span>
+                <span className="text-[10px] text-zinc-400 font-mono">★ {riderUser.rating || 4.95}</span>
+              </div>
+              {onLogoutRider && (
+                <button
+                  type="button"
+                  onClick={onLogoutRider}
+                  className="ml-1 text-[10px] text-zinc-500 hover:text-rose-400 font-bold transition-colors cursor-pointer"
+                  title="Sign out of Rider account"
+                >
+                  Exit
+                </button>
+              )}
+            </div>
+          )}
 
           <button
             type="button"
             onClick={onSwitchToDriver}
-            className="px-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold text-xs transition-all flex items-center gap-1.5 shrink-0"
+            className="px-3.5 py-2 rounded-xl border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold text-xs transition-all flex items-center gap-1.5 shrink-0"
           >
             <span>Driver Portal</span>
             <ArrowRight className="h-3.5 w-3.5" />
@@ -987,26 +1007,17 @@ export default function CustomerPortalView({
                   <span>Anti-herd damping engaged &bull; Dispersal wave 1</span>
                 </div>
 
-                <div className="pt-2 border-t border-zinc-800/80 flex flex-col items-center gap-2.5">
-                  <span className="text-[10px] text-zinc-400 font-mono">
-                    📱 <strong>Two-Phone Demo</strong>: Accept dispatch on Driver Portal (Phone 2)
+                <div className="pt-2 border-t border-zinc-800/80 flex flex-col items-center gap-2">
+                  <span className="text-[11px] text-zinc-400 font-mono">
+                    📱 Broadcasting to commercial fleet &bull; Waiting for driver to accept on Driver Portal...
                   </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleForceDriverAccept}
-                      className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold transition-all cursor-pointer"
-                    >
-                      ⚡ Simulate Driver Accept Now
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCancelBooking}
-                      className="px-3 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs font-bold transition-all cursor-pointer"
-                    >
-                      Cancel Request
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCancelBooking}
+                    className="px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Cancel Ride Request
+                  </button>
                 </div>
               </div>
             )}
@@ -1092,18 +1103,15 @@ export default function CustomerPortalView({
                   </button>
                 </div>
 
-                {/* Demo Fast-Forward Controls */}
-                <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-xs">
-                  <span className="text-[10px] text-zinc-400 font-mono">Demo Controls:</span>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleSimulateTripProgress("ON_TRIP")}
-                      className="px-3 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-[11px]"
-                    >
-                      Start Ride &rarr;
-                    </button>
+                {/* Safety & Boarding Info */}
+                <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                    <span>Provide 4-digit PIN to driver upon car arrival</span>
                   </div>
+                  <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                    GPS Tracking Active
+                  </span>
                 </div>
               </div>
             )}
@@ -1129,14 +1137,15 @@ export default function CustomerPortalView({
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleSimulateTripProgress("COMPLETED")}
-                  className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all shadow-md flex items-center justify-center gap-2"
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>Arrived &bull; Complete Trip &amp; View Tax Invoice</span>
-                </button>
+                <div className="p-3.5 rounded-2xl border border-zinc-800 bg-zinc-900/80 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-zinc-300">
+                    <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                    <span>RideCheck Active: Route telemetry monitored 24/7</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-400">
+                    Driver completes trip on arrival
+                  </span>
+                </div>
               </div>
             )}
 
@@ -1259,6 +1268,160 @@ export default function CustomerPortalView({
           onTrigger1000Burst={handleTrigger1000BurstTest}
           initialStressData={latestStressData}
         />
+      )}
+
+      {/* VIEW 3: DEDICATED RIDER RIDE HISTORY & RECEIPTS */}
+      {activeTab === "HISTORY" && (
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5 sm:p-7 shadow-2xl space-y-5 animate-fadeIn">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
+            <div>
+              <h3 className="text-xl font-black text-white flex items-center gap-2">
+                <span>My Trips &amp; Ride History</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono font-bold">
+                  {rideHistory.length} Completed
+                </span>
+              </h3>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Past rides, payment receipts, GST tax invoices, and driver ratings.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={fetchRideHistory}
+              className="px-3.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <FileText className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Refresh History</span>
+            </button>
+          </div>
+
+          {rideHistory.length === 0 ? (
+            <div className="py-12 text-center space-y-2">
+              <Car className="h-10 w-10 text-zinc-600 mx-auto" />
+              <h4 className="text-sm font-bold text-zinc-300">No completed trips yet</h4>
+              <p className="text-xs text-zinc-500">Book your first ride on the &apos;Request a Ride&apos; tab to see it logged here!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {rideHistory.map((ride) => (
+                <div
+                  key={ride.id}
+                  className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 hover:bg-zinc-900 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 font-bold">
+                        {ride.id}
+                      </span>
+                      <span className="text-xs font-bold text-white">{ride.timestamp}</span>
+                      <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 text-[10px] font-bold">
+                        {ride.vehicleType ? ride.vehicleType.replace("UBER_", "Uber ") : "Uber Cab"}
+                      </span>
+                      {ride.surgeMultiplier > 1.0 && (
+                        <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/30">
+                          ⚡ {ride.surgeMultiplier}x Surge
+                        </span>
+                      )}
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold border border-emerald-500/30">
+                        ✓ Completed
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-300 pt-1 truncate">
+                      <span className="text-zinc-400 truncate">{ride.pickupAddress}</span>
+                      <ArrowRight className="h-3 w-3 text-zinc-500 shrink-0" />
+                      <span className="text-white font-semibold truncate">{ride.dropoffAddress}</span>
+                    </div>
+
+                    <div className="text-[11px] text-zinc-400 flex items-center gap-2 pt-0.5">
+                      <span>Driver: <strong className="text-zinc-200">{ride.driverName || "Rajesh Kumar"}</strong></span>
+                      <span>&bull;</span>
+                      <span>Vehicle: {ride.vehicleModel || "Dzire"} ({ride.licensePlate || "KA 01 MJ 4829"})</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
+                    <div className="text-right">
+                      <span className="text-base font-black text-white font-mono block">
+                        ₹{ride.fareInr}
+                      </span>
+                      <span className="text-[10px] text-zinc-400 block font-mono">
+                        {ride.paymentMode} &bull; Paid
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedHistoryRide(ride)}
+                      className="px-3 py-1.5 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <FileText className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>Invoice</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* DETAILED RIDE INVOICE MODAL */}
+      {selectedHistoryRide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="relative w-full max-w-md rounded-3xl border border-zinc-700 bg-zinc-950 p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div>
+                <h4 className="text-base font-black text-white flex items-center gap-2">
+                  <span>Uber Tax Invoice</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/30">
+                    PAID
+                  </span>
+                </h4>
+                <span className="text-[10px] text-zinc-400 font-mono">Invoice #{selectedHistoryRide.id}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedHistoryRide(null)}
+                className="p-1.5 rounded-xl border border-zinc-800 text-zinc-400 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl border border-zinc-800 bg-zinc-900/60 space-y-2 text-xs">
+              <div className="flex justify-between text-zinc-300">
+                <span>Trip Date</span>
+                <span className="font-bold text-white">{selectedHistoryRide.timestamp}</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
+                <span>Driver Partner</span>
+                <span className="font-bold text-white">{selectedHistoryRide.driverName || "Rajesh Kumar"}</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
+                <span>Vehicle</span>
+                <span className="font-mono text-zinc-200">{selectedHistoryRide.vehicleModel} ({selectedHistoryRide.licensePlate})</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
+                <span>Surge Multiplier</span>
+                <span className="font-mono text-amber-300 font-bold">{selectedHistoryRide.surgeMultiplier}x</span>
+              </div>
+              <div className="border-t border-zinc-800 pt-2 flex justify-between text-sm font-black text-white">
+                <span>Total Fare Charged</span>
+                <span className="font-mono text-emerald-400">₹{selectedHistoryRide.fareInr}</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSelectedHistoryRide(null)}
+              className="w-full py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs transition-all cursor-pointer"
+            >
+              Close Invoice
+            </button>
+          </div>
+        </div>
       )}
 
       {/* CALL DRIVER MODAL */}

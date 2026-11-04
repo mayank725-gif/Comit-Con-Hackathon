@@ -63,6 +63,7 @@ interface DatabaseSchema {
   users: Record<string, DriverUser>;
   profiles: Record<string, DriverWorkProfile>;
   sessions: Record<string, DriverSession>;
+  riders: Record<string, any>;
   trips: DriverTripLog[];
   zones: Record<string, CityZone>;
   drivers: Driver[];
@@ -102,10 +103,11 @@ class CustomDriverDatabase {
       users: {},
       profiles: {},
       sessions: {},
+      riders: {},
       trips: [],
       zones: this.getDefaultZones(),
       drivers: this.getDefaultDrivers(),
-      rides: [],
+      rides: this.getDefaultRides(),
       surgeRequests: this.getDefaultSurgeRequests(),
       marketplaceMetrics: this.getDefaultMetrics(),
     };
@@ -123,10 +125,11 @@ class CustomDriverDatabase {
             users: { ...this.inMemoryDb.users, ...(parsed.users || {}) },
             profiles: { ...this.inMemoryDb.profiles, ...(parsed.profiles || {}) },
             sessions: { ...this.inMemoryDb.sessions, ...(parsed.sessions || {}) },
+            riders: { ...this.inMemoryDb.riders, ...(parsed.riders || {}) },
             trips: parsed.trips || [],
             zones: parsed.zones && Object.keys(parsed.zones).length > 0 ? parsed.zones : this.getDefaultZones(),
             drivers: parsed.drivers && parsed.drivers.length > 0 ? parsed.drivers : this.getDefaultDrivers(),
-            rides: parsed.rides || [],
+            rides: parsed.rides && parsed.rides.length > 0 ? parsed.rides : this.getDefaultRides(),
             surgeRequests: parsed.surgeRequests && parsed.surgeRequests.length > 0 ? parsed.surgeRequests : this.getDefaultSurgeRequests(),
             marketplaceMetrics: parsed.marketplaceMetrics || this.getDefaultMetrics(),
           };
@@ -261,6 +264,46 @@ class CustomDriverDatabase {
       }));
       this.persistToDisk();
     }
+  }
+
+  public getRiderRides(query?: string): RideRequest[] {
+    this.loadFromDisk();
+    const rides = this.inMemoryDb.rides || [];
+    if (!query) return rides;
+    const q = query.toLowerCase();
+    return rides.filter(
+      (r) =>
+        r.riderName.toLowerCase().includes(q) ||
+        r.id.toLowerCase().includes(q) ||
+        (r.pickupAddress && r.pickupAddress.toLowerCase().includes(q))
+    );
+  }
+
+  public getDriverRides(driverName?: string): RideRequest[] {
+    this.loadFromDisk();
+    const rides = this.inMemoryDb.rides || [];
+    if (!driverName) return rides.filter((r) => r.status === "COMPLETED");
+    const d = driverName.toLowerCase();
+    return rides.filter(
+      (r) => (r.driverName && r.driverName.toLowerCase().includes(d)) || r.status === "COMPLETED"
+    );
+  }
+
+  public saveRiderProfile(rider: any): any {
+    this.loadFromDisk();
+    if (!this.inMemoryDb.riders) this.inMemoryDb.riders = {};
+    const key = rider.phone || rider.id || "default_rider";
+    this.inMemoryDb.riders[key] = {
+      ...rider,
+      updatedAt: new Date().toISOString(),
+    };
+    this.persistToDisk();
+    return this.inMemoryDb.riders[key];
+  }
+
+  public getRiderProfile(idOrPhone: string): any {
+    this.loadFromDisk();
+    return (this.inMemoryDb.riders && this.inMemoryDb.riders[idOrPhone]) || null;
   }
 
   // =========================================================================
@@ -845,6 +888,77 @@ class CustomDriverDatabase {
         latencyMs: +(1.4 + Math.random() * 2.2).toFixed(1),
       };
     });
+  }
+
+  private getDefaultRides(): RideRequest[] {
+    return [
+      {
+        id: "RIDE-982140",
+        riderName: "Aman Gupta",
+        riderRating: 4.95,
+        pickupAddress: "Kempegowda International Airport (BLR T2)",
+        pickupCoords: [13.1986, 77.7066],
+        dropoffAddress: "Indiranagar 100ft Road Metro, Bengaluru",
+        dropoffCoords: [12.9784, 77.6408],
+        vehicleType: "UBER_PREMIER",
+        distanceKm: 38,
+        durationMin: 52,
+        fareInr: 890,
+        surgeMultiplier: 1.4,
+        surgeBonusInr: 254,
+        timestamp: "Yesterday, 07:45 PM",
+        status: "COMPLETED",
+        paymentMode: "GOOGLE_PAY_UPI",
+        driverName: "Rajesh Kumar",
+        vehicleModel: "Maruti Suzuki Dzire",
+        licensePlate: "KA 01 MJ 4829",
+        otp: "4829",
+      },
+      {
+        id: "RIDE-871234",
+        riderName: "Aman Gupta",
+        riderRating: 4.95,
+        pickupAddress: "Koramangala 5th Block Club Area",
+        pickupCoords: [12.9352, 77.6245],
+        dropoffAddress: "Bellandur EcoSpace Outer Ring Rd",
+        dropoffCoords: [12.926, 77.6762],
+        vehicleType: "UBER_GO",
+        distanceKm: 9.5,
+        durationMin: 24,
+        fareInr: 340,
+        surgeMultiplier: 1.8,
+        surgeBonusInr: 151,
+        timestamp: "Yesterday, 10:15 AM",
+        status: "COMPLETED",
+        paymentMode: "CORPORATE_CARD",
+        driverName: "Sunil Yadav",
+        vehicleModel: "Hyundai Aura",
+        licensePlate: "KA 05 AB 1122",
+        otp: "1122",
+      },
+      {
+        id: "RIDE-763491",
+        riderName: "Priya Sharma",
+        riderRating: 4.98,
+        pickupAddress: "M. Chinnaswamy Stadium, MG Road",
+        pickupCoords: [12.9788, 77.5996],
+        dropoffAddress: "Whitefield ITPL Main Gate",
+        dropoffCoords: [12.9866, 77.7381],
+        vehicleType: "UBER_GREEN_EV",
+        distanceKm: 18.2,
+        durationMin: 40,
+        fareInr: 580,
+        surgeMultiplier: 2.2,
+        surgeBonusInr: 316,
+        timestamp: "2 days ago, 11:30 PM",
+        status: "COMPLETED",
+        paymentMode: "GOOGLE_PAY_UPI",
+        driverName: "Rajesh Kumar",
+        vehicleModel: "Tata Tigor EV",
+        licensePlate: "KA 01 MJ 4829",
+        otp: "4829",
+      },
+    ];
   }
 
   private getDefaultMetrics() {
