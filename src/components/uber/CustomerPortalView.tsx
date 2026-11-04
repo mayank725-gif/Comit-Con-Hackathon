@@ -346,31 +346,121 @@ export default function CustomerPortalView({
     };
 
     setConfirmedRide(newRide);
-    onBookRide(newRide);
+    if (onBookRide) {
+      onBookRide(newRide);
+    } else {
+      fetch("/api/uber/rides", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newRide),
+      }).catch(console.error);
+    }
 
-    // Realistic matching radar animation (3.2 seconds)
+    // Realistic matching radar animation
     setTripState("SEARCHING");
+
+    // Standalone fallback: auto-assign driver after 18s only if not accepted by another device
     setTimeout(() => {
-      setAssignedDriver({
-        name: fleetDriver.name,
-        rating: fleetDriver.rating || 4.93,
-        vehicleModel: fleetDriver.vehicleModel || "Maruti Suzuki Dzire",
-        licensePlate: fleetDriver.licensePlate || "KA 01 MJ 1042",
-        tripsCompleted: fleetDriver.tripsCompleted || 2840,
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-        phone: "+91 98450 12890",
+      setAssignedDriver((current: any) => {
+        if (current) return current;
+        return {
+          name: fleetDriver.name,
+          rating: fleetDriver.rating || 4.93,
+          vehicleModel: fleetDriver.vehicleModel || "Maruti Suzuki Dzire",
+          licensePlate: fleetDriver.licensePlate || "KA 01 MJ 1042",
+          tripsCompleted: fleetDriver.tripsCompleted || 2840,
+          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+          phone: "+91 98450 12890",
+        };
       });
       setDriverEtaMin(3);
-      setTripState("ASSIGNED");
-    }, 3200);
+      setTripState((st) => (st === "SEARCHING" ? "ASSIGNED" : st));
+    }, 18000);
   };
+
+  const handleForceDriverAccept = () => {
+    const fleetDriver = state.drivers[0] || {
+      name: "Rajesh Kumar",
+      rating: 4.96,
+      vehicleModel: "Maruti Suzuki Dzire",
+      licensePlate: "KA 01 MJ 4829",
+      tripsCompleted: 2840,
+    };
+    setAssignedDriver({
+      name: fleetDriver.name,
+      rating: fleetDriver.rating || 4.96,
+      vehicleModel: fleetDriver.vehicleModel || "Maruti Suzuki Dzire",
+      licensePlate: fleetDriver.licensePlate || "KA 01 MJ 4829",
+      tripsCompleted: 2840,
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      phone: "+91 98450 12890",
+    });
+    setDriverEtaMin(3);
+    setTripState("ASSIGNED");
+  };
+
+  // Real-Time 2-Phone Synchronization via Custom Database
+  useEffect(() => {
+    if (!confirmedRide?.id || tripState === "IDLE") return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/uber/rides");
+        const data = await res.json();
+        if (data.success && data.rides) {
+          const live = data.rides.find((r: RideRequest) => r.id === confirmedRide.id);
+          if (live) {
+            if (live.status === "ACCEPTED" && tripState === "SEARCHING") {
+              setAssignedDriver({
+                name: live.driverName || "Rajesh Kumar (Partner Driver)",
+                rating: live.driverRating || 4.96,
+                vehicleModel: live.vehicleModel || "Maruti Suzuki Dzire",
+                licensePlate: live.licensePlate || "KA 01 MJ 4829",
+                tripsCompleted: 2840,
+                avatar: live.driverAvatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+                phone: live.driverPhone || "+91 98450 12890",
+              });
+              if (live.otp) setRideOtp(live.otp);
+              setDriverEtaMin(3);
+              setTripState("ASSIGNED");
+            } else if (live.status === "IN_PROGRESS" && tripState !== "ON_TRIP") {
+              setTripState("ON_TRIP");
+            } else if (live.status === "COMPLETED" && tripState !== "COMPLETED") {
+              setTripState("COMPLETED");
+            } else if (live.status === "CANCELLED") {
+              setTripState("IDLE");
+              setConfirmedRide(null);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Rider cross-device sync poll warning:", err);
+      }
+    }, 1200);
+
+    return () => clearInterval(pollInterval);
+  }, [confirmedRide?.id, tripState]);
 
   // Advance Trip Lifecycle for Demo & Testing
   const handleSimulateTripProgress = (nextState: "ON_TRIP" | "COMPLETED") => {
     setTripState(nextState);
   };
 
-  const handleCancelBooking = () => {
+  const handleCancelBooking = async () => {
+    if (confirmedRide?.id) {
+      try {
+        await fetch("/api/uber/rides", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            rideId: confirmedRide.id,
+            status: "CANCELLED",
+          }),
+        });
+      } catch (e) {
+        // ignore
+      }
+    }
     setTripState("IDLE");
     setConfirmedRide(null);
     setAssignedDriver(null);
@@ -895,6 +985,28 @@ export default function CustomerPortalView({
                 <div className="flex items-center justify-center gap-2 text-[11px] font-mono text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span>Anti-herd damping engaged &bull; Dispersal wave 1</span>
+                </div>
+
+                <div className="pt-2 border-t border-zinc-800/80 flex flex-col items-center gap-2.5">
+                  <span className="text-[10px] text-zinc-400 font-mono">
+                    📱 <strong>Two-Phone Demo</strong>: Accept dispatch on Driver Portal (Phone 2)
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleForceDriverAccept}
+                      className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold transition-all cursor-pointer"
+                    >
+                      ⚡ Simulate Driver Accept Now
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelBooking}
+                      className="px-3 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                    >
+                      Cancel Request
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

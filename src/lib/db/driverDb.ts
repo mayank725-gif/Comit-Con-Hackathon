@@ -89,7 +89,13 @@ class CustomDriverDatabase {
   private isPersisting: boolean = false;
 
   constructor() {
-    const storageDir = process.env.DATA_DIR || path.join(process.cwd(), ".data");
+    const isServerless = Boolean(
+      process.env.VERCEL ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.TMPDIR ||
+      process.env.NODE_ENV === "production"
+    );
+    const storageDir = process.env.DATA_DIR || (isServerless ? "/tmp" : path.join(process.cwd(), ".data"));
     this.dbFilePath = path.join(storageDir, "uber_driver_database.json");
 
     this.inMemoryDb = {
@@ -198,28 +204,63 @@ class CustomDriverDatabase {
   }
 
   // =========================================================================
-  // RIDES & BOOKINGS OPERATIONS
+  // RIDES & BOOKINGS OPERATIONS (CROSS-DEVICE TWO-PHONE REAL-TIME SYNC)
   // =========================================================================
   public getRides(): RideRequest[] {
+    this.loadFromDisk();
     return this.inMemoryDb.rides || [];
   }
 
+  public getLatestActiveRide(): RideRequest | null {
+    this.loadFromDisk();
+    const rides = this.inMemoryDb.rides || [];
+    return (
+      rides.find(
+        (r) =>
+          r.status === "REQUESTED" ||
+          r.status === "PENDING" ||
+          r.status === "ACCEPTED" ||
+          r.status === "IN_PROGRESS"
+      ) || null
+    );
+  }
+
   public createRideRequest(ride: RideRequest): RideRequest {
+    this.loadFromDisk();
     if (!this.inMemoryDb.rides) this.inMemoryDb.rides = [];
     this.inMemoryDb.rides = [ride, ...this.inMemoryDb.rides].slice(0, 50);
     this.persistToDisk();
     return ride;
   }
 
-  public updateRideStatus(rideId: string, status: RideRequest["status"]): RideRequest | null {
+  public updateRideStatus(
+    rideId: string,
+    status: RideRequest["status"],
+    driverDetails?: Partial<RideRequest>
+  ): RideRequest | null {
+    this.loadFromDisk();
     if (!this.inMemoryDb.rides) return null;
     const found = this.inMemoryDb.rides.find((r) => r.id === rideId);
     if (found) {
       found.status = status;
+      if (driverDetails) {
+        Object.assign(found, driverDetails);
+      }
       this.persistToDisk();
       return found;
     }
     return null;
+  }
+
+  public clearAllActiveRides(): void {
+    this.loadFromDisk();
+    if (this.inMemoryDb.rides) {
+      this.inMemoryDb.rides = this.inMemoryDb.rides.map((r) => ({
+        ...r,
+        status: "COMPLETED" as const,
+      }));
+      this.persistToDisk();
+    }
   }
 
   // =========================================================================

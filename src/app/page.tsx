@@ -20,6 +20,7 @@ import {
   RideRequest,
 } from "@/lib/uber/types";
 import { UBER_BENCHMARK_DATA } from "@/lib/uber/benchmark";
+import { ArrowRight } from "lucide-react";
 
 // Dynamic import with ssr: false for Leaflet real map
 const RealLeafletMap = dynamic(
@@ -198,8 +199,32 @@ export default function Home() {
     } catch (e) {
       console.error("Failed to persist ride to custom database:", e);
     }
-    // Ride request is persisted to custom database and queued for driver dispatch
   };
+
+  // Cross-device polling: Listen for dispatches booked on Phone 1 (/rider)
+  useEffect(() => {
+    if (activeTrip || portalMode !== "DRIVER") return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/uber/rides");
+        const data = await res.json();
+        if (data.success && data.activeRide) {
+          const active: RideRequest = data.activeRide;
+          if (
+            (active.status === "REQUESTED" || active.status === "PENDING") &&
+            (!incomingRideRequest || incomingRideRequest.id !== active.id)
+          ) {
+            setIncomingRideRequest(active);
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }, 1200);
+
+    return () => clearInterval(interval);
+  }, [activeTrip, incomingRideRequest, portalMode]);
 
   const handleSimulateDispatch = () => {
     const cityName = currentProfile?.cityName || "Bengaluru";
@@ -227,13 +252,36 @@ export default function Home() {
     setIncomingRideRequest(simRequest);
   };
 
-  const handleAcceptRide = (request: RideRequest) => {
+  const handleAcceptRide = async (request: RideRequest) => {
     setIncomingRideRequest(null);
     setActiveTrip(request);
 
     // Fly map to pickup/dropoff
     if (request.pickupCoords) {
       setMapFlyToCoords([...request.pickupCoords]);
+    }
+
+    // Sync accept back to Rider Phone 1
+    try {
+      await fetch("/api/uber/rides", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rideId: request.id,
+          status: "ACCEPTED",
+          driverDetails: {
+            driverName: currentProfile?.driverName || "Rajesh Kumar (Partner Driver)",
+            driverPhone: "+91 98450 12890",
+            driverRating: 4.96,
+            vehicleModel: currentProfile?.vehicleModel || "Maruti Suzuki Dzire",
+            licensePlate: currentProfile?.licensePlate || "KA 01 MJ 4829",
+            driverAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+            driverCoords: currentProfile?.assignedCoordinates || [12.9788, 77.5980],
+          },
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to sync accept ride:", e);
     }
 
     setChatMessages((prev) => [
@@ -253,12 +301,40 @@ export default function Home() {
     ]);
   };
 
-  const handleDeclineRide = () => {
+  const handleDeclineRide = async () => {
+    if (incomingRideRequest) {
+      try {
+        await fetch("/api/uber/rides", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            rideId: incomingRideRequest.id,
+            status: "CANCELLED",
+          }),
+        });
+      } catch (e) {
+        // ignore
+      }
+    }
     setIncomingRideRequest(null);
   };
 
   const handleCompleteTrip = async (trip: RideRequest) => {
     setActiveTrip(null);
+
+    // Sync trip completion back to Rider Phone 1
+    try {
+      await fetch("/api/uber/rides", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rideId: trip.id,
+          status: "COMPLETED",
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to sync complete ride:", e);
+    }
 
     // Update earnings in current profile & persist into custom database
     const newEarnings = ((currentProfile?.currentEarnings) || 2070) + trip.fareInr;
@@ -420,6 +496,38 @@ export default function Home() {
       />
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+        {/* TWO-PHONE LIVE DEMO PRESENTATION BANNER */}
+        <div className="rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 p-4 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-400">
+                TWO-PHONE LIVE DEMONSTRATION MODE
+              </span>
+            </div>
+            <p className="text-xs text-zinc-300">
+              Open <strong className="text-white">/rider</strong> on Phone 1 and <strong className="text-white">/driver</strong> on Phone 2 to experience live cross-phone ride booking, instant dispatch alerts, and trip completion!
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+            <a
+              href="/rider"
+              className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
+            >
+              <span>📱 Phone 1 (Rider)</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+            <a
+              href="/driver"
+              className="flex-1 md:flex-none px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
+            >
+              <span>🚗 Phone 2 (Driver)</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+          </div>
+        </div>
+
         {/* CUSTOMER RIDE BOOKING PORTAL */}
         {portalMode === "CUSTOMER" && (
           <CustomerPortalView

@@ -146,8 +146,16 @@ export interface RideRequest {
   surgeMultiplier: number;
   surgeBonusInr: number;
   timestamp: string;
-  status: "REQUESTED" | "DISPATCHED" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  status: "PENDING" | "REQUESTED" | "DISPATCHED" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
   paymentMode: "GOOGLE_PAY_UPI" | "CASH" | "UBER_CASH" | "CORPORATE_CARD";
+  otp?: string;
+  driverName?: string;
+  driverPhone?: string;
+  driverRating?: number;
+  vehicleModel?: string;
+  licensePlate?: string;
+  driverAvatar?: string;
+  driverCoords?: [number, number];
 }
 
 export interface AssistantMessage {
