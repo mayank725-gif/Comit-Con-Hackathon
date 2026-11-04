@@ -37,18 +37,18 @@ export default function IncomingRideDispatchModal({
     uberAudio.playDispatchAlert();
 
     const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          onDecline();
-          return 0;
-        }
-        return prev - 1;
-      });
+      setTimeLeft((prev) => Math.max(0, prev - 1));
     }, 1000);
 
     return () => clearInterval(interval);
   }, [request]);
+
+  // Pure effect to safely trigger decline without concurrent side-effects
+  useEffect(() => {
+    if (request && timeLeft === 0) {
+      onDecline();
+    }
+  }, [timeLeft, request, onDecline]);
 
   if (!request) return null;
 

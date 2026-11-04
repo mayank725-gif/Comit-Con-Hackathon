@@ -74,13 +74,16 @@ export async function GET(req: Request) {
     }
 
     // Recompute latest active pending/accepted/in_progress ride
-    activeRide = rides.find(
+    const filteredActive = rides.find(
       (r) =>
         r.status === "REQUESTED" ||
         r.status === "PENDING" ||
         r.status === "ACCEPTED" ||
         r.status === "IN_PROGRESS"
-    ) || null;
+    );
+
+    // If driver query filtered out an unassigned incoming ride, preserve the global active dispatch
+    activeRide = filteredActive || (driver && activeRide && (activeRide.status === "REQUESTED" || activeRide.status === "PENDING") ? activeRide : null);
 
     return NextResponse.json({ success: true, rides, activeRide });
   } catch (e: any) {

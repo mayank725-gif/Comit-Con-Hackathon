@@ -388,6 +388,10 @@ export default function RealLeafletMap({
 
     return () => {
       isMounted = false;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
     };
   }, []);
 
@@ -709,6 +713,9 @@ export default function RealLeafletMap({
     if (hubId) setActiveMetroId(hubId);
     if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo([lat, lng], zoom, { duration: 1.5 });
+      setTimeout(() => {
+        mapInstanceRef.current?.invalidateSize();
+      }, 300);
     }
   };
 
@@ -716,6 +723,9 @@ export default function RealLeafletMap({
   useEffect(() => {
     if (flyToCoords && mapInstanceRef.current) {
       mapInstanceRef.current.flyTo(flyToCoords, 13, { duration: 1.5 });
+      setTimeout(() => {
+        mapInstanceRef.current?.invalidateSize();
+      }, 300);
     }
   }, [flyToCoords]);
 

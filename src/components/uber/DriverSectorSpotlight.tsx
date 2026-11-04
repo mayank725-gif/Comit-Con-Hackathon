@@ -123,11 +123,11 @@ export default function DriverSectorSpotlight({
   }
 
   // Financial Ledger Calculations
-  const grossShiftEarnings = profile.currentEarnings || 3120;
+  const grossShiftEarnings = typeof profile.currentEarnings === "number" ? profile.currentEarnings : 3120;
   const platformFee = Math.round(grossShiftEarnings * 0.2); // 20% Uber fee
-  const tollReimbursements = 120;
-  const estimatedFuelCng = 420;
-  const netTakeHome = grossShiftEarnings - platformFee + tollReimbursements - estimatedFuelCng;
+  const tollReimbursements = grossShiftEarnings > 0 ? 120 : 0;
+  const estimatedFuelCng = grossShiftEarnings > 0 ? 420 : 0;
+  const netTakeHome = Math.max(0, grossShiftEarnings - platformFee + tollReimbursements - estimatedFuelCng);
   const target = profile.dailyEarningsTarget || 3500;
   const progressPercent = Math.min(100, Math.round((grossShiftEarnings / target) * 100));
 

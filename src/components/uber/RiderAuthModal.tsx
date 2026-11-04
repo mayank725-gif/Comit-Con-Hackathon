@@ -81,22 +81,33 @@ export default function RiderAuthModal({
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [profileType, setProfileType] = useState<"PERSONAL" | "BUSINESS">("PERSONAL");
   const [gstin, setGstin] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSelectPreset = (preset: RiderUser) => {
     setSelectedPresetId(preset.id);
     setIsCustomMode(false);
+    setFormError(null);
   };
 
   const handleContinue = () => {
+    setFormError(null);
     let rider: RiderUser;
-    if (isCustomMode && customName && customPhone) {
+    if (isCustomMode) {
+      if (!customName.trim()) {
+        setFormError("Please enter your name");
+        return;
+      }
+      if (!customPhone.trim()) {
+        setFormError("Please enter your 10-digit mobile number");
+        return;
+      }
       rider = {
         id: `RIDER-${Date.now().toString().slice(-4)}`,
-        name: customName,
-        phone: customPhone.startsWith("+91") ? customPhone : `+91 ${customPhone}`,
-        email: `${customName.toLowerCase().replace(/\s+/g, ".")}@example.com`,
+        name: customName.trim(),
+        phone: customPhone.startsWith("+91") ? customPhone.trim() : `+91 ${customPhone.trim()}`,
+        email: `${customName.trim().toLowerCase().replace(/\s+/g, ".")}@example.com`,
         avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
         rating: 4.96,
         profileType,
@@ -258,6 +269,14 @@ export default function RiderAuthModal({
                 />
               </div>
             )}
+          </div>
+        )}
+
+        {/* Validation Error Message */}
+        {formError && (
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/40 text-rose-400 text-xs font-semibold flex items-center gap-2 animate-fadeIn">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-400 shrink-0" />
+            <span>{formError}</span>
           </div>
         )}
 

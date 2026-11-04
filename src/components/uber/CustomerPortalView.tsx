@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { VehicleType, RideRequest, MarketplaceState, AssistantMessage } from "@/lib/uber/types";
 import SurgeHandlingMonitor from "@/components/uber/SurgeHandlingMonitor";
@@ -174,6 +174,7 @@ export default function CustomerPortalView({
   const [isSearchingDropoff, setIsSearchingDropoff] = useState(false);
   const [searchResults, setSearchResults] = useState<LocationItem[]>([]);
   const [activeSearchField, setActiveSearchField] = useState<"pickup" | "dropoff" | null>(null);
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Selected vehicle & payment
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleType>("UBER_GO");
@@ -298,6 +299,10 @@ export default function CustomerPortalView({
 
   // Swap Pickup & Dropoff
   const handleSwapLocations = () => {
+    if (tripState !== "IDLE") return; // Prevent modifying active route during active ride
+    setIsSearchingPickup(false);
+    setIsSearchingDropoff(false);
+    setSearchResults([]);
     const tempQuery = pickupQuery;
     const tempCoords = pickupCoords;
     setPickupQuery(dropoffQuery);
@@ -306,8 +311,8 @@ export default function CustomerPortalView({
     setDropoffCoords(tempCoords);
   };
 
-  // Live Location Search (OpenStreetMap Nominatim + India Database)
-  const handleLocationSearch = async (text: string, field: "pickup" | "dropoff") => {
+  // Live Location Search (OpenStreetMap Nominatim + India Database) with 200ms debounce
+  const handleLocationSearch = (text: string, field: "pickup" | "dropoff") => {
     setActiveSearchField(field);
     if (field === "pickup") {
       setPickupQuery(text);
@@ -317,20 +322,26 @@ export default function CustomerPortalView({
       setIsSearchingDropoff(true);
     }
 
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+
     if (text.trim().length < 2) {
       setSearchResults([]);
       return;
     }
 
-    try {
-      const res = await fetch(`/api/uber/locations?q=${encodeURIComponent(text.trim())}`);
-      const data = await res.json();
-      if (data.success && data.locations) {
-        setSearchResults(data.locations);
+    searchDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/uber/locations?q=${encodeURIComponent(text.trim())}`);
+        const data = await res.json();
+        if (data.success && data.locations) {
+          setSearchResults(data.locations);
+        }
+      } catch (e) {
+        console.error("Location search failed:", e);
       }
-    } catch (e) {
-      console.error("Location search failed:", e);
-    }
+    }, 200);
   };
 
   const handleSelectLocation = (loc: LocationItem) => {
@@ -363,9 +374,15 @@ export default function CustomerPortalView({
         : (travelProfile === "BUSINESS" ? "Aman Gupta (Corp Travel)" : "Aman Gupta");
       const resolvedRating = riderUser?.rating || 4.95;
 
+      const selectedTierObj = VEHICLE_TIERS.find((v) => v.type === selectedVehicle) || VEHICLE_TIERS[0];
+      const activeTierFare = Math.round(
+        (routeData.distanceKm * selectedTierObj.ratePerKm + 50) * routeData.surgeMultiplier
+      );
+
       const newRide: RideRequest = {
         id: `RIDE_${Date.now().toString().slice(-6)}`,
         riderName: resolvedRiderName,
+        riderPhone: riderUser?.phone || "+91 98450 12890",
         riderRating: resolvedRating,
         pickupAddress: pickupQuery,
         pickupCoords,
@@ -374,7 +391,7 @@ export default function CustomerPortalView({
         vehicleType: selectedVehicle,
         distanceKm: routeData.distanceKm,
         durationMin: routeData.travelTimeMin,
-        fareInr: routeData.finalFareInr,
+        fareInr: activeTierFare,
         surgeMultiplier: routeData.surgeMultiplier,
         surgeBonusInr: routeData.surgeBonusInr,
         timestamp: new Date().toISOString(),
@@ -429,6 +446,9 @@ export default function CustomerPortalView({
       } else if (live.status === "CANCELLED") {
         setTripState("IDLE");
         setConfirmedRide(null);
+        setAssignedDriver(null);
+        setRideOtp("");
+        setDriverEtaMin(3);
       }
     };
 
@@ -539,10 +559,16 @@ export default function CustomerPortalView({
     }
   };
 
+  // Dynamic Active Selected Vehicle Tier & Fare
+  const activeSelectedTier = VEHICLE_TIERS.find((v) => v.type === selectedVehicle) || VEHICLE_TIERS[0];
+  const activeSelectedFare = Math.round(
+    (routeData.distanceKm * activeSelectedTier.ratePerKm + 50) * routeData.surgeMultiplier
+  );
+
   // Calculate GST Tax for Business Travel
   const gstRate = 0.05; // 5% GST for passenger transport
-  const basePreTaxFare = Math.round(routeData.finalFareInr / (1 + gstRate));
-  const gstAmount = routeData.finalFareInr - basePreTaxFare;
+  const basePreTaxFare = Math.round(activeSelectedFare / (1 + gstRate));
+  const gstAmount = activeSelectedFare - basePreTaxFare;
   const cgst = +(gstAmount / 2).toFixed(1);
   const sgst = +(gstAmount / 2).toFixed(1);
 
@@ -811,8 +837,13 @@ export default function CustomerPortalView({
                   <button
                     type="button"
                     onClick={handleSwapLocations}
+                    disabled={tripState !== "IDLE"}
                     title="Swap pickup and destination"
-                    className="p-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors"
+                    className={`p-1 rounded-lg border border-zinc-800 transition-colors ${
+                      tripState !== "IDLE"
+                        ? "opacity-30 cursor-not-allowed bg-zinc-950 text-zinc-600"
+                        : "bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white cursor-pointer"
+                    }`}
                   >
                     <ArrowUpDown className="h-3.5 w-3.5" />
                   </button>
@@ -886,6 +917,8 @@ export default function CustomerPortalView({
                       onClick={() => {
                         setDropoffQuery(chip.name);
                         setDropoffCoords([chip.lat, chip.lng]);
+                        setIsSearchingDropoff(false);
+                        setSearchResults([]);
                       }}
                       className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[11px] text-zinc-300 font-medium transition-all truncate"
                     >
@@ -1001,7 +1034,7 @@ export default function CustomerPortalView({
                     <span className="font-bold text-white text-xs block">Guaranteed Total Fare</span>
                     <span className="text-[10px] text-emerald-400 font-medium">Fixed rate &bull; No driver negotiation</span>
                   </div>
-                  <span className="text-2xl font-black text-white font-mono">₹{routeData.finalFareInr}</span>
+                  <span className="text-2xl font-black text-white font-mono">₹{activeSelectedFare}</span>
                 </div>
               </div>
 
@@ -1041,8 +1074,8 @@ export default function CustomerPortalView({
                     </>
                   ) : (
                     <>
-                      <span>Request {VEHICLE_TIERS.find((v) => v.type === selectedVehicle)?.name}</span>
-                      <span className="text-xs font-mono font-bold text-zinc-700">&bull; ₹{routeData.finalFareInr}</span>
+                      <span>Request {activeSelectedTier.name}</span>
+                      <span className="text-xs font-mono font-bold text-zinc-700">&bull; ₹{activeSelectedFare}</span>
                     </>
                   )}
                 </button>

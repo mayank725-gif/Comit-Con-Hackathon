@@ -33,6 +33,14 @@ export default function MichelangeloTelemetryView({
 }: MichelangeloTelemetryViewProps) {
   const [activeLogTab, setActiveLogTab] = useState<"stream" | "features">("stream");
   const [retrainingStatus, setRetrainingStatus] = useState<"IDLE" | "RETRAINING" | "RECALIBRATED">("IDLE");
+  const isMountedRef = React.useRef(true);
+
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const isHealthy = state.modelHealth.status === "HEALTHY";
   const driftScore = state.modelHealth.featureDriftScore;
@@ -42,8 +50,12 @@ export default function MichelangeloTelemetryView({
     setRetrainingStatus("RETRAINING");
     setTimeout(async () => {
       await onTriggerScenario("RESET");
+      if (!isMountedRef.current) return;
       setRetrainingStatus("RECALIBRATED");
-      setTimeout(() => setRetrainingStatus("IDLE"), 3000);
+      setTimeout(() => {
+        if (!isMountedRef.current) return;
+        setRetrainingStatus("IDLE");
+      }, 3000);
     }, 1800);
   };
 

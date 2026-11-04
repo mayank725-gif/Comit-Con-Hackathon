@@ -83,6 +83,22 @@ export default function DriverAssistantChat({
     }
   }, []);
 
+  // Cleanup speech recognition and text-to-speech on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          // ignore
+        }
+      }
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   // Auto-scroll to bottom whenever messages change or loading state toggles
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

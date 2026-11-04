@@ -164,7 +164,7 @@ export default function DriverAuthModal({
       const data = await res.json();
       if (data.success && data.user && data.profile) {
         // Pre-configure work territory for this fleet driver
-        await saveDriverProfileToCustomDb({
+        const savedRes = await saveDriverProfileToCustomDb({
           userId: data.user.id,
           city: fleetDriver.city,
           cityName: fleetDriver.cityName,
@@ -178,10 +178,13 @@ export default function DriverAuthModal({
           driverName: fleetDriver.name,
         });
 
+        const activeProfile = (savedRes && savedRes.profile) ? savedRes.profile : data.profile;
+
         onAuthSuccess(data.user, {
-          ...data.profile,
+          ...activeProfile,
           driverName: fleetDriver.name,
           cityName: fleetDriver.cityName,
+          primaryZone: fleetDriver.zone,
           primaryZoneName: fleetDriver.zoneName,
           vehicleModel: fleetDriver.vehicle,
           licensePlate: fleetDriver.plate,

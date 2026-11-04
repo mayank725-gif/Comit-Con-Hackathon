@@ -234,6 +234,12 @@ class CustomDriverDatabase {
   public createRideRequest(ride: RideRequest): RideRequest {
     this.loadFromDisk();
     if (!this.inMemoryDb.rides) this.inMemoryDb.rides = [];
+    // Supercede any prior unaccepted pending ride to avoid ghost duplicates
+    for (const r of this.inMemoryDb.rides) {
+      if ((r.status === "PENDING" || r.status === "REQUESTED") && r.id !== ride.id) {
+        r.status = "CANCELLED";
+      }
+    }
     this.inMemoryDb.rides = [ride, ...this.inMemoryDb.rides].slice(0, 50);
     this.persistToDisk();
     return ride;

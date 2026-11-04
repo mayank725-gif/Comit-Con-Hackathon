@@ -130,7 +130,7 @@ export function subscribeToActiveDispatch(
           const data = snapshot.data();
           if (data && data.ride && (data.status === "REQUESTED" || data.status === "PENDING")) {
             onDispatch(data.ride as RideRequest);
-          } else if (data && (data.status === "COMPLETED" || data.status === "CANCELLED")) {
+          } else {
             onDispatch(null);
           }
         }

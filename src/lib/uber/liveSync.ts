@@ -10,7 +10,8 @@ const BASE_RELAY = "https://ntfy.sh";
 const GLOBAL_DISPATCH_TOPIC = "uber_comit_global_dispatches_v2";
 
 function cleanTopic(id: string): string {
-  return "uber_sync_ride_" + id.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  const safeId = (id || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return "uber_sync_ride_" + (safeId || "default_channel");
 }
 
 // 1. Broadcast ride lifecycle update (Driver accepts, starts, or completes trip)

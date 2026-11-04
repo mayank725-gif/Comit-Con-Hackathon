@@ -116,10 +116,10 @@ export default function UberNavbar({
 
           {/* Sub-Tabs for Driver Mode */}
           {portalMode === "DRIVER" && (
-            <nav className="hidden lg:flex items-center gap-1 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-1 text-xs">
+            <nav className="flex items-center gap-1 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-1 text-xs overflow-x-auto max-w-[200px] sm:max-w-none shrink-0">
               <button
                 onClick={() => onTabChange("map")}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 ${
                   activeTab === "map" ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -127,7 +127,7 @@ export default function UberNavbar({
               </button>
               <button
                 onClick={() => onTabChange("copilot")}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 ${
                   activeTab === "copilot" ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -135,7 +135,7 @@ export default function UberNavbar({
               </button>
               <button
                 onClick={() => onTabChange("benchmark")}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 ${
                   activeTab === "benchmark" ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -143,7 +143,7 @@ export default function UberNavbar({
               </button>
               <button
                 onClick={() => onTabChange("telemetry")}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 ${
                   activeTab === "telemetry" ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-white"
                 }`}
               >

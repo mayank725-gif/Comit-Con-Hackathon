@@ -32,6 +32,7 @@ export default function ActiveTripHUD({
   const [phase, setPhase] = useState<"TO_PICKUP" | "VERIFY_OTP" | "IN_TRANSIT">("TO_PICKUP");
   const [enteredOtp, setEnteredOtp] = useState("");
   const [otpError, setOtpError] = useState(false);
+  const [otpErrorMessage, setOtpErrorMessage] = useState("");
   const [speedKmh, setSpeedKmh] = useState(48);
   const [remainingKm, setRemainingKm] = useState(trip.distanceKm);
   const [hasCalledRider, setHasCalledRider] = useState(false);
@@ -48,6 +49,17 @@ export default function ActiveTripHUD({
     return () => clearInterval(interval);
   }, [phase]);
 
+  const handleCallRider = () => {
+    setHasCalledRider(true);
+    const phoneNumber = trip.riderPhone || "+91 98450 12890";
+    if (typeof window !== "undefined") {
+      window.location.href = `tel:${phoneNumber.replace(/\s+/g, "")}`;
+    }
+    setTimeout(() => {
+      setHasCalledRider(false);
+    }, 4000);
+  };
+
   const handleArrivedAtPickup = () => {
     setPhase("VERIFY_OTP");
   };
@@ -56,11 +68,20 @@ export default function ActiveTripHUD({
     e.preventDefault();
     // Validate that entered PIN is exactly 4 digits
     if (!enteredOtp || enteredOtp.length !== 4) {
+      setOtpErrorMessage("Please enter all 4 digits of the Safety PIN.");
+      setOtpError(true);
+      return;
+    }
+
+    // Verify against actual ride PIN
+    if (trip.otp && enteredOtp !== trip.otp) {
+      setOtpErrorMessage(`Incorrect PIN (${enteredOtp}). Ask ${trip.riderName} for the 4-digit code in their Uber app.`);
       setOtpError(true);
       return;
     }
 
     setOtpError(false);
+    setOtpErrorMessage("");
     setPhase("IN_TRANSIT");
     uberAudio.playDispatchAlert();
 
@@ -138,18 +159,18 @@ export default function ActiveTripHUD({
 
             <button
               type="button"
-              onClick={() => setHasCalledRider(true)}
-              className="p-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 text-xs font-medium flex items-center gap-1.5 transition-colors"
+              onClick={handleCallRider}
+              className="p-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Phone className="h-3.5 w-3.5 text-emerald-400" />
-              <span>{hasCalledRider ? "Calling..." : "Call Rider"}</span>
+              <span>{hasCalledRider ? "Opening dialer..." : "Call Rider"}</span>
             </button>
           </div>
 
           <button
             type="button"
             onClick={handleArrivedAtPickup}
-            className="w-full py-3.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-black text-xs transition-all shadow-lg flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-black text-xs transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
           >
             <MapPin className="h-4 w-4" />
             <span>I'VE ARRIVED AT PICKUP LOCATION</span>
@@ -177,6 +198,7 @@ export default function ActiveTripHUD({
                 onChange={(e) => {
                   setEnteredOtp(e.target.value.replace(/\D/g, ""));
                   setOtpError(false);
+                  setOtpErrorMessage("");
                 }}
                 placeholder="4-digit PIN (e.g. 5829)"
                 className="w-48 text-center text-xl font-black font-mono tracking-widest bg-zinc-950 border border-zinc-700 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-white"
@@ -184,7 +206,7 @@ export default function ActiveTripHUD({
 
               {otpError && (
                 <span className="text-[11px] text-rose-400 font-semibold">
-                  Please enter a valid 4-digit PIN.
+                  {otpErrorMessage || "Please enter a valid 4-digit PIN."}
                 </span>
               )}
 

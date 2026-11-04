@@ -13,7 +13,9 @@ class UberSoundEffects {
       }
     }
     if (this.ctx && this.ctx.state === "suspended") {
-      this.ctx.resume();
+      this.ctx.resume().catch(() => {
+        // Ignored: browser autoplay policy restriction will resolve on next user touch/click
+      });
     }
     return this.ctx;
   }

@@ -228,7 +228,8 @@ export class UberMarketplaceEngine {
     this.state.metrics.avgRiderWaitTimeMin = Math.round((totalWait / zoneCount) * 10) / 10;
 
     const totalEarnings = this.state.drivers.reduce((acc, d) => acc + d.earningsToday, 0);
-    this.state.metrics.avgDriverHourlyRate = Math.round(totalEarnings / (this.state.drivers.length * 4.8));
+    const activeDriverCount = Math.max(1, this.state.drivers.length);
+    this.state.metrics.avgDriverHourlyRate = Math.round(totalEarnings / (activeDriverCount * 4.8));
 
     // 3. Occasionally stream in a live incoming surge request to keep the stream fresh
     if (this.state.recentSurgeRequests && this.state.recentSurgeRequests.length > 0 && Math.random() < 0.4) {

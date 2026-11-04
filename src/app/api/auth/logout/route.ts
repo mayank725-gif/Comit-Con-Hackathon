@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     response.cookies.set("driver_session", "", {
       path: "/",
       maxAge: 0,
+      expires: new Date(0),
     });
 
     return response;

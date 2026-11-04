@@ -134,6 +134,7 @@ export interface SurgeHandlingRequest {
 export interface RideRequest {
   id: string;
   riderName: string;
+  riderPhone?: string;
   riderRating: number;
   pickupAddress: string;
   pickupCoords: [number, number];
