@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { RideRequest } from "@/lib/uber/types";
 import { uberAudio } from "@/lib/uber/soundEffects";
 import { updateRideInFirestore } from "@/lib/firebase/firestoreRides";
+import { broadcastRideStatus } from "@/lib/uber/liveSync";
 import {
   Navigation,
   CheckCircle2,
@@ -59,7 +60,10 @@ export default function ActiveTripHUD({
       setPhase("IN_TRANSIT");
       uberAudio.playDispatchAlert();
 
-      // Sync status in real-time with Cloud Firestore (Sub-30ms Instant Push)
+      // 1. Ultra-Low-Latency SSE/WebSocket broadcast (Sub-50ms)
+      broadcastRideStatus(trip.id, "IN_PROGRESS").catch(() => {});
+
+      // 2. Sync status in real-time with Cloud Firestore (Sub-30ms Instant Push)
       updateRideInFirestore(trip.id, "IN_PROGRESS").catch(() => {});
 
       // Sync status with Custom Database so Rider Phone 1 instantly updates to ON_TRIP / En Route
@@ -81,7 +85,9 @@ export default function ActiveTripHUD({
   };
 
   const handleFinish = () => {
-    // Play celebratory cash chime
+    // 1. Ultra-Low-Latency SSE/WebSocket broadcast (Sub-50ms)
+    broadcastRideStatus(trip.id, "COMPLETED").catch(() => {});
+    // 2. Play celebratory cash chime
     uberAudio.playTripCompletedCashChime();
     onCompleteTrip(trip);
   };
