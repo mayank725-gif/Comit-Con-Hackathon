@@ -9,7 +9,6 @@ import UberBenchmarkView from "@/components/uber/UberBenchmarkView";
 import MichelangeloTelemetryView from "@/components/uber/MichelangeloTelemetryView";
 import DriverSectorSpotlight from "@/components/uber/DriverSectorSpotlight";
 import DriverAuthModal from "@/components/uber/DriverAuthModal";
-import RiderBookingModal from "@/components/uber/RiderBookingModal";
 import IncomingRideDispatchModal from "@/components/uber/IncomingRideDispatchModal";
 import ActiveTripHUD from "@/components/uber/ActiveTripHUD";
 import { DriverUser, DriverWorkProfile } from "@/lib/db/driverDb";
@@ -54,7 +53,6 @@ export default function Home() {
   const [mapFlyToCoords, setMapFlyToCoords] = useState<[number, number] | null>(null);
 
   // Uber 2.0 Two-Sided Marketplace & Dispatch State
-  const [isRiderBookingOpen, setIsRiderBookingOpen] = useState(false);
   const [incomingRideRequest, setIncomingRideRequest] = useState<RideRequest | null>(null);
   const [activeTrip, setActiveTrip] = useState<RideRequest | null>(null);
 
@@ -418,6 +416,7 @@ export default function Home() {
         currentUser={currentUser}
         currentProfile={currentProfile}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenStressTest={() => handleTriggerScenario("STADIUM_CONCERT_END")}
       />
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
@@ -427,6 +426,7 @@ export default function Home() {
             state={state}
             onBookRide={handleRequestRide}
             onSwitchToDriver={() => setPortalMode("DRIVER")}
+            onTriggerScenario={handleTriggerScenario}
           />
         )}
 
@@ -604,14 +604,6 @@ export default function Home() {
           </>
         )}
       </main>
-
-      {/* Uber 2.0 Rider Booking Modal */}
-      <RiderBookingModal
-        isOpen={isRiderBookingOpen}
-        onClose={() => setIsRiderBookingOpen(false)}
-        onRequestRide={handleRequestRide}
-        activeSurge={focusedZone?.surgeMultiplier || 1.4}
-      />
 
       {/* Uber 2.0 Incoming Ride Dispatch Modal (Driver Alert) */}
       <IncomingRideDispatchModal

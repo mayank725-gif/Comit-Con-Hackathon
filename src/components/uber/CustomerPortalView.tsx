@@ -52,6 +52,7 @@ interface CustomerPortalViewProps {
   state: MarketplaceState;
   onBookRide: (ride: RideRequest) => void;
   onSwitchToDriver: () => void;
+  onTriggerScenario?: (type: any) => Promise<void>;
 }
 
 interface LocationItem {
@@ -116,6 +117,7 @@ export default function CustomerPortalView({
   state,
   onBookRide,
   onSwitchToDriver,
+  onTriggerScenario,
 }: CustomerPortalViewProps) {
   // Navigation Sub-tab inside Customer Portal
   const [activeTab, setActiveTab] = useState<"BOOK" | "SURGE_STREAM">("BOOK");
@@ -1135,6 +1137,7 @@ export default function CustomerPortalView({
       {activeTab === "SURGE_STREAM" && (
         <SurgeHandlingMonitor
           state={state}
+          onTriggerScenario={onTriggerScenario}
           onTrigger1000Burst={handleTrigger1000BurstTest}
         />
       )}
