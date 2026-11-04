@@ -54,11 +54,15 @@ export default function ActiveTripHUD({
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Allow any 4-digit number for seamless testing
-    if (enteredOtp.length === 4) {
-      setOtpError(false);
-      setPhase("IN_TRANSIT");
-      uberAudio.playDispatchAlert();
+    // Validate that entered PIN is exactly 4 digits
+    if (!enteredOtp || enteredOtp.length !== 4) {
+      setOtpError(true);
+      return;
+    }
+
+    setOtpError(false);
+    setPhase("IN_TRANSIT");
+    uberAudio.playDispatchAlert();
 
       // 1. Ultra-Low-Latency SSE/WebSocket broadcast (Sub-50ms)
       broadcastRideStatus(trip.id, "IN_PROGRESS").catch(() => {});
@@ -79,9 +83,6 @@ export default function ActiveTripHUD({
       } catch (e) {
         console.warn("Failed to sync IN_PROGRESS status:", e);
       }
-    } else {
-      setOtpError(true);
-    }
   };
 
   const handleFinish = () => {

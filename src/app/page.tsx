@@ -63,10 +63,16 @@ export default function Home() {
   // References to prevent duplicate dispatches, ghost re-alerts on decline, or alerts while on trip
   const declinedRideIdsRef = React.useRef<Set<string>>(new Set());
   const activeTripRef = React.useRef<RideRequest | null>(null);
+  const [isOnDuty, setIsOnDuty] = useState(true);
+  const isOnDutyRef = React.useRef<boolean>(true);
 
   useEffect(() => {
     activeTripRef.current = activeTrip;
   }, [activeTrip]);
+
+  useEffect(() => {
+    isOnDutyRef.current = isOnDuty;
+  }, [isOnDuty]);
 
   // Chat conversation
   const [chatMessages, setChatMessages] = useState<AssistantMessage[]>([
@@ -217,7 +223,7 @@ export default function Home() {
     if (activeTrip || portalMode !== "DRIVER") return;
 
     const interval = setInterval(async () => {
-      if (activeTripRef.current) return; // Never show new dispatch if on active trip
+      if (activeTripRef.current || !isOnDutyRef.current) return; // Never show new dispatch if on active trip or offline
       try {
         const res = await fetch("/api/uber/rides");
         const data = await res.json();
@@ -355,6 +361,7 @@ export default function Home() {
           dailyEarningsTarget: currentProfile.dailyEarningsTarget,
           willingOutstation: currentProfile.willingOutstation,
           driverName: currentProfile.driverName,
+          currentEarnings: newEarnings,
         });
       } catch (e) {
         console.error("Failed to persist trip earnings:", e);
@@ -715,6 +722,15 @@ export default function Home() {
                   sectorTelemetry={sectorTelemetry}
                   onFlyToMySector={handleFlyToMySector}
                   onOpenTerritoryModal={() => setIsAuthModalOpen(true)}
+                  isOnDuty={isOnDuty}
+                  onToggleDuty={() => {
+                    setIsOnDuty((prev) => {
+                      const nextVal = !prev;
+                      isOnDutyRef.current = nextVal;
+                      if (!nextVal) setIncomingRideRequest(null);
+                      return nextVal;
+                    });
+                  }}
                 />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">

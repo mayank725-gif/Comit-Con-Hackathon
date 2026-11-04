@@ -39,6 +39,8 @@ interface DriverSectorSpotlightProps {
   } | null;
   onFlyToMySector: (coords: [number, number]) => void;
   onOpenTerritoryModal: () => void;
+  isOnDuty?: boolean;
+  onToggleDuty?: () => void;
 }
 
 const HIGH_YIELD_HOTSPOTS = [
@@ -74,8 +76,11 @@ export default function DriverSectorSpotlight({
   sectorTelemetry,
   onFlyToMySector,
   onOpenTerritoryModal,
+  isOnDuty: propIsOnDuty,
+  onToggleDuty,
 }: DriverSectorSpotlightProps) {
-  const [isOnDuty, setIsOnDuty] = useState(true);
+  const [localOnDuty, setLocalOnDuty] = useState(true);
+  const isOnDuty = typeof propIsOnDuty === "boolean" ? propIsOnDuty : localOnDuty;
   const [isLedgerExpanded, setIsLedgerExpanded] = useState(false);
   const [isCashoutModalOpen, setIsCashoutModalOpen] = useState(false);
   const [hasCashedOut, setHasCashedOut] = useState(false);
@@ -127,7 +132,11 @@ export default function DriverSectorSpotlight({
   const progressPercent = Math.min(100, Math.round((grossShiftEarnings / target) * 100));
 
   const handleToggleDuty = () => {
-    setIsOnDuty(!isOnDuty);
+    if (onToggleDuty) {
+      onToggleDuty();
+    } else {
+      setLocalOnDuty(!localOnDuty);
+    }
     uberAudio.playDispatchAlert();
   };
 

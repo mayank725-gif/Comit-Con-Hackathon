@@ -140,10 +140,11 @@ export default function CustomerPortalView({
   const [selectedHistoryRide, setSelectedHistoryRide] = useState<RideRequest | null>(null);
   const [isBooking, setIsBooking] = useState(false);
 
-  // Fetch rider trip history from Custom DB
+  // Fetch rider trip history from Custom DB (filtered by logged-in rider)
   const fetchRideHistory = async () => {
     try {
-      const res = await fetch("/api/uber/rides");
+      const riderParam = riderUser?.name ? `?rider=${encodeURIComponent(riderUser.name)}` : "";
+      const res = await fetch(`/api/uber/rides${riderParam}`);
       const data = await res.json();
       if (data.success && data.rides) {
         setRideHistory(data.rides.filter((r: RideRequest) => r.status === "COMPLETED"));
@@ -207,7 +208,7 @@ export default function CustomerPortalView({
 
   useEffect(() => {
     fetchRideHistory();
-  }, [tripState]);
+  }, [tripState, riderUser?.name]);
 
   // Interactive Caller / Message Dialogs
   const [isCallModalOpen, setIsCallModalOpen] = useState(false);
@@ -357,10 +358,15 @@ export default function CustomerPortalView({
       const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
       setRideOtp(generatedOtp);
 
+      const resolvedRiderName = riderUser?.name
+        ? (travelProfile === "BUSINESS" ? `${riderUser.name} (Corp Travel)` : riderUser.name)
+        : (travelProfile === "BUSINESS" ? "Aman Gupta (Corp Travel)" : "Aman Gupta");
+      const resolvedRating = riderUser?.rating || 4.95;
+
       const newRide: RideRequest = {
         id: `RIDE_${Date.now().toString().slice(-6)}`,
-        riderName: travelProfile === "BUSINESS" ? "Aman Gupta (Corp Travel)" : "Aman Gupta",
-        riderRating: 4.95,
+        riderName: resolvedRiderName,
+        riderRating: resolvedRating,
         pickupAddress: pickupQuery,
         pickupCoords,
         dropoffAddress: dropoffQuery,
@@ -374,6 +380,7 @@ export default function CustomerPortalView({
         timestamp: new Date().toISOString(),
         status: "REQUESTED",
         paymentMode: travelProfile === "BUSINESS" ? "GOOGLE_PAY_UPI" : paymentMode,
+        otp: generatedOtp,
       };
 
       setConfirmedRide(newRide);
@@ -439,7 +446,7 @@ export default function CustomerPortalView({
       applyLiveRideState(live);
     });
 
-    // 3. High-speed HTTP polling fallback (300ms sync)
+    // 3. Resilient HTTP polling fallback (1500ms safety interval, avoiding rate limit and battery drain)
     const pollInterval = setInterval(async () => {
       try {
         const res = await fetch("/api/uber/rides");
@@ -453,7 +460,7 @@ export default function CustomerPortalView({
       } catch (err) {
         console.warn("Rider cross-device sync poll warning:", err);
       }
-    }, 300);
+    }, 1500);
 
     return () => {
       unsubLiveSync();
@@ -762,8 +769,14 @@ export default function CustomerPortalView({
                       />
                       {pickupQuery && (
                         <button
-                          onClick={() => setPickupQuery("")}
+                          type="button"
+                          onClick={() => {
+                            setPickupQuery("");
+                            setSearchResults([]);
+                            setIsSearchingPickup(false);
+                          }}
                           className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1"
+                          title="Clear pickup location"
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>
@@ -823,8 +836,14 @@ export default function CustomerPortalView({
                       />
                       {dropoffQuery && (
                         <button
-                          onClick={() => setDropoffQuery("")}
+                          type="button"
+                          onClick={() => {
+                            setDropoffQuery("");
+                            setSearchResults([]);
+                            setIsSearchingDropoff(false);
+                          }}
                           className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1"
+                          title="Clear destination"
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>
@@ -1240,10 +1259,16 @@ export default function CustomerPortalView({
                 <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4 space-y-2.5 text-xs">
                   <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
                     <span className="font-bold text-white">Official Tax Invoice</span>
-                    <span className="font-mono text-zinc-400 text-[10px]">INV-2026-90412</span>
+                    <span className="font-mono text-zinc-400 text-[10px]">
+                      INV-2026-{confirmedRide?.id ? confirmedRide.id.replace(/[^0-9]/g, "").slice(-5) || "90412" : "90412"}
+                    </span>
                   </div>
 
                   <div className="space-y-1 text-zinc-300 text-[11px]">
+                    <div className="flex justify-between">
+                      <span className="text-zinc-400">Ride Reference:</span>
+                      <span className="font-mono text-[10px] text-zinc-300 font-bold">{confirmedRide?.id || "RIDE-COMPLETED"}</span>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-zinc-400">Pickup:</span>
                       <span className="truncate max-w-[200px] text-right">{pickupQuery}</span>
@@ -1291,7 +1316,12 @@ export default function CustomerPortalView({
 
                   <button
                     type="button"
-                    onClick={() => setTripState("IDLE")}
+                    onClick={() => {
+                      setTripState("IDLE");
+                      setConfirmedRide(null);
+                      setAssignedDriver(null);
+                      setRideOtp("");
+                    }}
                     className="py-2.5 px-3 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-black transition-all flex items-center justify-center gap-1.5"
                   >
                     <span>Book Another Ride</span>

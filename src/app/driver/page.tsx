@@ -82,10 +82,16 @@ export default function DriverPage() {
   // References to prevent duplicate dispatches, ghost re-alerts on decline, or alerts while on trip
   const declinedRideIdsRef = useRef<Set<string>>(new Set());
   const activeTripRef = useRef<RideRequest | null>(null);
+  const [isOnDuty, setIsOnDuty] = useState(true);
+  const isOnDutyRef = useRef<boolean>(true);
 
   useEffect(() => {
     activeTripRef.current = activeTrip;
   }, [activeTrip]);
+
+  useEffect(() => {
+    isOnDutyRef.current = isOnDuty;
+  }, [isOnDuty]);
 
   // AI Chat messages
   const [chatMessages, setChatMessages] = useState<AssistantMessage[]>([
@@ -134,6 +140,8 @@ export default function DriverPage() {
   // Real-Time Cross-Device Dispatch (LiveSync SSE + Cloud Firestore + 1500ms Fallback Polling)
   useEffect(() => {
     const handleIncomingDispatch = (active: RideRequest | null) => {
+      // Rule 0: DO NOT show dispatch if driver is OFFLINE
+      if (!isOnDutyRef.current) return;
       // Rule 1: DO NOT send or show new dispatch if driver is currently on an active trip!
       if (activeTripRef.current) return;
       // Rule 2: DO NOT show a ride that was declined by this driver!
@@ -159,7 +167,7 @@ export default function DriverPage() {
 
     // 3. Fallback Polling (1500ms instead of aggressive 300ms)
     const dispatchInterval = setInterval(async () => {
-      if (activeTripRef.current) return; // Driver on trip, don't poll
+      if (activeTripRef.current || !isOnDutyRef.current) return; // Driver on trip or offline, don't poll
       try {
         const res = await fetch("/api/uber/rides");
         const data = await res.json();
@@ -389,6 +397,8 @@ export default function DriverPage() {
           dailyEarningsTarget: currentProfile.dailyEarningsTarget,
           willingOutstation: currentProfile.willingOutstation,
           driverName: currentProfile.driverName,
+          currentEarnings: newEarnings,
+          completedTrips: newTripsCount,
         });
       } catch (e) {
         console.error("Failed to persist trip earnings:", e);
@@ -597,6 +607,15 @@ export default function DriverPage() {
               sectorTelemetry={sectorTelemetry}
               onFlyToMySector={handleFlyToMySector}
               onOpenTerritoryModal={() => setIsAuthModalOpen(true)}
+              isOnDuty={isOnDuty}
+              onToggleDuty={() => {
+                setIsOnDuty((prev) => {
+                  const nextVal = !prev;
+                  isOnDutyRef.current = nextVal;
+                  if (!nextVal) setIncomingRideRequest(null);
+                  return nextVal;
+                });
+              }}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
