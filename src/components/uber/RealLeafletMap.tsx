@@ -3,6 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { MarketplaceState, ZoneId, Driver } from "@/lib/uber/types";
 import { INDIA_TOURIST_PLACES, TouristPlace } from "@/lib/uber/touristPlaces";
+import { isochroneEngine } from "@/lib/uber/isochroneEngine";
+import { VERIFIED_EV_CHARGING_HUBS } from "@/lib/uber/evEngine";
 import {
   Zap,
   Navigation,
@@ -26,6 +28,8 @@ import {
   Sparkles,
   ChevronRight,
   Languages,
+  Flame,
+  Timer,
 } from "lucide-react";
 
 interface RealLeafletMapProps {
@@ -92,10 +96,16 @@ export default function RealLeafletMap({
   const routesLayerRef = useRef<any>(null);
   const cityClustersLayerRef = useRef<any>(null);
   const touristLayerRef = useRef<any>(null);
+  const heatmapLayerRef = useRef<any>(null);
+  const isochroneLayerRef = useRef<any>(null);
+  const evChargerLayerRef = useRef<any>(null);
 
   const [mapStyle, setMapStyle] = useState<MapTileStyle>("google_traffic");
   const [isTrafficOverlayOn, setIsTrafficOverlayOn] = useState<boolean>(true);
   const [isTouristLayerOn, setIsTouristLayerOn] = useState<boolean>(true);
+  const [isHeatmapOn, setIsHeatmapOn] = useState<boolean>(true);
+  const [isIsochroneOn, setIsIsochroneOn] = useState<boolean>(false);
+  const [isEvChargersOn, setIsEvChargersOn] = useState<boolean>(true);
   const [voiceLang, setVoiceLang] = useState<"hi" | "en">("hi"); // Default to Hindi as requested
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [selectedTouristPlace, setSelectedTouristPlace] = useState<TouristPlace | null>(null);
@@ -377,6 +387,9 @@ export default function RealLeafletMap({
         routesLayerRef.current = L.featureGroup().addTo(map);
         cityClustersLayerRef.current = L.featureGroup().addTo(map);
         touristLayerRef.current = L.featureGroup().addTo(map);
+        heatmapLayerRef.current = L.featureGroup().addTo(map);
+        isochroneLayerRef.current = L.featureGroup().addTo(map);
+        evChargerLayerRef.current = L.featureGroup().addTo(map);
         markersLayerRef.current = L.featureGroup().addTo(map);
         mapInstanceRef.current = map;
 
@@ -706,8 +719,101 @@ export default function RealLeafletMap({
           markersMapRef.current.set(driver.id, marker);
         }
       });
+
+      // 6. Dynamic Michelangelo Heatmap Nodes
+      if (heatmapLayerRef.current) {
+        heatmapLayerRef.current.clearLayers();
+        if (isHeatmapOn) {
+          const heatNodes = isochroneEngine.getHeatmapNodes();
+          heatNodes.forEach((node) => {
+            L.circle(node.coords, {
+              radius: node.radiusMeters,
+              color: "#f59e0b",
+              weight: 1,
+              fillColor: "#ef4444",
+              fillOpacity: 0.16 + node.intensity * 0.14,
+            }).addTo(heatmapLayerRef.current);
+
+            const heatPin = L.marker(node.coords, {
+              icon: L.divIcon({
+                html: `
+                  <div class="cursor-pointer -translate-x-1/2 -translate-y-1/2">
+                    <div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-600/90 text-white text-[10px] font-black border border-rose-400 shadow-lg shadow-rose-500/30 backdrop-blur-sm">
+                      <span>🔥 ${node.surgeLevel}x</span>
+                    </div>
+                  </div>
+                `,
+                className: "custom-heat-pin",
+                iconSize: [0, 0],
+              }),
+            }).addTo(heatmapLayerRef.current);
+
+            heatPin.bindTooltip(`<b>${node.name}</b><br/>Surge: ${node.surgeLevel}x &bull; High Demand Corridor`, {
+              direction: "top",
+              className: "custom-leaflet-tooltip",
+            });
+          });
+        }
+      }
+
+      // 7. Reachability Isochrones (5m/10m/15m Traffic Contours)
+      if (isochroneLayerRef.current) {
+        isochroneLayerRef.current.clearLayers();
+        if (isIsochroneOn) {
+          const centerPoint: [number, number] = selectedDriverId
+            ? [
+                state.drivers.find((d) => d.id === selectedDriverId)?.lat || 12.9788,
+                state.drivers.find((d) => d.id === selectedDriverId)?.lng || 77.5996,
+              ]
+            : [12.9788, 77.5996];
+
+          const isochroneZones = isochroneEngine.generateIsochrones(centerPoint);
+          isochroneZones.forEach((iz) => {
+            L.polygon(iz.coords, {
+              color: iz.color,
+              weight: 2,
+              fillColor: iz.fillColor,
+              fillOpacity: 0.08,
+              dashArray: "3, 5",
+            })
+              .bindTooltip(`⏱️ <b>${iz.label}</b> (Dynamic Traffic Corridor)`, {
+                direction: "center",
+                className: "custom-leaflet-tooltip",
+              })
+              .addTo(isochroneLayerRef.current);
+          });
+        }
+      }
+
+      // 8. Verified EV Fast Charging Hubs
+      if (evChargerLayerRef.current) {
+        evChargerLayerRef.current.clearLayers();
+        if (isEvChargersOn) {
+          VERIFIED_EV_CHARGING_HUBS.forEach((hub) => {
+            const chargerPin = L.marker(hub.coords, {
+              icon: L.divIcon({
+                html: `
+                  <div class="cursor-pointer -translate-x-1/2 -translate-y-1/2 hover:scale-110 transition-transform">
+                    <div class="flex items-center gap-1 px-2 py-0.5 rounded-xl bg-emerald-950/95 border border-emerald-400 text-emerald-300 text-[10px] font-bold shadow-lg shadow-emerald-500/20 backdrop-blur-sm">
+                      <span>⚡ ${hub.powerKw}kW</span>
+                      <span class="text-[9px] px-1 rounded bg-emerald-800 text-white font-mono">${hub.availableStalls} free</span>
+                    </div>
+                  </div>
+                `,
+                className: "custom-ev-pin",
+                iconSize: [0, 0],
+              }),
+            }).addTo(evChargerLayerRef.current);
+
+            chargerPin.bindTooltip(
+              `<b>${hub.name}</b><br/>${hub.powerKw}kW DC Fast Charger<br/>Stalls: ${hub.availableStalls}/${hub.totalStalls} &bull; ₹${hub.costPerKwh}/kWh`,
+              { direction: "top", className: "custom-leaflet-tooltip" }
+            );
+          });
+        }
+      }
     });
-  }, [state, selectedZone, onSelectZone, selectedDriverId, mapStyle, voiceLang]);
+  }, [state, selectedZone, onSelectZone, selectedDriverId, mapStyle, voiceLang, isHeatmapOn, isIsochroneOn, isEvChargersOn]);
 
   const handleFlyTo = (lat: number, lng: number, zoom: number = 12, hubId?: string) => {
     if (hubId) setActiveMetroId(hubId);
@@ -942,6 +1048,45 @@ export default function RealLeafletMap({
           >
             <span className={`h-1.5 w-1.5 rounded-full ${isTrafficOverlayOn ? "bg-rose-400 animate-pulse" : "bg-zinc-500"}`} />
             <span>{voiceLang === "hi" ? "ट्रैफिक" : "Traffic"}</span>
+          </button>
+
+          {/* Toggle Demand Heatmap Button */}
+          <button
+            onClick={() => setIsHeatmapOn(!isHeatmapOn)}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all shrink-0 backdrop-blur-md ${
+              isHeatmapOn
+                ? "bg-amber-500/20 border-amber-500/60 text-amber-300"
+                : "bg-zinc-950/90 border-zinc-800 text-zinc-400 hover:text-white"
+            }`}
+          >
+            <Flame className={`h-3 w-3 ${isHeatmapOn ? "text-amber-400 animate-pulse" : "text-zinc-500"}`} />
+            <span>{voiceLang === "hi" ? "हीटमैप" : "Heatmap"}</span>
+          </button>
+
+          {/* Toggle 5/10/15m Isochrone Polygons */}
+          <button
+            onClick={() => setIsIsochroneOn(!isIsochroneOn)}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all shrink-0 backdrop-blur-md ${
+              isIsochroneOn
+                ? "bg-cyan-500/20 border-cyan-500/60 text-cyan-300"
+                : "bg-zinc-950/90 border-zinc-800 text-zinc-400 hover:text-white"
+            }`}
+          >
+            <Timer className={`h-3 w-3 ${isIsochroneOn ? "text-cyan-400" : "text-zinc-500"}`} />
+            <span>{voiceLang === "hi" ? "5-15m रीच" : "5-15m Reach"}</span>
+          </button>
+
+          {/* Toggle EV Chargers */}
+          <button
+            onClick={() => setIsEvChargersOn(!isEvChargersOn)}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all shrink-0 backdrop-blur-md ${
+              isEvChargersOn
+                ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-300"
+                : "bg-zinc-950/90 border-zinc-800 text-zinc-400 hover:text-white"
+            }`}
+          >
+            <Zap className={`h-3 w-3 ${isEvChargersOn ? "text-emerald-400" : "text-zinc-500"}`} />
+            <span>{voiceLang === "hi" ? "EV चार्जर्स" : "EV Hubs"}</span>
           </button>
         </div>
       </div>

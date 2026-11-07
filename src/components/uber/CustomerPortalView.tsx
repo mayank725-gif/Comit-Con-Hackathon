@@ -41,7 +41,11 @@ import {
   FileText,
   Printer,
   ChevronRight,
+  Leaf,
+  ShieldAlert,
 } from "lucide-react";
+import CorporateInvoiceModal from "./CorporateInvoiceModal";
+import SafetySentinelModal from "./SafetySentinelModal";
 
 // Dynamic import of Leaflet map for customer view
 const RealLeafletMap = dynamic(
@@ -206,6 +210,9 @@ export default function CustomerPortalView({
   const [driverEtaMin, setDriverEtaMin] = useState<number>(3);
   const [liveTripSpeed, setLiveTripSpeed] = useState<number>(46);
   const [confirmedRide, setConfirmedRide] = useState<RideRequest | null>(null);
+  const [selectedInvoiceRide, setSelectedInvoiceRide] = useState<RideRequest | null>(null);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [isSafetyModalOpen, setIsSafetyModalOpen] = useState(false);
 
   useEffect(() => {
     fetchRideHistory();
@@ -1255,9 +1262,14 @@ export default function CustomerPortalView({
                     <ShieldCheck className="h-4 w-4 text-emerald-400" />
                     <span>RideCheck Active: Route safely tracked 24/7</span>
                   </div>
-                  <span className="text-[10px] font-mono text-zinc-400">
-                    Driver completes trip on arrival
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsSafetyModalOpen(true)}
+                    className="px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-[11px] font-mono text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <ShieldAlert className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Safety Sentinel &bull; SOS</span>
+                  </button>
                 </div>
 
                 {/* Instant Arrival Confirmation (Ensures rider is never stuck) */}
@@ -1341,29 +1353,65 @@ export default function CustomerPortalView({
                   </div>
                 </div>
 
-                {/* Action Buttons: Print Invoice / Book Another */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => window.print()}
-                    className="py-2.5 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <Printer className="h-3.5 w-3.5 text-zinc-400" />
-                    <span>Print Invoice</span>
-                  </button>
-
+                {/* Action Buttons: Tax Invoice / Book Another */}
+                <div className="space-y-2 pt-1">
                   <button
                     type="button"
                     onClick={() => {
-                      setTripState("IDLE");
-                      setConfirmedRide(null);
-                      setAssignedDriver(null);
-                      setRideOtp("");
+                      setSelectedInvoiceRide(
+                        confirmedRide || {
+                          id: "UBR-LIVE-TRIP-2026",
+                          riderName: riderUser?.name || "Corporate Passenger",
+                          riderRating: 4.9,
+                          pickupAddress: pickupQuery,
+                          pickupCoords: pickupCoords,
+                          dropoffAddress: dropoffQuery,
+                          dropoffCoords: dropoffCoords,
+                          vehicleType: selectedVehicle,
+                          distanceKm: routeData.distanceKm,
+                          durationMin: routeData.travelTimeMin,
+                          fareInr: routeData.finalFareInr,
+                          surgeMultiplier: routeData.surgeMultiplier,
+                          surgeBonusInr: routeData.surgeBonusInr,
+                          timestamp: new Date().toISOString(),
+                          status: "COMPLETED",
+                          paymentMode: paymentMode,
+                          driverName: assignedDriver?.name || "Suresh Kumar",
+                          vehicleModel: assignedDriver?.vehicleModel || "Maruti Suzuki Dzire Tour",
+                          licensePlate: assignedDriver?.licensePlate || "KA 01 MJ 8492",
+                        }
+                      );
+                      setIsInvoiceModalOpen(true);
                     }}
-                    className="py-2.5 px-3 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-black transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 cursor-pointer"
                   >
-                    <span>Book Another Ride</span>
+                    <FileText className="h-4 w-4" />
+                    <span>View Official GST Tax Invoice &amp; Carbon Credits</span>
                   </button>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      className="py-2.5 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Printer className="h-3.5 w-3.5 text-zinc-400" />
+                      <span>Print Summary</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTripState("IDLE");
+                        setConfirmedRide(null);
+                        setAssignedDriver(null);
+                        setRideOtp("");
+                      }}
+                      className="py-2.5 px-3 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Book Another Ride</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -1495,11 +1543,14 @@ export default function CustomerPortalView({
 
                     <button
                       type="button"
-                      onClick={() => setSelectedHistoryRide(ride)}
+                      onClick={() => {
+                        setSelectedInvoiceRide(ride);
+                        setIsInvoiceModalOpen(true);
+                      }}
                       className="px-3 py-1.5 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                     >
                       <FileText className="h-3.5 w-3.5 text-emerald-400" />
-                      <span>Invoice</span>
+                      <span>Tax Invoice</span>
                     </button>
                   </div>
                 </div>
@@ -1689,6 +1740,43 @@ export default function CustomerPortalView({
             />
           </div>
         </div>
+      )}
+
+      {/* Official Tax Invoice & Carbon Credit Modal */}
+      {selectedInvoiceRide && (
+        <CorporateInvoiceModal
+          ride={selectedInvoiceRide}
+          isOpen={isInvoiceModalOpen}
+          onClose={() => setIsInvoiceModalOpen(false)}
+        />
+      )}
+
+      {/* Autonomous Safety Sentinel Modal for Riders */}
+      {tripState === "ON_TRIP" && (
+        <SafetySentinelModal
+          trip={
+            confirmedRide || {
+              id: "ACTIVE_RIDER_TRIP",
+              riderName: riderUser?.name || "Passenger",
+              pickupAddress: pickupQuery,
+              pickupCoords: pickupCoords,
+              dropoffAddress: dropoffQuery,
+              dropoffCoords: dropoffCoords,
+              status: "IN_PROGRESS",
+              fareInr: routeData.finalFareInr,
+              distanceKm: routeData.distanceKm,
+              durationMin: routeData.travelTimeMin,
+              vehicleType: selectedVehicle,
+              surgeMultiplier: routeData.surgeMultiplier,
+              surgeBonusInr: routeData.surgeBonusInr,
+              timestamp: new Date().toISOString(),
+              riderRating: 4.9,
+              paymentMode: paymentMode,
+            }
+          }
+          isOpen={isSafetyModalOpen}
+          onClose={() => setIsSafetyModalOpen(false)}
+        />
       )}
     </div>
   );

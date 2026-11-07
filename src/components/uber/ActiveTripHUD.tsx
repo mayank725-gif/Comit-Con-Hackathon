@@ -5,11 +5,14 @@ import { RideRequest } from "@/lib/uber/types";
 import { uberAudio } from "@/lib/uber/soundEffects";
 import { updateRideInFirestore } from "@/lib/firebase/firestoreRides";
 import { broadcastRideStatus } from "@/lib/uber/liveSync";
+import SafetySentinelModal from "./SafetySentinelModal";
 import {
   Navigation,
   CheckCircle2,
   Phone,
   ShieldAlert,
+  ShieldCheck,
+  Radio,
   Gauge,
   Clock,
   MapPin,
@@ -36,6 +39,7 @@ export default function ActiveTripHUD({
   const [speedKmh, setSpeedKmh] = useState(48);
   const [remainingKm, setRemainingKm] = useState(trip.distanceKm);
   const [hasCalledRider, setHasCalledRider] = useState(false);
+  const [isSafetyModalOpen, setIsSafetyModalOpen] = useState(false);
 
   // Live speedometer and distance ticker
   useEffect(() => {
@@ -131,7 +135,17 @@ export default function ActiveTripHUD({
         </div>
 
         {/* Live Running Meter & Speed */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Safety Sentinel Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsSafetyModalOpen(true)}
+            className="flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-[11px] font-mono text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer"
+          >
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">SAFETY SENTINEL</span>
+          </button>
+
           {phase === "IN_TRANSIT" && (
             <div className="flex items-center gap-1 text-xs font-mono text-zinc-300">
               <Gauge className="h-3.5 w-3.5 text-zinc-300" />
@@ -262,6 +276,13 @@ export default function ActiveTripHUD({
           </div>
         </div>
       )}
+
+      {/* Safety Sentinel Modal */}
+      <SafetySentinelModal
+        trip={trip}
+        isOpen={isSafetyModalOpen}
+        onClose={() => setIsSafetyModalOpen(false)}
+      />
     </div>
   );
 }

@@ -113,6 +113,66 @@ class UberSoundEffects {
       console.warn("Audio chime error:", e);
     }
   }
+
+  // Safety Sentinel Urgent Anomaly Alert (Alternating warble)
+  playSafetyAlertTone() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      // Pulse 1: 750 Hz
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = "sawtooth";
+      osc1.frequency.setValueAtTime(750, now);
+      osc1.frequency.linearRampToValueAtTime(950, now + 0.15);
+      gain1.gain.setValueAtTime(0.25, now);
+      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.2);
+
+      // Pulse 2: 950 Hz drop
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = "sawtooth";
+      osc2.frequency.setValueAtTime(950, now + 0.22);
+      osc2.frequency.linearRampToValueAtTime(650, now + 0.38);
+      gain2.gain.setValueAtTime(0.25, now + 0.22);
+      gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.42);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.22);
+      osc2.stop(now + 0.42);
+    } catch (e) {
+      console.warn("Safety alert tone error:", e);
+    }
+  }
+
+  // High-Yield Tactical Radar Ping (Subtle sonar chirp)
+  playRadarPingTone() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(1400, now);
+      osc.frequency.exponentialRampToValueAtTime(1800, now + 0.08);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    } catch (e) {
+      console.warn("Radar ping tone error:", e);
+    }
+  }
 }
 
 export const uberAudio = new UberSoundEffects();

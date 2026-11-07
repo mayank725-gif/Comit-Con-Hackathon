@@ -12,6 +12,8 @@ import DriverSectorSpotlight from "@/components/uber/DriverSectorSpotlight";
 import DriverAuthModal from "@/components/uber/DriverAuthModal";
 import IncomingRideDispatchModal from "@/components/uber/IncomingRideDispatchModal";
 import ActiveTripHUD from "@/components/uber/ActiveTripHUD";
+import PredictiveRepositioningHUD from "@/components/uber/PredictiveRepositioningHUD";
+import EVChargingStationHUD from "@/components/uber/EVChargingStationHUD";
 import { DriverUser, DriverWorkProfile } from "@/lib/db/driverDb";
 import { saveDriverProfileToCustomDb } from "@/lib/firebase/authService";
 import {
@@ -904,6 +906,32 @@ export default function Home() {
                 onTriggerScenario={handleTriggerScenario}
                 isProcessing={isProcessing}
               />
+            )}
+
+            {/* TAB 5: MICHELANGELO PREDICTIVE SURGE RADAR */}
+            {activeTab === "radar" && (
+              <div className="space-y-4 animate-fadeIn">
+                <PredictiveRepositioningHUD
+                  driverCoords={currentProfile?.assignedCoordinates || [12.9788, 77.5996]}
+                  onRepositionSelect={(hotspot) => {
+                    setMapFlyToCoords(hotspot.coords);
+                    setActiveTab("map");
+                  }}
+                />
+              </div>
+            )}
+
+            {/* TAB 6: EV CHARGING HUB & BATTERY TELEMETRY */}
+            {activeTab === "ev" && (
+              <div className="space-y-4 animate-fadeIn">
+                <EVChargingStationHUD
+                  driverCoords={currentProfile?.assignedCoordinates || [12.9788, 77.5996]}
+                  onRouteToStation={(station) => {
+                    setMapFlyToCoords(station.coords);
+                    setActiveTab("map");
+                  }}
+                />
+              </div>
             )}
           </>
         )}

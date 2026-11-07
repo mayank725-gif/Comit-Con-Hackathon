@@ -15,7 +15,7 @@ import {
   Users,
 } from "lucide-react";
 
-export type UberTab = "map" | "copilot" | "benchmark" | "telemetry";
+export type UberTab = "map" | "copilot" | "benchmark" | "telemetry" | "radar" | "ev";
 export type PortalMode = "CUSTOMER" | "DRIVER";
 
 interface UberNavbarProps {
@@ -148,6 +148,22 @@ export default function UberNavbar({
                 }`}
               >
                 AI Tech
+              </button>
+              <button
+                onClick={() => onTabChange("radar")}
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 ${
+                  activeTab === "radar" ? "bg-zinc-800 text-amber-300" : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Radar
+              </button>
+              <button
+                onClick={() => onTabChange("ev")}
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 ${
+                  activeTab === "ev" ? "bg-zinc-800 text-emerald-300" : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                EV Hub
               </button>
             </nav>
           )}

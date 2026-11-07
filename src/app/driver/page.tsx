@@ -10,6 +10,9 @@ import ActiveTripHUD from "@/components/uber/ActiveTripHUD";
 import DriverAuthModal from "@/components/uber/DriverAuthModal";
 import MichelangeloTelemetryView from "@/components/uber/MichelangeloTelemetryView";
 import UberBenchmarkView from "@/components/uber/UberBenchmarkView";
+import PredictiveRepositioningHUD from "@/components/uber/PredictiveRepositioningHUD";
+import EVChargingStationHUD from "@/components/uber/EVChargingStationHUD";
+import CorporateInvoiceModal from "@/components/uber/CorporateInvoiceModal";
 import { DriverUser, DriverWorkProfile } from "@/lib/db/driverDb";
 import { saveDriverProfileToCustomDb } from "@/lib/firebase/authService";
 import {
@@ -43,6 +46,7 @@ import {
   TrendingUp,
   CheckCircle2,
   RefreshCw,
+  Zap,
 } from "lucide-react";
 
 // Dynamic Leaflet Real Map import
@@ -60,7 +64,9 @@ const RealLeafletMap = dynamic(
 );
 
 export default function DriverPage() {
-  const [activeTab, setActiveTab] = useState<"map" | "telemetry" | "benchmarks" | "trips">("map");
+  const [activeTab, setActiveTab] = useState<"map" | "telemetry" | "benchmarks" | "trips" | "radar" | "ev">("map");
+  const [selectedInvoiceTrip, setSelectedInvoiceTrip] = useState<RideRequest | null>(null);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [state, setState] = useState<MarketplaceState | null>(null);
   const [selectedZone, setSelectedZone] = useState<ZoneId | null>("STADIUM");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -545,6 +551,26 @@ export default function DriverPage() {
               >
                 🏆 Earnings Growth
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("radar")}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1 ${
+                  activeTab === "radar" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <Radio className="h-3.5 w-3.5 text-amber-400" />
+                <span>Predictive Radar</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("ev")}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1 ${
+                  activeTab === "ev" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <Zap className="h-3.5 w-3.5 text-emerald-400" />
+                <span>EV Hub</span>
+              </button>
             </div>
 
             <Link
@@ -598,6 +624,26 @@ export default function DriverPage() {
             }`}
           >
             🏆 Earnings Growth
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("radar")}
+            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all flex items-center gap-1 ${
+              activeTab === "radar" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            }`}
+          >
+            <Radio className="h-3 w-3 text-amber-400" />
+            <span>Radar</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("ev")}
+            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all flex items-center gap-1 ${
+              activeTab === "ev" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            }`}
+          >
+            <Zap className="h-3 w-3 text-emerald-400" />
+            <span>EV Hub</span>
           </button>
         </div>
       </header>
@@ -805,7 +851,7 @@ export default function DriverPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 shrink-0 self-end md:self-center">
+                    <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
                       <div className="text-right">
                         <span className="text-xl font-black text-emerald-400 font-mono block">
                           ₹{trip.fareInr}
@@ -814,6 +860,18 @@ export default function DriverPage() {
                           Net Payout Credited
                         </span>
                       </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedInvoiceTrip(trip);
+                          setIsInvoiceModalOpen(true);
+                        }}
+                        className="px-3 py-1.5 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                      >
+                        <FileText className="h-3.5 w-3.5 text-emerald-400" />
+                        <span>Receipt</span>
+                      </button>
                     </div>
                   </div>
                 ))
@@ -835,7 +893,42 @@ export default function DriverPage() {
         {activeTab === "benchmarks" && (
           <UberBenchmarkView stats={UBER_BENCHMARK_DATA} />
         )}
+
+        {/* Tab 5: Michelangelo Predictive Surge Radar */}
+        {activeTab === "radar" && (
+          <div className="space-y-4 animate-fadeIn">
+            <PredictiveRepositioningHUD
+              driverCoords={currentProfile?.assignedCoordinates || [12.9788, 77.5996]}
+              onRepositionSelect={(hotspot) => {
+                setMapFlyToCoords(hotspot.coords);
+                setActiveTab("map");
+              }}
+            />
+          </div>
+        )}
+
+        {/* Tab 6: EV Charging Hub & Battery Telemetry */}
+        {activeTab === "ev" && (
+          <div className="space-y-4 animate-fadeIn">
+            <EVChargingStationHUD
+              driverCoords={currentProfile?.assignedCoordinates || [12.9788, 77.5996]}
+              onRouteToStation={(station) => {
+                setMapFlyToCoords(station.coords);
+                setActiveTab("map");
+              }}
+            />
+          </div>
+        )}
       </main>
+
+      {/* Official Tax Invoice & Carbon Credit Modal */}
+      {selectedInvoiceTrip && (
+        <CorporateInvoiceModal
+          ride={selectedInvoiceTrip}
+          isOpen={isInvoiceModalOpen}
+          onClose={() => setIsInvoiceModalOpen(false)}
+        />
+      )}
 
       {/* Real-Time Incoming Ride Dispatch Modal (Rings on Phone 2!) */}
       <IncomingRideDispatchModal

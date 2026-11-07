@@ -157,6 +157,100 @@ export interface RideRequest {
   licensePlate?: string;
   driverAvatar?: string;
   driverCoords?: [number, number];
+  // Safety & Emergency Sentinel
+  safetyStatus?: "SECURE" | "ANOMALY_DETECTED" | "SOS_TRIGGERED";
+  routeDeviationMeters?: number;
+  lastSafetyCheckTimestamp?: string;
+  // Carbon & EV Telemetry
+  carbonSavedKg?: number;
+  isEvRide?: boolean;
+}
+
+export interface PredictiveSurgeHotspot {
+  id: string;
+  zoneName: string;
+  city: string;
+  coords: [number, number];
+  predictedSurge: number;
+  timeToPeakMin: number;
+  confidenceScore: number;
+  catalyst: string;
+  earningsBoostPercent: number;
+  recommendedBearingDeg: number;
+  surgeStatus: "FORMING" | "PEAKING" | "DAMPING";
+}
+
+export interface RouteAnomalyAlert {
+  id: string;
+  tripId: string;
+  type: "ROUTE_DIVERGENCE" | "PROLONGED_STOP" | "UNSCHEDULED_DETOUR" | "SILENT_SOS";
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  deviationMeters: number;
+  divergenceLocation: [number, number];
+  status: "ACTIVE_CHECK" | "RESOLVED" | "ESCALATED_DISPATCH";
+  timestamp: string;
+  audioPrompt: string;
+}
+
+export interface EVChargingStation {
+  id: string;
+  name: string;
+  provider: "TATA_POWER_EZ" | "STATIQ" | "JIO_BP_PULSE" | "ATHER_GRID";
+  city: string;
+  coords: [number, number];
+  powerKw: number;
+  availableStalls: number;
+  totalStalls: number;
+  costPerKwh: number;
+  distanceKm: number;
+  connectorType: "CCS2 / Type 2" | "CHAdeMO / CCS2" | "Bharat AC001";
+}
+
+export interface EVTelemetry {
+  socPercent: number;
+  batteryHealthPercent: number;
+  estRangeKm: number;
+  co2SavedTotalKg: number;
+  chargingState: "DISCHARGING" | "CHARGING" | "LOW_BATTERY_GUARD";
+  motorTempC: number;
+}
+
+export interface RideTaxInvoice {
+  invoiceNumber: string;
+  hsnCode: string; // 996412 - Passenger transport service
+  gstin: string;
+  sacCode: string;
+  tripId: string;
+  riderName: string;
+  riderPhone?: string;
+  driverName: string;
+  driverPhone?: string;
+  vehicleModel: string;
+  licensePlate: string;
+  pickup: string;
+  dropoff: string;
+  distanceKm: number;
+  durationMin: number;
+  baseFare: number;
+  distanceFare: number;
+  surgeMultiplier: number;
+  surgeBonus: number;
+  cgstInr: number;
+  sgstInr: number;
+  platformFeeInr: number;
+  totalInr: number;
+  carbonSavedKg: number;
+  upiQrString: string;
+  issuedAt: string;
+  paymentMode: string;
+}
+
+export interface IsochroneZone {
+  minutes: 5 | 10 | 15;
+  label: string;
+  color: string;
+  fillColor: string;
+  coords: [number, number][];
 }
 
 export interface AssistantMessage {
