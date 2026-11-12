@@ -257,19 +257,19 @@ export default function DriverAssistantChat({
   const currentPresets = chatLang === "hi" ? PRESET_QUERIES_HI : PRESET_QUERIES_EN;
 
   return (
-    <div className="flex flex-col h-[540px] rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-2xl">
+    <div className="flex flex-col h-[540px] rounded-[28px] border border-[#e2e6de] bg-white safar-card-shadow overflow-hidden text-[#193c34]">
       {/* Chat Header */}
-      <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-950/90 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-[#e2e6de] bg-[#fafaf6] px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-800 border border-zinc-700 shadow-md">
-            <Sparkles className="h-4 w-4 text-white" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ecf1e8] border border-[#193c34]/20 text-[#193c34] safar-card-shadow">
+            <Sparkles className="h-4 w-4 text-[#193c34]" />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-white tracking-tight">
-              {chatLang === "hi" ? "उबर ड्राइवर कॉपायलट" : "Uber Assistant Copilot"}
+            <h3 className="text-xs font-bold text-[#193c34] tracking-tight">
+              {chatLang === "hi" ? "उबर ड्राइवर कॉपायलट" : "Uber Copilot"}
             </h3>
-            <p className="text-[10px] text-zinc-400">
-              {chatLang === "hi" ? "माइकल एंजेलो स्मार्ट डिस्पैच" : "AI Multi-Agent Dispatch"}
+            <p className="text-[10px] text-[#6b7a74]">
+              {chatLang === "hi" ? "माइकल एंजेलो स्मार्ट डिस्पैच" : "Smart AI Dispatch"}
             </p>
           </div>
         </div>
@@ -277,14 +277,14 @@ export default function DriverAssistantChat({
         {/* Voice Audio Mode Toggle, Language Selector & Status */}
         <div className="flex items-center gap-1.5">
           {/* Hindi / English Chat Language Toggle */}
-          <div className="flex items-center bg-zinc-900 rounded-xl p-0.5 border border-zinc-800 text-[10px] font-bold">
+          <div className="flex items-center bg-[#f4f5f0] rounded-full p-0.5 border border-[#e2e6de] text-[10px] font-bold">
             <button
               type="button"
               onClick={() => setChatLang("hi")}
-              className={`px-2 py-0.5 rounded-lg transition-all ${
+              className={`px-2.5 py-0.5 rounded-full transition-all ${
                 chatLang === "hi"
-                  ? "bg-amber-500 text-black shadow-sm font-extrabold"
-                  : "text-zinc-400 hover:text-white"
+                  ? "bg-[#193c34] text-white safar-card-shadow font-semibold"
+                  : "text-[#6b7a74] hover:text-[#193c34]"
               }`}
             >
               🇮🇳 हिंदी
@@ -292,10 +292,10 @@ export default function DriverAssistantChat({
             <button
               type="button"
               onClick={() => setChatLang("en")}
-              className={`px-2 py-0.5 rounded-lg transition-all ${
+              className={`px-2.5 py-0.5 rounded-full transition-all ${
                 chatLang === "en"
-                  ? "bg-white text-black shadow-sm font-bold"
-                  : "text-zinc-400 hover:text-white"
+                  ? "bg-[#193c34] text-white safar-card-shadow font-semibold"
+                  : "text-[#6b7a74] hover:text-[#193c34]"
               }`}
             >
               EN
@@ -312,17 +312,17 @@ export default function DriverAssistantChat({
               setIsVoiceEnabled(!isVoiceEnabled);
             }}
             title={isVoiceEnabled ? "Voice Output Active (Click to mute)" : "Enable Hands-Free Voice Output"}
-            className={`flex items-center gap-1 px-2 py-1 rounded-xl text-[10px] font-bold border transition-all ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all ${
               isVoiceEnabled
-                ? "border-emerald-500 bg-emerald-500/20 text-emerald-300"
-                : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white"
+                ? "border-[#193c34] bg-[#ecf1e8] text-[#193c34]"
+                : "border-[#e2e6de] bg-white text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
-            {isVoiceEnabled ? <Volume2 className="h-3 w-3 text-emerald-400" /> : <VolumeX className="h-3 w-3" />}
+            {isVoiceEnabled ? <Volume2 className="h-3 w-3 text-[#193c34]" /> : <VolumeX className="h-3 w-3 text-[#6b7a74]" />}
             <span className="hidden sm:inline">{isVoiceEnabled ? "Voice ON" : "Voice"}</span>
           </button>
 
-          <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[9px] font-bold text-emerald-400">
+          <span className="rounded-full bg-[#ecf1e8] text-[#193c34] px-2 py-0.5 text-[9px] font-bold">
             {chatLang === "hi" ? "सक्रिय" : "Online"}
           </span>
 
@@ -330,23 +330,23 @@ export default function DriverAssistantChat({
             type="button"
             onClick={() => setIsApiKeyModalOpen(true)}
             title="Configure LLM Reasoning Engine"
-            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-[9px] font-bold text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf1e8] border border-[#d2dcd5] text-[9px] font-bold text-[#193c34] hover:bg-[#d8e4d2] transition-all cursor-pointer"
           >
-            <Cpu className="h-3 w-3 text-emerald-400" />
+            <Cpu className="h-3 w-3 text-[#193c34]" />
             <span className="hidden sm:inline">LLM Mode</span>
           </button>
         </div>
       </div>
 
       {/* Preset Action Buttons (2x2 Grid) */}
-      <div className="border-b border-zinc-800/80 bg-zinc-950/60 p-2 grid grid-cols-2 gap-1.5">
+      <div className="border-b border-[#e2e6de] bg-[#fafaf6] p-2.5 grid grid-cols-2 gap-1.5">
         {currentPresets.map((preset, idx) => (
           <button
             key={idx}
             type="button"
             onClick={() => handlePresetClick(preset.query)}
             disabled={isLoading}
-            className="text-left rounded-xl border border-zinc-800 bg-zinc-900/90 px-2.5 py-1.5 text-[11px] font-medium text-zinc-300 hover:border-zinc-600 hover:text-white transition-all disabled:opacity-50 truncate shadow-sm"
+            className="text-left rounded-full border border-[#e2e6de] bg-white px-3 py-1.5 text-[11px] font-medium text-[#193c34] hover:bg-[#ecf1e8] hover:border-[#193c34]/30 transition-all disabled:opacity-50 truncate safar-card-shadow"
           >
             {preset.label}
           </button>
@@ -354,7 +354,7 @@ export default function DriverAssistantChat({
       </div>
 
       {/* Messages Stream with Smooth Auto-Scroll */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-white">
         {messages.map((msg) => {
           const isDriver = msg.sender === "DRIVER";
           const isExpanded = expandedTraceId === msg.id;
@@ -368,7 +368,7 @@ export default function DriverAssistantChat({
               {!isDriver && (
                 <div className="flex items-center justify-between w-full max-w-[85%] px-1">
                   {msg.agentType && (
-                    <span className="text-[10px] font-bold tracking-wide flex items-center gap-1 text-emerald-400">
+                    <span className="text-[10px] font-bold tracking-wide flex items-center gap-1 text-[#193c34]">
                       {msg.agentType === "DISPATCH"
                         ? "🤖 Smart Route Advisor"
                         : msg.agentType === "EVENT_INTEL"
@@ -382,30 +382,30 @@ export default function DriverAssistantChat({
                     type="button"
                     onClick={() => speakText(msg.text, msg.id)}
                     title="Speak text aloud"
-                    className="text-zinc-500 hover:text-white transition-colors"
+                    className="text-[#6b7a74] hover:text-[#193c34] transition-colors"
                   >
-                    <Volume2 className={`h-3 w-3 ${isSpeaking ? "text-emerald-400 animate-bounce" : ""}`} />
+                    <Volume2 className={`h-3 w-3 ${isSpeaking ? "text-[#193c34] animate-bounce" : ""}`} />
                   </button>
                 </div>
               )}
 
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
+                className={`max-w-[85%] rounded-[20px] px-4 py-3 text-xs leading-relaxed ${
                   isDriver
-                    ? "bg-white text-black font-semibold rounded-br-sm shadow-md"
-                    : "bg-zinc-950 border border-zinc-800/90 text-zinc-200 rounded-bl-sm shadow-md"
+                    ? "bg-[#193c34] text-white font-medium rounded-br-sm safar-card-shadow"
+                    : "bg-[#fbfbf9] border border-[#e2e6de] text-[#193c34] rounded-bl-sm safar-card-shadow"
                 }`}
               >
                 <p className="whitespace-pre-line">{msg.text}</p>
 
                 {/* Actionable Dispatch Badge */}
                 {msg.actionableRecommendation && (
-                  <div className="mt-2.5 pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-medium">
-                    <span className="text-amber-400 flex items-center gap-1 font-bold">
+                  <div className="mt-2.5 pt-2 border-t border-[#e2e6de] flex items-center justify-between text-[11px] font-medium">
+                    <span className="text-[#f87746] flex items-center gap-1 font-bold">
                       <Sparkles className="h-3 w-3" />
                       {msg.actionableRecommendation.suggestedZone} &bull; {msg.actionableRecommendation.estimatedSurge}x
                     </span>
-                    <span className="text-emerald-400 font-bold">
+                    <span className="text-[#193c34] font-bold">
                       {msg.actionableRecommendation.extraEarningsEstimate}
                     </span>
                   </div>
@@ -418,36 +418,36 @@ export default function DriverAssistantChat({
                   <button
                     type="button"
                     onClick={() => setExpandedTraceId(isExpanded ? null : msg.id)}
-                    className="flex items-center gap-1 text-[10px] text-emerald-400/80 hover:text-emerald-300 transition-colors px-1 font-medium"
+                    className="flex items-center gap-1 text-[10px] text-[#6b7a74] hover:text-[#193c34] transition-colors px-1 font-medium"
                   >
-                    <ShieldCheck className="h-3 w-3 text-emerald-400" />
-                    <span>✓ Real-time traffic &amp; route verified ({msg.routingTrace.latencyMs}ms)</span>
+                    <ShieldCheck className="h-3 w-3 text-[#193c34]" />
+                    <span>✓ Real-time route verified ({msg.routingTrace.latencyMs}ms)</span>
                     {isExpanded ? <ChevronUp className="h-2.5 w-2.5 ml-1" /> : <ChevronDown className="h-2.5 w-2.5 ml-1" />}
                   </button>
 
                   {isExpanded && (
-                    <div className="mt-1.5 rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 text-[10px] text-zinc-300 space-y-1.5 animate-fadeIn">
-                      <div className="flex justify-between border-b border-zinc-800/80 pb-1">
-                        <span className="text-zinc-400">Recommendation Accuracy:</span>
-                        <span className="text-emerald-400 font-bold">
+                    <div className="mt-1.5 rounded-2xl border border-[#e2e6de] bg-[#fbfbf9] p-3 text-[10px] text-[#193c34] space-y-1.5 animate-fadeIn safar-card-shadow">
+                      <div className="flex justify-between border-b border-[#e2e6de] pb-1">
+                        <span className="text-[#6b7a74]">Recommendation Accuracy:</span>
+                        <span className="text-[#193c34] font-bold">
                           {(msg.routingTrace.confidenceScore * 100).toFixed(1)}% High Confidence
                         </span>
                       </div>
-                      <div className="flex justify-between border-b border-zinc-800/80 pb-1">
-                        <span className="text-zinc-400">Live Decision Speed:</span>
-                        <span className="text-emerald-300 font-mono">{msg.routingTrace.latencyMs}ms instant response</span>
+                      <div className="flex justify-between border-b border-[#e2e6de] pb-1">
+                        <span className="text-[#6b7a74]">Live Decision Speed:</span>
+                        <span className="text-[#193c34] font-mono">{msg.routingTrace.latencyMs}ms instant</span>
                       </div>
                       <div className="space-y-1 pt-0.5">
-                        <span className="text-zinc-400 text-[9px] block">Verified Real-Time Signals:</span>
+                        <span className="text-[#6b7a74] text-[9px] block">Verified Real-Time Signals:</span>
                         <div className="flex flex-wrap gap-1">
-                          <span className="rounded-md bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 text-[9px] text-zinc-200">
-                            🚦 Live Google Traffic
+                          <span className="rounded-full bg-white border border-[#e2e6de] px-2 py-0.5 text-[9px] text-[#193c34]">
+                            🚦 Traffic Flow
                           </span>
-                          <span className="rounded-md bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 text-[9px] text-zinc-200">
-                            👥 Passenger Demand Surge
+                          <span className="rounded-full bg-white border border-[#e2e6de] px-2 py-0.5 text-[9px] text-[#193c34]">
+                            👥 Passenger Demand
                           </span>
-                          <span className="rounded-md bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 text-[9px] text-zinc-200">
-                            🎯 Shift Earnings Goal
+                          <span className="rounded-full bg-white border border-[#e2e6de] px-2 py-0.5 text-[9px] text-[#193c34]">
+                            🎯 Shift Goal
                           </span>
                         </div>
                       </div>
@@ -456,7 +456,7 @@ export default function DriverAssistantChat({
                 </div>
               )}
 
-              <span className="text-[9px] font-mono text-zinc-600 px-1">
+              <span className="text-[9px] font-mono text-[#6b7a74] px-1">
                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </span>
             </div>
@@ -464,10 +464,10 @@ export default function DriverAssistantChat({
         })}
 
         {isLoading && (
-          <div className="flex items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950 p-3 text-xs text-zinc-300 max-w-[70%]">
-            <div className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="font-mono text-[11px]">
-              {chatLang === "hi" ? "माइकल एंजेलो एजेंट रूटिंग क्वेरी संसाधित कर रहा है..." : "Michelangelo agent routing query..."}
+          <div className="flex items-center gap-2 rounded-full border border-[#e2e6de] bg-[#fbfbf9] px-4 py-2 text-xs text-[#193c34] max-w-[70%] safar-card-shadow">
+            <div className="h-2 w-2 rounded-full bg-[#193c34] animate-ping" />
+            <span className="text-[11px] text-[#6b7a74]">
+              {chatLang === "hi" ? "माइकल एंजेलो रूटिंग संसाधित कर रहा है..." : "Analyzing optimal route..."}
             </span>
           </div>
         )}
@@ -478,7 +478,7 @@ export default function DriverAssistantChat({
       {/* Input Bar with Voice Input (Microphone) & Send Button */}
       <form
         onSubmit={handleSubmit}
-        className="border-t border-zinc-800 bg-zinc-950/90 p-3 flex items-center gap-2"
+        className="border-t border-[#e2e6de] bg-[#fafaf6] p-3 flex items-center gap-2"
       >
         {/* Voice Input Microphone Button */}
         <button
@@ -489,10 +489,10 @@ export default function DriverAssistantChat({
               ? chatLang === "hi" ? "सुन रहा हूँ... (रोकने के लिए क्लिक करें)" : "Listening... (Click to stop)"
               : chatLang === "hi" ? "हिंदी में बोलकर पूछें" : "Speak to Driver Copilot"
           }
-          className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-all ${
+          className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all safar-card-shadow ${
             isListening
-              ? "border-rose-500 bg-rose-500/20 text-rose-400 animate-pulse ring-2 ring-rose-500/40"
-              : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white"
+              ? "border-[#f87746] bg-[#f87746]/10 text-[#f87746] animate-pulse ring-2 ring-[#f87746]/40"
+              : "border-[#e2e6de] bg-white text-[#6b7a74] hover:text-[#193c34]"
           }`}
         >
           <Mic className="h-4 w-4" />
@@ -510,13 +510,13 @@ export default function DriverAssistantChat({
               : "Ask copilot (e.g., 'Where is highest surge?')..."
           }
           disabled={isLoading}
-          className="flex-1 rounded-xl border border-zinc-800 bg-zinc-900/90 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white transition-colors"
+          className="flex-1 rounded-full border border-[#e2e6de] bg-white px-4 py-2 text-xs text-[#193c34] placeholder-[#6b7a74] focus:outline-none focus:border-[#193c34] transition-colors"
         />
 
         <button
           type="submit"
           disabled={isLoading || !inputText.trim()}
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-black hover:bg-zinc-200 disabled:opacity-40 transition-all shadow-md font-bold"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f87746] hover:bg-[#e06334] text-white disabled:opacity-40 transition-all safar-card-shadow font-bold shadow-md shadow-[#f87746]/20 cursor-pointer disabled:cursor-not-allowed"
         >
           <Send className="h-4 w-4" />
         </button>

@@ -486,35 +486,35 @@ export default function DriverPage() {
   const focusedZone = selectedZone && state?.zones ? state.zones[selectedZone] : null;
 
   return (
-    <div className="min-h-screen bg-black bg-grid-pattern text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
+    <div className="min-h-screen bg-[#fafaf6] text-[#193c34] flex flex-col font-sans selection:bg-[#ecf1e8]">
       {/* Standalone Driver Navigation Bar */}
-      <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-black/95 backdrop-blur-xl px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-40 w-full border-b border-[#e2e6de] bg-white/85 backdrop-blur-md px-4 py-3 sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           {/* Logo & Online Status */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-xl sm:text-2xl font-black tracking-tighter text-white">
+            <Link href="/" className="flex items-center gap-2 group">
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-[#193c34] group-hover:text-[#f87746] transition-colors">
                 Uber
               </span>
-              <span className="rounded-md bg-amber-400 text-black px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
+              <span className="rounded-full bg-[#ecf1e8] text-[#193c34] px-2.5 py-0.5 text-[11px] font-bold tracking-wide">
                 Driver Partner
               </span>
             </Link>
 
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-mono text-emerald-400 font-bold">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>ONLINE &bull; Listening for Trips</span>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ecf1e8] border border-[#d2dcd5] text-[11px] text-[#193c34] font-medium">
+              <span className="h-2 w-2 rounded-full bg-[#193c34] animate-ping" />
+              <span>ONLINE &bull; Ready for Trips</span>
             </div>
           </div>
 
           {/* Sub-tab navigation & Rider App Link */}
-          <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center gap-1 p-1 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="hidden md:flex items-center gap-1 p-1 rounded-full bg-[#f4f5f0] border border-[#e2e6de] text-xs">
               <button
                 type="button"
                 onClick={() => setActiveTab("map")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
-                  activeTab === "map" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                className={`px-3.5 py-1.5 rounded-full font-semibold transition-all flex items-center gap-1.5 ${
+                  activeTab === "map" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
                 }`}
               >
                 <MapPin className="h-3.5 w-3.5" />
@@ -523,14 +523,14 @@ export default function DriverPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab("trips")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
-                  activeTab === "trips" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                className={`px-3.5 py-1.5 rounded-full font-semibold transition-all flex items-center gap-1.5 ${
+                  activeTab === "trips" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
                 }`}
               >
                 <FileText className="h-3.5 w-3.5" />
                 <span>Trip Log</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
-                  activeTab === "trips" ? "bg-black/20 text-black" : "bg-zinc-800 text-zinc-300"
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  activeTab === "trips" ? "bg-[#ecf1e8] text-[#193c34]" : "bg-white text-[#6b7a74]"
                 }`}>
                   {driverTrips.length}
                 </span>
@@ -538,8 +538,8 @@ export default function DriverPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab("telemetry")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
-                  activeTab === "telemetry" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                className={`px-3.5 py-1.5 rounded-full font-semibold transition-all flex items-center gap-1.5 ${
+                  activeTab === "telemetry" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
                 }`}
               >
                 <Activity className="h-3.5 w-3.5" />
@@ -548,8 +548,8 @@ export default function DriverPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab("benchmarks")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
-                  activeTab === "benchmarks" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                className={`px-3.5 py-1.5 rounded-full font-semibold transition-all flex items-center gap-1.5 ${
+                  activeTab === "benchmarks" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
                 }`}
               >
                 <TrendingUp className="h-3.5 w-3.5" />
@@ -558,45 +558,45 @@ export default function DriverPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab("radar")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1 ${
-                  activeTab === "radar" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                className={`px-3.5 py-1.5 rounded-full font-semibold transition-all flex items-center gap-1 ${
+                  activeTab === "radar" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
                 }`}
               >
-                <Radio className="h-3.5 w-3.5 text-amber-400" />
+                <Radio className="h-3.5 w-3.5 text-[#f87746]" />
                 <span>Predictive Radar</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("ev")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1 ${
-                  activeTab === "ev" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                className={`px-3.5 py-1.5 rounded-full font-semibold transition-all flex items-center gap-1 ${
+                  activeTab === "ev" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
                 }`}
               >
-                <Zap className="h-3.5 w-3.5 text-emerald-400" />
+                <Zap className="h-3.5 w-3.5 text-[#193c34]" />
                 <span>EV Hub</span>
               </button>
             </div>
 
             <Link
               href="/rider"
-              className="px-3.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 shrink-0"
+              className="px-4 py-1.5 rounded-full border border-[#e2e6de] bg-white hover:bg-[#ecf1e8] text-[#193c34] font-semibold text-xs transition-all flex items-center gap-2 shrink-0 safar-card-shadow"
               title="Open Rider Booking Portal on Phone 1"
             >
-              <User className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">Open Rider Portal (Phone 1)</span>
-              <span className="sm:hidden">Rider App</span>
-              <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
+              <User className="h-3.5 w-3.5 text-[#f87746]" />
+              <span className="hidden sm:inline">Rider Portal</span>
+              <span className="sm:hidden">Rider</span>
+              <ArrowRight className="h-3.5 w-3.5 text-[#6b7a74]" />
             </Link>
           </div>
         </div>
 
         {/* Mobile Horizontal Sub-Tab Bar */}
-        <div className="flex md:hidden items-center gap-1.5 pt-2.5 overflow-x-auto text-xs border-t border-zinc-900 mt-2">
+        <div className="flex md:hidden items-center gap-1.5 pt-2.5 overflow-x-auto text-xs border-t border-[#e2e6de] mt-2">
           <button
             type="button"
             onClick={() => setActiveTab("map")}
-            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all ${
-              activeTab === "map" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            className={`px-3 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
+              activeTab === "map" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
             🗺️ Map
@@ -604,18 +604,18 @@ export default function DriverPage() {
           <button
             type="button"
             onClick={() => setActiveTab("trips")}
-            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all flex items-center gap-1 ${
-              activeTab === "trips" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            className={`px-3 py-1.5 rounded-full font-semibold shrink-0 transition-all flex items-center gap-1 ${
+              activeTab === "trips" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
             <span>📋 Trip Log</span>
-            <span className="text-[10px] font-mono font-bold">({driverTrips.length})</span>
+            <span className="text-[10px] font-bold">({driverTrips.length})</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("telemetry")}
-            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all ${
-              activeTab === "telemetry" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            className={`px-3 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
+              activeTab === "telemetry" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
             📊 City Status
@@ -623,30 +623,30 @@ export default function DriverPage() {
           <button
             type="button"
             onClick={() => setActiveTab("benchmarks")}
-            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all ${
-              activeTab === "benchmarks" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            className={`px-3 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
+              activeTab === "benchmarks" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
-            🏆 Earnings Growth
+            🏆 Growth
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("radar")}
-            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all flex items-center gap-1 ${
-              activeTab === "radar" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            className={`px-3 py-1.5 rounded-full font-semibold shrink-0 transition-all flex items-center gap-1 ${
+              activeTab === "radar" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
-            <Radio className="h-3 w-3 text-amber-400" />
+            <Radio className="h-3 w-3 text-[#f87746]" />
             <span>Radar</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("ev")}
-            className={`px-3 py-1.5 rounded-lg font-bold shrink-0 transition-all flex items-center gap-1 ${
-              activeTab === "ev" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white bg-zinc-900"
+            className={`px-3 py-1.5 rounded-full font-semibold shrink-0 transition-all flex items-center gap-1 ${
+              activeTab === "ev" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
-            <Zap className="h-3 w-3 text-emerald-400" />
+            <Zap className="h-3 w-3 text-[#193c34]" />
             <span>EV Hub</span>
           </button>
         </div>
@@ -732,77 +732,77 @@ export default function DriverPage() {
 
         {/* Tab 2: Driver Shift Trip Log & Earnings History */}
         {activeTab === "trips" && (
-          <div className="space-y-5 animate-fadeIn">
+          <div className="space-y-5 animate-fadeIn text-[#193c34]">
             {/* Shift Earnings Top Summary Card */}
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-zinc-800 pb-5">
+            <div className="rounded-[28px] border border-[#e2e6de] bg-white p-6 safar-card-shadow">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-[#e2e6de] pb-5">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono font-bold">
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#ecf1e8] text-[#193c34] font-semibold">
                       ACTIVE SHIFT
                     </span>
-                    <span className="text-xs text-zinc-400">
-                      Driver: <strong className="text-white">{currentProfile?.driverName || "Rajesh Kumar"}</strong>
+                    <span className="text-xs text-[#6b7a74]">
+                      Driver Partner: <strong className="text-[#193c34]">{currentProfile?.driverName || "Rajesh Kumar"}</strong>
                     </span>
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-[#193c34] tracking-tight">
                     Shift Trip Log &amp; Payouts
                   </h2>
-                  <p className="text-xs text-zinc-400">
-                    Real-time transaction history, guaranteed fares, and surge multipliers synced from self-hosted custom DB.
+                  <p className="text-xs text-[#6b7a74]">
+                    Real-time transaction history, upfront verified fares, and live surge payouts.
                   </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={fetchDriverTrips}
-                  className="px-3.5 py-2 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-full border border-[#e2e6de] bg-white hover:bg-[#ecf1e8] text-[#193c34] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer safar-card-shadow"
                 >
-                  <RefreshCw className={`h-3.5 w-3.5 text-emerald-400 ${isLoadingTrips ? "animate-spin" : ""}`} />
-                  <span>Refresh Trip Log</span>
+                  <RefreshCw className={`h-3.5 w-3.5 text-[#193c34] ${isLoadingTrips ? "animate-spin" : ""}`} />
+                  <span>Refresh Log</span>
                 </button>
               </div>
 
               {/* Key Driver Metrics Strip */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-5">
-                <div className="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/50">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                <div className="p-4 rounded-[20px] border border-[#e2e6de] bg-[#fbfbf9]">
+                  <span className="text-[10px] font-semibold text-[#6b7a74] uppercase tracking-wider block">
                     TOTAL SHIFT EARNINGS
                   </span>
-                  <span className="text-2xl font-black text-emerald-400 font-mono mt-1 block">
+                  <span className="text-2xl font-bold text-[#193c34] font-mono mt-1 block">
                     ₹{currentProfile?.currentEarnings || 2070}
                   </span>
-                  <span className="text-[10px] text-zinc-500">Target: ₹{currentProfile?.dailyEarningsTarget || 3200}</span>
+                  <span className="text-[10px] text-[#6b7a74]">Target: ₹{currentProfile?.dailyEarningsTarget || 3200}</span>
                 </div>
 
-                <div className="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/50">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                <div className="p-4 rounded-[20px] border border-[#e2e6de] bg-[#fbfbf9]">
+                  <span className="text-[10px] font-semibold text-[#6b7a74] uppercase tracking-wider block">
                     COMPLETED TRIPS
                   </span>
-                  <span className="text-2xl font-black text-white font-mono mt-1 block">
+                  <span className="text-2xl font-bold text-[#193c34] font-mono mt-1 block">
                     {driverTrips.length}
                   </span>
-                  <span className="text-[10px] text-emerald-400">100% Acceptance Rate</span>
+                  <span className="text-[10px] text-[#193c34] font-semibold">100% Acceptance</span>
                 </div>
 
-                <div className="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/50">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                <div className="p-4 rounded-[20px] border border-[#e2e6de] bg-[#fbfbf9]">
+                  <span className="text-[10px] font-semibold text-[#6b7a74] uppercase tracking-wider block">
                     AVG. FARE PER TRIP
                   </span>
-                  <span className="text-2xl font-black text-white font-mono mt-1 block">
+                  <span className="text-2xl font-bold text-[#193c34] font-mono mt-1 block">
                     ₹{driverTrips.length > 0 ? Math.round(driverTrips.reduce((acc, t) => acc + (t.fareInr || 0), 0) / driverTrips.length) : 480}
                   </span>
-                  <span className="text-[10px] text-amber-300">Boosted by Michelangelo surge</span>
+                  <span className="text-[10px] text-[#f87746] font-semibold">Includes surge pricing</span>
                 </div>
 
-                <div className="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/50">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                <div className="p-4 rounded-[20px] border border-[#e2e6de] bg-[#fbfbf9]">
+                  <span className="text-[10px] font-semibold text-[#6b7a74] uppercase tracking-wider block">
                     PARTNER RATING
                   </span>
-                  <span className="text-2xl font-black text-amber-400 font-mono mt-1 block">
+                  <span className="text-2xl font-bold text-[#f87746] font-mono mt-1 block">
                     ★ 4.96
                   </span>
-                  <span className="text-[10px] text-zinc-400">Based on 2,840 trips</span>
+                  <span className="text-[10px] text-[#6b7a74]">Based on 2,840 trips</span>
                 </div>
               </div>
             </div>
@@ -810,10 +810,10 @@ export default function DriverPage() {
             {/* Trip Cards List */}
             <div className="space-y-3">
               {driverTrips.length === 0 ? (
-                <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-12 text-center space-y-2">
-                  <Car className="h-10 w-10 text-zinc-600 mx-auto" />
-                  <h4 className="text-sm font-bold text-zinc-300">No completed trips yet this shift</h4>
-                  <p className="text-xs text-zinc-500">
+                <div className="rounded-[28px] border border-[#e2e6de] bg-white p-12 text-center space-y-2 safar-card-shadow">
+                  <Car className="h-10 w-10 text-[#6b7a74] mx-auto" />
+                  <h4 className="text-sm font-semibold text-[#193c34]">No completed trips yet this shift</h4>
+                  <p className="text-xs text-[#6b7a74]">
                     Switch to &apos;Driver Map&apos; and accept incoming dispatches from Phone 1 to log trips here!
                   </p>
                 </div>
@@ -821,35 +821,35 @@ export default function DriverPage() {
                 driverTrips.map((trip) => (
                   <div
                     key={trip.id}
-                    className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 sm:p-5 hover:border-zinc-700 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                    className="rounded-[20px] border border-[#e2e6de] bg-[#fbfbf9] p-4.5 hover:bg-white transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 safar-card-shadow text-[#193c34]"
                   >
-                    <div className="space-y-1 flex-1 min-w-0">
+                    <div className="space-y-1.5 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 font-bold">
+                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white border border-[#e2e6de] text-[#193c34] font-semibold">
                           {trip.id}
                         </span>
-                        <span className="text-xs font-bold text-white">{trip.timestamp}</span>
-                        <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 text-[10px] font-bold">
+                        <span className="text-xs font-semibold text-[#193c34]">{trip.timestamp}</span>
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#ecf1e8] text-[#193c34] text-[10px] font-semibold">
                           {trip.vehicleType ? trip.vehicleType.replace("UBER_", "Uber ") : "Uber Cab"}
                         </span>
                         {trip.surgeMultiplier > 1.0 && (
-                          <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/30">
+                          <span className="px-2 py-0.5 rounded-full bg-[#f87746]/10 text-[#f87746] font-mono text-[10px] font-bold border border-[#f87746]/30">
                             ⚡ {trip.surgeMultiplier}x Surge (+₹{trip.surgeBonusInr || Math.round(trip.fareInr * 0.3)})
                           </span>
                         )}
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold border border-emerald-500/30">
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#ecf1e8] text-[#193c34] text-[10px] font-semibold">
                           ✓ Settled &bull; Cash Collected
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-xs text-zinc-300 pt-1 truncate">
-                        <span className="text-zinc-400 truncate">{trip.pickupAddress}</span>
-                        <ArrowRight className="h-3 w-3 text-zinc-500 shrink-0" />
-                        <span className="text-white font-semibold truncate">{trip.dropoffAddress}</span>
+                      <div className="flex items-center gap-1.5 text-xs text-[#193c34] pt-1 truncate">
+                        <span className="text-[#6b7a74] truncate">{trip.pickupAddress}</span>
+                        <ArrowRight className="h-3 w-3 text-[#6b7a74] shrink-0" />
+                        <span className="font-semibold truncate">{trip.dropoffAddress}</span>
                       </div>
 
-                      <div className="text-[11px] text-zinc-400 flex items-center gap-2 pt-0.5">
-                        <span>Passenger: <strong className="text-zinc-200">{trip.riderName || "Passenger"}</strong></span>
+                      <div className="text-[11px] text-[#6b7a74] flex items-center gap-2 pt-0.5">
+                        <span>Passenger: <strong className="text-[#193c34]">{trip.riderName || "Passenger"}</strong></span>
                         <span>&bull;</span>
                         <span>Payment: {trip.paymentMode || "UPI / Digital"}</span>
                       </div>
@@ -857,10 +857,10 @@ export default function DriverPage() {
 
                     <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
                       <div className="text-right">
-                        <span className="text-xl font-black text-emerald-400 font-mono block">
+                        <span className="text-xl font-bold text-[#193c34] font-mono block">
                           ₹{trip.fareInr}
                         </span>
-                        <span className="text-[10px] text-zinc-400 block font-mono">
+                        <span className="text-[10px] text-[#6b7a74] block font-mono">
                           Net Payout Credited
                         </span>
                       </div>
@@ -871,9 +871,9 @@ export default function DriverPage() {
                           setSelectedInvoiceTrip(trip);
                           setIsInvoiceModalOpen(true);
                         }}
-                        className="px-3 py-1.5 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-full border border-[#e2e6de] bg-white hover:bg-[#ecf1e8] text-[#193c34] text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer safar-card-shadow"
                       >
-                        <FileText className="h-3.5 w-3.5 text-emerald-400" />
+                        <FileText className="h-3.5 w-3.5 text-[#193c34]" />
                         <span>Receipt</span>
                       </button>
                     </div>

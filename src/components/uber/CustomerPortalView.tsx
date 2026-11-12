@@ -587,16 +587,16 @@ export default function CustomerPortalView({
   return (
     <div className="space-y-6">
       {/* Top Uber-Style Segmented Navigation Bar */}
-      <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-4 sm:p-5 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="rounded-[28px] border border-[#e2e6de] bg-white p-3.5 sm:p-4 safar-card-shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         {/* Left: Tab Switcher (Book Ride vs Live Surge Requests) */}
-        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-zinc-900 border border-zinc-800 text-xs">
+        <div className="flex items-center gap-1 p-1 rounded-full bg-[#f4f5f0] border border-[#e2e6de] text-xs">
           <button
             type="button"
             onClick={() => setActiveTab("BOOK")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-black text-xs transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-xs transition-all ${
               activeTab === "BOOK"
-                ? "bg-white text-black shadow-lg"
-                : "text-zinc-400 hover:text-white"
+                ? "bg-[#193c34] text-white safar-card-shadow"
+                : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
             <span>🚖 Request a Ride</span>
@@ -605,20 +605,20 @@ export default function CustomerPortalView({
           <button
             type="button"
             onClick={() => setActiveTab("SURGE_STREAM")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-black text-xs transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-xs transition-all ${
               activeTab === "SURGE_STREAM"
-                ? "bg-amber-400 text-black shadow-lg"
-                : "text-zinc-400 hover:text-white"
+                ? "bg-[#f87746] text-white safar-card-shadow"
+                : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
-            <Flame className={`h-3.5 w-3.5 ${activeTab === "SURGE_STREAM" ? "text-black fill-black" : "text-amber-400"}`} />
-            <span>⚡ Live Surge Requests</span>
-            <span className={`px-1.5 py-0.2 rounded-full font-mono text-[10px] font-extrabold border ${
+            <Flame className={`h-3.5 w-3.5 ${activeTab === "SURGE_STREAM" ? "text-white fill-white" : "text-[#f87746]"}`} />
+            <span>⚡ Live Surge</span>
+            <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-bold ${
               activeTab === "SURGE_STREAM"
-                ? "bg-black/20 text-black border-black/30"
-                : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                ? "bg-white/20 text-white"
+                : "bg-[#ecf1e8] text-[#193c34]"
             }`}>
-              {routeData.surgeMultiplier}x Active
+              {routeData.surgeMultiplier}x
             </span>
           </button>
 
@@ -628,18 +628,18 @@ export default function CustomerPortalView({
               setActiveTab("HISTORY");
               fetchRideHistory();
             }}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-black text-xs transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full font-semibold text-xs transition-all ${
               activeTab === "HISTORY"
-                ? "bg-white text-black shadow-lg"
-                : "text-zinc-400 hover:text-white"
+                ? "bg-[#193c34] text-white safar-card-shadow"
+                : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
             <span>📁 My Trips</span>
             <span
-              className={`px-1.5 py-0.2 rounded-full font-mono text-[10px] font-extrabold border ${
+              className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-bold ${
                 activeTab === "HISTORY"
-                  ? "bg-black/20 text-black border-black/30"
-                  : "bg-zinc-800 text-zinc-300 border-zinc-700"
+                  ? "bg-white/20 text-white"
+                  : "bg-white text-[#6b7a74]"
               }`}
             >
               {rideHistory.length}
@@ -648,14 +648,14 @@ export default function CustomerPortalView({
         </div>
 
         {/* Center: Travel Profile Badge (Personal vs Business GST) */}
-        <div className="flex items-center rounded-2xl border border-zinc-800 bg-zinc-900/90 p-1 text-xs">
+        <div className="flex items-center rounded-full border border-[#e2e6de] bg-[#f4f5f0] p-1 text-xs">
           <button
             type="button"
             onClick={() => setTravelProfile("PERSONAL")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-medium transition-all ${
               travelProfile === "PERSONAL"
-                ? "bg-white text-black shadow-sm font-extrabold"
-                : "text-zinc-400 hover:text-white"
+                ? "bg-white text-[#193c34] safar-card-shadow font-semibold"
+                : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
             <User className="h-3.5 w-3.5" />
@@ -665,10 +665,10 @@ export default function CustomerPortalView({
           <button
             type="button"
             onClick={() => setTravelProfile("BUSINESS")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-medium transition-all ${
               travelProfile === "BUSINESS"
-                ? "bg-white text-black shadow-sm font-extrabold"
-                : "text-zinc-400 hover:text-white"
+                ? "bg-white text-[#193c34] safar-card-shadow font-semibold"
+                : "text-[#6b7a74] hover:text-[#193c34]"
             }`}
           >
             <Briefcase className="h-3.5 w-3.5" />
@@ -679,21 +679,21 @@ export default function CustomerPortalView({
         {/* Right: Logged-in Rider Profile & Switch to Driver */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           {riderUser && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900/90 text-xs">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#e2e6de] bg-white safar-card-shadow text-xs">
               <img
                 src={riderUser.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
                 alt={riderUser.name}
-                className="w-6 h-6 rounded-full object-cover border border-emerald-400"
+                className="w-5 h-5 rounded-full object-cover border border-[#193c34]/20"
               />
               <div className="text-left">
-                <span className="font-bold text-white block text-xs leading-none">{riderUser.name}</span>
-                <span className="text-[10px] text-zinc-400 font-mono">★ {riderUser.rating || 4.95}</span>
+                <span className="font-semibold text-[#193c34] block text-xs leading-none">{riderUser.name}</span>
+                <span className="text-[10px] text-[#6b7a74]">★ {riderUser.rating || 4.95}</span>
               </div>
               {onLogoutRider && (
                 <button
                   type="button"
                   onClick={onLogoutRider}
-                  className="ml-1 text-[10px] text-zinc-500 hover:text-rose-400 font-bold transition-colors cursor-pointer"
+                  className="ml-1 text-[10px] text-[#6b7a74] hover:text-rose-500 font-semibold transition-colors cursor-pointer"
                   title="Sign out of Rider account"
                 >
                   Exit
@@ -705,10 +705,10 @@ export default function CustomerPortalView({
           <button
             type="button"
             onClick={onSwitchToDriver}
-            className="px-3.5 py-2 rounded-xl border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold text-xs transition-all flex items-center gap-1.5 shrink-0"
+            className="px-4 py-2 rounded-full border border-[#e2e6de] bg-white hover:bg-[#ecf1e8] text-[#193c34] font-semibold text-xs transition-all flex items-center gap-1.5 shrink-0 safar-card-shadow"
           >
             <span>Driver Portal</span>
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRight className="h-3.5 w-3.5 text-[#6b7a74]" />
           </button>
         </div>
       </div>
@@ -718,25 +718,25 @@ export default function CustomerPortalView({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* LEFT 5 COLS: Iconic Floating Uber "Request a ride" Card */}
           <div className="lg:col-span-5 space-y-4">
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-7 shadow-2xl space-y-5">
+            <div className="rounded-[28px] border border-[#e2e6de] bg-white p-6 sm:p-7 safar-card-shadow space-y-5 text-[#193c34]">
               {/* Header Title & Schedule Toggle */}
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    Request a ride
+                  <h1 className="text-2xl sm:text-3xl font-bold text-[#193c34] tracking-tight">
+                    Request a <span className="font-editorial italic font-normal text-[#f87746]">ride</span>
                   </h1>
-                  <p className="text-xs text-zinc-400 mt-0.5">
-                    Guaranteed upfront pricing &bull; Pan-India real-time dispatch
+                  <p className="text-xs text-[#6b7a74] mt-0.5">
+                    Guaranteed upfront pricing &bull; Real-time verified dispatch
                   </p>
                 </div>
 
                 {/* Schedule Picker */}
-                <div className="flex items-center p-1 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
+                <div className="flex items-center p-1 rounded-full bg-[#f4f5f0] border border-[#e2e6de] text-xs">
                   <button
                     type="button"
                     onClick={() => setScheduleMode("NOW")}
-                    className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                      scheduleMode === "NOW" ? "bg-white text-black" : "text-zinc-400 hover:text-white"
+                    className={`px-3 py-1 rounded-full font-semibold transition-all ${
+                      scheduleMode === "NOW" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
                     }`}
                   >
                     Now
@@ -744,8 +744,8 @@ export default function CustomerPortalView({
                   <button
                     type="button"
                     onClick={() => setScheduleMode("LATER")}
-                    className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                      scheduleMode === "LATER" ? "bg-white text-black" : "text-zinc-400 hover:text-white"
+                    className={`px-3 py-1 rounded-full font-semibold transition-all ${
+                      scheduleMode === "LATER" ? "bg-white text-[#193c34] safar-card-shadow" : "text-[#6b7a74] hover:text-[#193c34]"
                     }`}
                   >
                     <Clock className="h-3 w-3 inline mr-1" />
@@ -756,31 +756,31 @@ export default function CustomerPortalView({
 
               {/* Business Travel Billing Callout (When Business Profile is active) */}
               {travelProfile === "BUSINESS" && (
-                <div className="rounded-2xl border border-zinc-700 bg-zinc-900/90 p-3.5 space-y-2 text-xs animate-fadeIn">
-                  <div className="flex items-center justify-between text-white font-bold">
+                <div className="rounded-2xl border border-[#e2e6de] bg-[#fbfbf9] p-3.5 space-y-2 text-xs animate-fadeIn">
+                  <div className="flex items-center justify-between text-[#193c34] font-bold">
                     <span className="flex items-center gap-1.5">
-                      <Briefcase className="h-4 w-4 text-emerald-400" />
+                      <Briefcase className="h-4 w-4 text-[#193c34]" />
                       <span>Uber for Business &bull; GST Input Tax Credit</span>
                     </span>
-                    <span className="text-[10px] font-mono text-emerald-400">ITC Eligible</span>
+                    <span className="text-[10px] font-mono text-[#193c34] bg-[#ecf1e8] px-2 py-0.5 rounded-full font-bold">ITC Eligible</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-[11px]">
                     <div>
-                      <span className="text-zinc-400 block text-[10px]">Company GSTIN</span>
+                      <span className="text-[#6b7a74] block text-[10px]">Company GSTIN</span>
                       <input
                         type="text"
                         value={corporateGstin}
                         onChange={(e) => setCorporateGstin(e.target.value.toUpperCase())}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-white font-mono uppercase text-xs"
+                        className="w-full bg-white border border-[#e2e6de] rounded-xl px-2.5 py-1 text-[#193c34] font-mono uppercase text-xs focus:outline-none focus:border-[#193c34]"
                       />
                     </div>
                     <div>
-                      <span className="text-zinc-400 block text-[10px]">Expense Code / Project</span>
+                      <span className="text-[#6b7a74] block text-[10px]">Expense Code / Project</span>
                       <input
                         type="text"
                         value={expenseCode}
                         onChange={(e) => setExpenseCode(e.target.value.toUpperCase())}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-white font-mono uppercase text-xs"
+                        className="w-full bg-white border border-[#e2e6de] rounded-xl px-2.5 py-1 text-[#193c34] font-mono uppercase text-xs focus:outline-none focus:border-[#193c34]"
                       />
                     </div>
                   </div>
@@ -792,7 +792,7 @@ export default function CustomerPortalView({
                 {/* Pickup Field */}
                 <div className="relative">
                   <div className="flex items-center gap-3">
-                    <span className="h-3 w-3 rounded-full bg-emerald-400 shrink-0 shadow-sm shadow-emerald-400/50" />
+                    <span className="h-3 w-3 rounded-full bg-[#193c34] shrink-0 shadow-sm" />
                     <div className="relative flex-1">
                       <input
                         type="text"
@@ -803,7 +803,7 @@ export default function CustomerPortalView({
                           setIsSearchingPickup(true);
                         }}
                         placeholder="Pickup location..."
-                        className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-white rounded-xl px-3.5 py-3 text-xs text-white placeholder-zinc-500 font-medium transition-all focus:outline-none"
+                        className="w-full bg-[#fbfbf9] border border-[#e2e6de] hover:border-[#193c34] focus:border-[#193c34] focus:bg-white rounded-full px-4 py-3 text-xs text-[#193c34] placeholder-[#6b7a74] font-medium transition-all focus:outline-none"
                       />
                       {pickupQuery && (
                         <button
@@ -813,7 +813,7 @@ export default function CustomerPortalView({
                             setSearchResults([]);
                             setIsSearchingPickup(false);
                           }}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7a74] hover:text-[#193c34] p-1"
                           title="Clear pickup location"
                         >
                           <X className="h-3.5 w-3.5" />
@@ -824,19 +824,19 @@ export default function CustomerPortalView({
 
                   {/* Autocomplete Dropdown */}
                   {isSearchingPickup && searchResults.length > 0 && activeSearchField === "pickup" && (
-                    <div className="absolute top-full left-6 right-0 mt-1 rounded-2xl border border-zinc-800 bg-zinc-900/98 backdrop-blur-xl shadow-2xl overflow-hidden divide-y divide-zinc-800/60 max-h-56 overflow-y-auto z-40">
+                    <div className="absolute top-full left-6 right-0 mt-1.5 rounded-2xl border border-[#e2e6de] bg-white safar-card-shadow overflow-hidden divide-y divide-[#e2e6de] max-h-56 overflow-y-auto z-40">
                       {searchResults.map((loc) => (
                         <button
                           key={loc.id}
                           type="button"
                           onClick={() => handleSelectLocation(loc)}
-                          className="w-full p-2.5 text-left hover:bg-zinc-800 transition-colors flex items-center justify-between text-xs text-white"
+                          className="w-full p-2.5 text-left hover:bg-[#fafaf6] transition-colors flex items-center justify-between text-xs text-[#193c34]"
                         >
                           <div className="truncate pr-2">
-                            <span className="font-bold block truncate">{loc.name}</span>
-                            <span className="text-[10px] text-zinc-400 block truncate">{loc.address}</span>
+                            <span className="font-semibold block truncate text-[#193c34]">{loc.name}</span>
+                            <span className="text-[10px] text-[#6b7a74] block truncate">{loc.address}</span>
                           </div>
-                          <span className="text-[10px] font-mono text-zinc-400 shrink-0">{loc.city}</span>
+                          <span className="text-[10px] font-mono text-[#6b7a74] shrink-0">{loc.city}</span>
                         </button>
                       ))}
                     </div>
@@ -845,16 +845,16 @@ export default function CustomerPortalView({
 
                 {/* Connecting Line with Swap Button */}
                 <div className="flex items-center justify-between pl-[5px] pr-2 py-0.5">
-                  <div className="h-4 border-l-2 border-zinc-700" />
+                  <div className="h-4 border-l-2 border-[#e2e6de]" />
                   <button
                     type="button"
                     onClick={handleSwapLocations}
                     disabled={tripState !== "IDLE"}
                     title="Swap pickup and destination"
-                    className={`p-1 rounded-lg border border-zinc-800 transition-colors ${
+                    className={`p-1.5 rounded-full border border-[#e2e6de] transition-colors ${
                       tripState !== "IDLE"
-                        ? "opacity-30 cursor-not-allowed bg-zinc-950 text-zinc-600"
-                        : "bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white cursor-pointer"
+                        ? "opacity-30 cursor-not-allowed bg-white text-[#6b7a74]"
+                        : "bg-white hover:bg-[#ecf1e8] text-[#193c34] cursor-pointer safar-card-shadow"
                     }`}
                   >
                     <ArrowUpDown className="h-3.5 w-3.5" />
@@ -864,7 +864,7 @@ export default function CustomerPortalView({
                 {/* Dropoff Field */}
                 <div className="relative">
                   <div className="flex items-center gap-3">
-                    <span className="h-3 w-3 rounded-none bg-white shrink-0 shadow-sm" />
+                    <span className="h-3 w-3 rounded-sm bg-[#f87746] shrink-0 shadow-sm" />
                     <div className="relative flex-1">
                       <input
                         type="text"
@@ -875,7 +875,7 @@ export default function CustomerPortalView({
                           setIsSearchingDropoff(true);
                         }}
                         placeholder="Where to? (Destination)..."
-                        className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-white rounded-xl px-3.5 py-3 text-xs text-white placeholder-zinc-500 font-medium transition-all focus:outline-none"
+                        className="w-full bg-[#fbfbf9] border border-[#e2e6de] hover:border-[#193c34] focus:border-[#193c34] focus:bg-white rounded-full px-4 py-3 text-xs text-[#193c34] placeholder-[#6b7a74] font-medium transition-all focus:outline-none"
                       />
                       {dropoffQuery && (
                         <button
@@ -885,7 +885,7 @@ export default function CustomerPortalView({
                             setSearchResults([]);
                             setIsSearchingDropoff(false);
                           }}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7a74] hover:text-[#193c34] p-1"
                           title="Clear destination"
                         >
                           <X className="h-3.5 w-3.5" />
@@ -896,19 +896,19 @@ export default function CustomerPortalView({
 
                   {/* Autocomplete Dropdown */}
                   {isSearchingDropoff && searchResults.length > 0 && activeSearchField === "dropoff" && (
-                    <div className="absolute top-full left-6 right-0 mt-1 rounded-2xl border border-zinc-800 bg-zinc-900/98 backdrop-blur-xl shadow-2xl overflow-hidden divide-y divide-zinc-800/60 max-h-56 overflow-y-auto z-40">
+                    <div className="absolute top-full left-6 right-0 mt-1.5 rounded-2xl border border-[#e2e6de] bg-white safar-card-shadow overflow-hidden divide-y divide-[#e2e6de] max-h-56 overflow-y-auto z-40">
                       {searchResults.map((loc) => (
                         <button
                           key={loc.id}
                           type="button"
                           onClick={() => handleSelectLocation(loc)}
-                          className="w-full p-2.5 text-left hover:bg-zinc-800 transition-colors flex items-center justify-between text-xs text-white"
+                          className="w-full p-2.5 text-left hover:bg-[#fafaf6] transition-colors flex items-center justify-between text-xs text-[#193c34]"
                         >
                           <div className="truncate pr-2">
-                            <span className="font-bold block truncate">{loc.name}</span>
-                            <span className="text-[10px] text-zinc-400 block truncate">{loc.address}</span>
+                            <span className="font-semibold block truncate text-[#193c34]">{loc.name}</span>
+                            <span className="text-[10px] text-[#6b7a74] block truncate">{loc.address}</span>
                           </div>
-                          <span className="text-[10px] font-mono text-zinc-400 shrink-0">{loc.city}</span>
+                          <span className="text-[10px] font-mono text-[#6b7a74] shrink-0">{loc.city}</span>
                         </button>
                       ))}
                     </div>
@@ -918,8 +918,8 @@ export default function CustomerPortalView({
 
               {/* Quick Popular Destination Chips */}
               <div className="space-y-1.5 pt-1">
-                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">
-                  Popular High-Yield Routes:
+                <span className="text-[11px] font-medium text-[#6b7a74] uppercase tracking-wider block">
+                  Popular Destinations:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {POPULAR_CHIPS.map((chip) => (
@@ -932,7 +932,7 @@ export default function CustomerPortalView({
                         setIsSearchingDropoff(false);
                         setSearchResults([]);
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[11px] text-zinc-300 font-medium transition-all truncate"
+                      className="px-3 py-1 rounded-full bg-[#f4f5f0] hover:bg-[#ecf1e8] border border-[#e2e6de] text-[11px] text-[#193c34] font-medium transition-all truncate"
                     >
                       {chip.name}
                     </button>
@@ -942,30 +942,30 @@ export default function CustomerPortalView({
 
               {/* LIVE SURGE NOTIFICATION CALLOUT BANNER (SURGE HANDLING IN ACTION) */}
               {routeData.surgeMultiplier > 1.0 && (
-                <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3.5 space-y-2 text-xs animate-fadeIn">
+                <div className="rounded-2xl border border-[#f87746]/30 bg-[#f87746]/10 p-3.5 space-y-1.5 text-xs animate-fadeIn text-[#193c34]">
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-amber-400 font-extrabold text-xs">
+                    <span className="flex items-center gap-1.5 text-[#f87746] font-bold text-xs">
                       <Flame className="h-4 w-4 shrink-0" />
                       <span>{routeData.surgeMultiplier}x Demand Surge Active</span>
                     </span>
                     <button
                       type="button"
                       onClick={() => setActiveTab("SURGE_STREAM")}
-                      className="text-[10px] font-bold text-amber-300 hover:underline flex items-center gap-1"
+                      className="text-[11px] font-semibold text-[#f87746] hover:underline flex items-center gap-1"
                     >
-                      <span>View Live Stream</span>
+                      <span>Live Stream</span>
                       <ArrowRight className="h-3 w-3" />
                     </button>
                   </div>
-                  <p className="text-[11px] text-zinc-300 leading-snug">
-                    High demand fair pricing enabled: +₹{routeData.surgeBonusInr} included. 65% of cabs stay reserved for the surrounding city.
+                  <p className="text-[11px] text-[#6b7a74] leading-snug">
+                    Fair market pricing: +₹{routeData.surgeBonusInr} included. 65% fleet reserved for general city mobility.
                   </p>
                 </div>
               )}
 
               {/* VEHICLE TIER LIST (AUTHENTIC PRODUCTION UBER ROWS) */}
               <div className="space-y-2">
-                <span className="text-xs font-black text-white block">Suggested Rides</span>
+                <span className="text-xs font-bold text-[#193c34] block">Suggested Rides</span>
                 <div className="space-y-2">
                   {VEHICLE_TIERS.map((tier) => {
                     const isSelected = selectedVehicle === tier.type;
@@ -978,10 +978,10 @@ export default function CustomerPortalView({
                         key={tier.type}
                         type="button"
                         onClick={() => setSelectedVehicle(tier.type)}
-                        className={`w-full p-3 rounded-2xl border text-left transition-all flex items-center justify-between ${
+                        className={`w-full p-3.5 rounded-[20px] border text-left transition-all flex items-center justify-between ${
                           isSelected
-                            ? "border-white bg-zinc-900 shadow-xl ring-2 ring-white/60"
-                            : "border-zinc-800 bg-zinc-950 hover:bg-zinc-900"
+                            ? "border-2 border-[#193c34] bg-[#fafaf6] safar-card-shadow ring-1 ring-[#193c34]/20"
+                            : "border-[#e2e6de] bg-white hover:border-[#193c34]/40"
                         }`}
                       >
                         {/* Left: Icon & Names */}
@@ -989,22 +989,22 @@ export default function CustomerPortalView({
                           <span className="text-2xl">{tier.icon}</span>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-extrabold text-xs text-white">{tier.name}</span>
-                              <span className="text-[10px] text-zinc-400 flex items-center gap-0.5">
+                              <span className="font-bold text-xs text-[#193c34]">{tier.name}</span>
+                              <span className="text-[10px] text-[#6b7a74] flex items-center gap-0.5">
                                 👤 {tier.capacity}
                               </span>
                             </div>
-                            <span className="text-[11px] text-zinc-400 block">{tier.etaMin} mins away &bull; {tier.desc}</span>
+                            <span className="text-[11px] text-[#6b7a74] block">{tier.etaMin} mins away &bull; {tier.desc}</span>
                           </div>
                         </div>
 
                         {/* Right: Fare */}
                         <div className="text-right">
-                          <span className="text-sm font-black text-white font-mono block">
+                          <span className="text-sm font-bold text-[#193c34] font-mono block">
                             ₹{tierFare}
                           </span>
                           {routeData.surgeMultiplier > 1.0 && (
-                            <span className="text-[9px] font-mono text-amber-400 font-bold block">
+                            <span className="text-[9px] font-mono text-[#f87746] font-bold block">
                               ⚡ Surge Inc.
                             </span>
                           )}
@@ -1016,53 +1016,53 @@ export default function CustomerPortalView({
               </div>
 
               {/* FARE BREAKDOWN & GST TAX DETAILS */}
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-3.5 space-y-2 text-xs">
-                <div className="flex items-center justify-between text-zinc-400">
+              <div className="rounded-2xl border border-[#e2e6de] bg-[#fbfbf9] p-4 space-y-2 text-xs text-[#193c34]">
+                <div className="flex items-center justify-between text-[#6b7a74]">
                   <span>Trip Route &amp; Travel Time:</span>
-                  <span className="font-mono text-zinc-200">
+                  <span className="font-mono text-[#193c34] font-medium">
                     {routeData.distanceKm} km &bull; ~{routeData.travelTimeMin} mins
                   </span>
                 </div>
 
                 {routeData.surgeBonusInr > 0 && (
-                  <div className="flex items-center justify-between text-amber-400 font-medium">
+                  <div className="flex items-center justify-between text-[#f87746] font-medium">
                     <span className="flex items-center gap-1">
                       <Flame className="h-3.5 w-3.5" />
                       Dynamic Surge ({routeData.surgeMultiplier}x):
                     </span>
-                    <span className="font-mono">+₹{routeData.surgeBonusInr} included</span>
+                    <span className="font-mono font-bold">+₹{routeData.surgeBonusInr} included</span>
                   </div>
                 )}
 
                 {travelProfile === "BUSINESS" && (
-                  <div className="flex items-center justify-between text-zinc-400 text-[11px] border-t border-zinc-800/80 pt-1.5">
+                  <div className="flex items-center justify-between text-[#6b7a74] text-[11px] border-t border-[#e2e6de] pt-2">
                     <span>GST (5% ITC Claimable):</span>
-                    <span className="font-mono">CGST: ₹{cgst} + SGST: ₹{sgst} (₹{gstAmount})</span>
+                    <span className="font-mono text-[#193c34]">CGST: ₹{cgst} + SGST: ₹{sgst} (₹{gstAmount})</span>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
+                <div className="flex items-center justify-between pt-2.5 border-t border-[#e2e6de]">
                   <div>
-                    <span className="font-bold text-white text-xs block">Guaranteed Total Fare</span>
-                    <span className="text-[10px] text-emerald-400 font-medium">Fixed rate &bull; No driver negotiation</span>
+                    <span className="font-bold text-[#193c34] text-xs block">Guaranteed Total Fare</span>
+                    <span className="text-[10px] text-[#193c34] font-medium">Fixed rate &bull; No driver negotiation</span>
                   </div>
-                  <span className="text-2xl font-black text-white font-mono">₹{activeSelectedFare}</span>
+                  <span className="text-2xl font-bold text-[#193c34] font-mono">₹{activeSelectedFare}</span>
                 </div>
               </div>
 
               {/* PAYMENT SELECTOR */}
-              <div className="flex items-center justify-between text-xs pt-1 border-t border-zinc-800">
-                <span className="text-zinc-400">Payment:</span>
+              <div className="flex items-center justify-between text-xs pt-1 border-t border-[#e2e6de]">
+                <span className="text-[#6b7a74]">Payment:</span>
                 <div className="flex items-center gap-1.5">
                   {(["GOOGLE_PAY_UPI", "CASH", "UBER_CASH"] as const).map((mode) => (
                     <button
                       key={mode}
                       type="button"
                       onClick={() => setPaymentMode(mode)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                         paymentMode === mode
-                          ? "bg-white text-black border-white"
-                          : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
+                          ? "bg-[#193c34] text-white border-[#193c34] safar-card-shadow"
+                          : "bg-white border-[#e2e6de] text-[#6b7a74] hover:text-[#193c34]"
                       }`}
                     >
                       {mode === "GOOGLE_PAY_UPI" ? "📱 UPI" : mode === "CASH" ? "💵 Cash" : "💳 Uber Cash"}
@@ -1077,27 +1077,27 @@ export default function CustomerPortalView({
                   type="button"
                   onClick={handleConfirmBooking}
                   disabled={isBooking}
-                  className="w-full py-4 rounded-2xl bg-white hover:bg-zinc-200 disabled:opacity-60 text-black font-black text-sm transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                  className="w-full py-3.5 rounded-full bg-[#f87746] hover:bg-[#e06334] disabled:opacity-60 text-white font-bold text-sm transition-all safar-card-shadow flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed shadow-lg shadow-[#f87746]/20"
                 >
                   {isBooking ? (
                     <>
-                      <div className="h-4 w-4 rounded-full border-2 border-black border-t-transparent animate-spin" />
+                      <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
                       <span>Contacting nearby drivers...</span>
                     </>
                   ) : (
                     <>
                       <span>Request {activeSelectedTier.name}</span>
-                      <span className="text-xs font-mono font-bold text-zinc-700">&bull; ₹{activeSelectedFare}</span>
+                      <span className="text-xs font-mono font-semibold text-white/90">&bull; ₹{activeSelectedFare}</span>
                     </>
                   )}
                 </button>
               ) : (
-                <div className="w-full py-3.5 px-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-1">
-                  <span className="text-xs font-bold text-emerald-400 flex items-center justify-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                <div className="w-full py-3 px-4 rounded-full bg-[#ecf1e8] border border-[#d2dcd5] text-center space-y-0.5">
+                  <span className="text-xs font-bold text-[#193c34] flex items-center justify-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-[#193c34] animate-ping" />
                     Active Ride in Progress
                   </span>
-                  <span className="text-[11px] text-zinc-400 block">
+                  <span className="text-[11px] text-[#6b7a74] block">
                     Complete your current ride before booking a new one.
                   </span>
                 </div>
@@ -1107,34 +1107,34 @@ export default function CustomerPortalView({
             {/* REALISTIC RIDE LIFECYCLE CARDS (THE MISSING HERO EXPERIENCE) */}
             {/* STATE 1: MATCHING RADAR */}
             {tripState === "SEARCHING" && (
-              <div className="rounded-3xl border border-zinc-700 bg-zinc-950 p-6 shadow-2xl space-y-4 animate-fadeIn text-center">
+              <div className="rounded-[28px] border border-[#e2e6de] bg-white p-6 safar-card-shadow space-y-4 animate-fadeIn text-center text-[#193c34]">
                 <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
-                  <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
-                  <div className="relative w-14 h-14 rounded-full bg-zinc-900 border border-emerald-400 flex items-center justify-center text-white">
-                    <Car className="h-7 w-7 text-emerald-400 animate-pulse" />
+                  <div className="absolute inset-0 rounded-full bg-[#193c34]/10 animate-ping" />
+                  <div className="relative w-14 h-14 rounded-full bg-[#ecf1e8] border border-[#193c34]/20 flex items-center justify-center text-[#193c34]">
+                    <Car className="h-7 w-7 text-[#193c34] animate-pulse" />
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-base font-extrabold text-white">Connecting with Nearby Drivers...</h3>
-                  <p className="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">
-                    Searching commercial fleet near {pickupQuery.split(",")[0]}. Price is locked at <strong>₹{routeData.finalFareInr}</strong>.
+                  <h3 className="text-base font-bold text-[#193c34]">Connecting with Nearby Drivers...</h3>
+                  <p className="text-xs text-[#6b7a74] mt-1 max-w-xs mx-auto">
+                    Searching verified commercial fleet near {pickupQuery.split(",")[0]}. Price locked at <strong>₹{routeData.finalFareInr}</strong>.
                   </p>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 text-[11px] font-mono text-emerald-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Fair city coverage enabled &bull; First group cab dispatch</span>
+                <div className="flex items-center justify-center gap-2 text-[11px] font-medium text-[#193c34]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#193c34] animate-pulse" />
+                  <span>Fair city coverage active &bull; Dispatched to closest driver</span>
                 </div>
 
-                <div className="pt-2 border-t border-zinc-800/80 flex flex-col items-center gap-2">
-                  <span className="text-[11px] text-zinc-400 font-mono">
-                    📱 Broadcasting to commercial fleet &bull; Waiting for driver to accept on Driver Portal...
+                <div className="pt-2 border-t border-[#e2e6de] flex flex-col items-center gap-2">
+                  <span className="text-[11px] text-[#6b7a74]">
+                    📱 Waiting for driver partner acceptance...
                   </span>
                   <button
                     type="button"
                     onClick={handleCancelBooking}
-                    className="px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-full border border-[#e2e6de] bg-white hover:bg-[#ecf1e8] text-[#193c34] text-xs font-semibold transition-all cursor-pointer safar-card-shadow"
                   >
                     Cancel Ride Request
                   </button>
@@ -1144,51 +1144,51 @@ export default function CustomerPortalView({
 
             {/* STATE 2: DRIVER ASSIGNED & EN ROUTE */}
             {tripState === "ASSIGNED" && assignedDriver && (
-              <div className="rounded-3xl border-2 border-emerald-500/60 bg-zinc-950 p-6 shadow-2xl space-y-5 animate-scaleUp">
+              <div className="rounded-[28px] border-2 border-[#193c34] bg-white p-6 safar-card-shadow space-y-5 animate-scaleUp text-[#193c34]">
                 {/* Header with OTP & ETA */}
-                <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <div className="flex items-center justify-between border-b border-[#e2e6de] pb-4">
                   <div>
-                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block font-mono">
+                    <span className="text-[11px] font-bold text-[#193c34] uppercase tracking-wider block">
                       ● DRIVER EN ROUTE
                     </span>
-                    <h3 className="text-xl font-black text-white mt-0.5">
+                    <h3 className="text-xl font-bold text-[#193c34] mt-0.5">
                       Arriving in {driverEtaMin} mins
                     </h3>
                   </div>
 
                   {/* 4-Digit Security PIN */}
                   <div className="text-right">
-                    <span className="text-[10px] text-zinc-400 block font-mono">YOUR SAFETY PIN</span>
-                    <div className="px-3 py-1 rounded-xl bg-white text-black font-black text-lg tracking-widest font-mono shadow-md">
+                    <span className="text-[10px] text-[#6b7a74] block font-medium">YOUR SAFETY PIN</span>
+                    <div className="px-3.5 py-1 rounded-full bg-[#193c34] text-white font-bold text-lg tracking-widest font-mono safar-card-shadow">
                       {rideOtp}
                     </div>
                   </div>
                 </div>
 
                 {/* Driver & Vehicle Details Card */}
-                <div className="flex items-center justify-between bg-zinc-900/90 rounded-2xl border border-zinc-800 p-4">
+                <div className="flex items-center justify-between bg-[#fbfbf9] rounded-[20px] border border-[#e2e6de] p-4">
                   <div className="flex items-center gap-3.5">
                     <img
                       src={assignedDriver.avatar}
                       alt={assignedDriver.name}
-                      className="w-12 h-12 rounded-2xl object-cover border border-emerald-400 shadow-md"
+                      className="w-12 h-12 rounded-full object-cover border border-[#193c34]/20 safar-card-shadow"
                     />
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-white text-sm">{assignedDriver.name}</span>
-                        <span className="text-[10px] text-amber-400 font-bold">★ {assignedDriver.rating}</span>
+                        <span className="font-bold text-[#193c34] text-sm">{assignedDriver.name}</span>
+                        <span className="text-[11px] text-[#f87746] font-bold">★ {assignedDriver.rating}</span>
                       </div>
-                      <span className="text-xs text-zinc-300 font-medium block">
+                      <span className="text-xs text-[#6b7a74] font-medium block">
                         {assignedDriver.vehicleModel}
                       </span>
-                      <span className="text-[11px] text-zinc-500 font-mono">
-                        {assignedDriver.tripsCompleted} commercial trips completed
+                      <span className="text-[11px] text-[#6b7a74]">
+                        {assignedDriver.tripsCompleted} trips completed
                       </span>
                     </div>
                   </div>
 
                   {/* Indian Yellow Commercial Number Plate */}
-                  <div className="rounded-lg bg-amber-400 text-black font-mono font-black text-xs px-2.5 py-1.5 border border-black/40 shadow-inner tracking-wider">
+                  <div className="rounded-lg bg-amber-400 text-black font-mono font-bold text-xs px-2.5 py-1.5 border border-black/40 shadow-inner tracking-wider">
                     {assignedDriver.licensePlate}
                   </div>
                 </div>
@@ -1198,25 +1198,25 @@ export default function CustomerPortalView({
                   <button
                     type="button"
                     onClick={() => setIsCallModalOpen(true)}
-                    className="p-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                    className="p-2.5 rounded-full bg-white hover:bg-[#ecf1e8] text-[#193c34] border border-[#e2e6de] text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 safar-card-shadow"
                   >
-                    <Phone className="h-3.5 w-3.5 text-emerald-400" />
+                    <Phone className="h-3.5 w-3.5 text-[#193c34]" />
                     <span>Call</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setIsChatModalOpen(true)}
-                    className="p-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                    className="p-2.5 rounded-full bg-white hover:bg-[#ecf1e8] text-[#193c34] border border-[#e2e6de] text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 safar-card-shadow"
                   >
-                    <MessageSquare className="h-3.5 w-3.5 text-zinc-300" />
+                    <MessageSquare className="h-3.5 w-3.5 text-[#193c34]" />
                     <span>Chat</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={handleCancelBooking}
-                    className="p-2.5 rounded-xl bg-rose-950/30 hover:bg-rose-950/60 text-rose-300 border border-rose-500/30 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                    className="p-2.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
                   >
                     <X className="h-3.5 w-3.5" />
                     <span>Cancel</span>
@@ -1224,13 +1224,13 @@ export default function CustomerPortalView({
                 </div>
 
                 {/* Safety & Boarding Info */}
-                <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
+                <div className="pt-2 border-t border-[#e2e6de] flex items-center justify-between text-xs text-[#6b7a74]">
                   <div className="flex items-center gap-1.5">
-                    <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                    <span>Provide 4-digit PIN to driver upon car arrival</span>
+                    <ShieldCheck className="h-4 w-4 text-[#193c34]" />
+                    <span>Provide 4-digit PIN upon car arrival</span>
                   </div>
-                  <span className="text-[10px] font-mono text-emerald-400 font-bold">
-                    GPS Tracking Active
+                  <span className="text-[11px] text-[#193c34] font-medium">
+                    GPS Active
                   </span>
                 </div>
               </div>
@@ -1238,43 +1238,43 @@ export default function CustomerPortalView({
 
             {/* STATE 3: ON TRIP IN PROGRESS */}
             {tripState === "ON_TRIP" && (
-              <div className="rounded-3xl border-2 border-emerald-500 bg-zinc-950 p-6 shadow-2xl space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div className="rounded-[28px] border-2 border-[#193c34] bg-white p-6 safar-card-shadow space-y-4 animate-fadeIn text-[#193c34]">
+                <div className="flex items-center justify-between border-b border-[#e2e6de] pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="font-extrabold text-xs text-emerald-400 font-mono uppercase">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#193c34] animate-pulse" />
+                    <span className="font-bold text-xs text-[#193c34] uppercase">
                       TRIP IN PROGRESS
                     </span>
                   </div>
-                  <span className="text-xs font-mono text-zinc-300">{liveTripSpeed} km/h</span>
+                  <span className="text-xs font-mono text-[#6b7a74]">{liveTripSpeed} km/h</span>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-zinc-400 block font-mono">HEADING TO DROPOFF</span>
-                  <h4 className="text-base font-extrabold text-white mt-0.5">{dropoffQuery}</h4>
-                  <p className="text-xs text-zinc-400 mt-1">
+                  <span className="text-[10px] text-[#6b7a74] block uppercase font-medium">HEADING TO DROPOFF</span>
+                  <h4 className="text-base font-bold text-[#193c34] mt-0.5">{dropoffQuery}</h4>
+                  <p className="text-xs text-[#6b7a74] mt-1">
                     ETA: ~{routeData.travelTimeMin} mins &bull; {routeData.distanceKm} km remaining
                   </p>
                 </div>
 
-                <div className="p-3.5 rounded-2xl border border-zinc-800 bg-zinc-900/80 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 text-zinc-300">
-                    <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                    <span>RideCheck Active: Route safely tracked 24/7</span>
+                <div className="p-3.5 rounded-2xl border border-[#e2e6de] bg-[#fbfbf9] flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-[#193c34]">
+                    <ShieldCheck className="h-4 w-4 text-[#193c34]" />
+                    <span>RideCheck: Route monitored 24/7</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsSafetyModalOpen(true)}
-                    className="px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-[11px] font-mono text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1 rounded-full bg-[#ecf1e8] border border-[#d2dcd5] text-[11px] font-semibold text-[#193c34] hover:bg-[#d8e4d2] transition-all cursor-pointer flex items-center gap-1"
                   >
-                    <ShieldAlert className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>Safety Sentinel &bull; SOS</span>
+                    <ShieldAlert className="h-3.5 w-3.5 text-[#193c34]" />
+                    <span>Safety Sentinel</span>
                   </button>
                 </div>
 
                 {/* Instant Arrival Confirmation (Ensures rider is never stuck) */}
-                <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-800/80">
-                  <span className="text-[11px] text-zinc-400 font-mono">
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#e2e6de]">
+                  <span className="text-[11px] text-[#6b7a74]">
                     Reached destination?
                   </span>
                   <button
@@ -1283,7 +1283,7 @@ export default function CustomerPortalView({
                       setTripState("COMPLETED");
                       fetchRideHistory();
                     }}
-                    className="px-3.5 py-1.5 rounded-xl border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    className="px-4 py-2 rounded-full bg-[#193c34] hover:bg-[#122c26] text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer safar-card-shadow"
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     <span>Arrived &bull; View Tax Invoice &rarr;</span>
@@ -1294,59 +1294,59 @@ export default function CustomerPortalView({
 
             {/* STATE 4: TRIP COMPLETED & ENTERPRISE GST TAX INVOICE */}
             {tripState === "COMPLETED" && (
-              <div className="rounded-3xl border border-zinc-700 bg-zinc-950 p-6 shadow-2xl space-y-4 animate-scaleUp">
-                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
-                    <CheckCircle2 className="h-5 w-5" />
+              <div className="rounded-[28px] border border-[#e2e6de] bg-white p-6 safar-card-shadow space-y-4 animate-scaleUp text-[#193c34]">
+                <div className="flex items-center justify-between border-b border-[#e2e6de] pb-3">
+                  <div className="flex items-center gap-2 text-[#193c34] font-bold text-xs">
+                    <CheckCircle2 className="h-5 w-5 text-[#193c34]" />
                     <span>TRIP COMPLETED &bull; PAID ₹{routeData.finalFareInr}</span>
                   </div>
-                  <span className="text-[10px] font-mono text-zinc-400">
+                  <span className="text-[10px] font-mono text-[#6b7a74]">
                     SAC: 996412
                   </span>
                 </div>
 
                 {/* Printable Business Tax Invoice Summary */}
-                <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4 space-y-2.5 text-xs">
-                  <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-                    <span className="font-bold text-white">Official Tax Invoice</span>
-                    <span className="font-mono text-zinc-400 text-[10px]">
+                <div className="rounded-[20px] bg-[#fbfbf9] border border-[#e2e6de] p-4 space-y-2.5 text-xs text-[#193c34]">
+                  <div className="flex items-center justify-between border-b border-[#e2e6de] pb-2">
+                    <span className="font-bold text-[#193c34]">Official Tax Invoice</span>
+                    <span className="font-mono text-[#6b7a74] text-[10px]">
                       INV-2026-{confirmedRide?.id ? confirmedRide.id.replace(/[^0-9]/g, "").slice(-5) || "90412" : "90412"}
                     </span>
                   </div>
 
-                  <div className="space-y-1 text-zinc-300 text-[11px]">
+                  <div className="space-y-1 text-[#6b7a74] text-[11px]">
                     <div className="flex justify-between">
-                      <span className="text-zinc-400">Ride Reference:</span>
-                      <span className="font-mono text-[10px] text-zinc-300 font-bold">{confirmedRide?.id || "RIDE-COMPLETED"}</span>
+                      <span className="text-[#6b7a74]">Ride Reference:</span>
+                      <span className="font-mono text-[10px] text-[#193c34] font-semibold">{confirmedRide?.id || "RIDE-COMPLETED"}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-400">Pickup:</span>
-                      <span className="truncate max-w-[200px] text-right">{pickupQuery}</span>
+                      <span className="text-[#6b7a74]">Pickup:</span>
+                      <span className="truncate max-w-[200px] text-right text-[#193c34]">{pickupQuery}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-400">Dropoff:</span>
-                      <span className="truncate max-w-[200px] text-right">{dropoffQuery}</span>
+                      <span className="text-[#6b7a74]">Dropoff:</span>
+                      <span className="truncate max-w-[200px] text-right text-[#193c34]">{dropoffQuery}</span>
                     </div>
                     {travelProfile === "BUSINESS" && (
-                      <div className="flex justify-between font-mono text-[10px] text-emerald-400">
+                      <div className="flex justify-between font-mono text-[10px] text-[#193c34]">
                         <span>Corporate GSTIN:</span>
                         <span>{corporateGstin}</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="border-t border-zinc-800 pt-2 space-y-1 font-mono text-[11px]">
-                    <div className="flex justify-between text-zinc-400">
+                  <div className="border-t border-[#e2e6de] pt-2 space-y-1 font-mono text-[11px]">
+                    <div className="flex justify-between text-[#6b7a74]">
                       <span>Base Fare &amp; Distance:</span>
                       <span>₹{routeData.baseFareInr}</span>
                     </div>
                     {routeData.surgeBonusInr > 0 && (
-                      <div className="flex justify-between text-amber-400">
+                      <div className="flex justify-between text-[#f87746]">
                         <span>Dynamic Surge Multiplier ({routeData.surgeMultiplier}x):</span>
                         <span>+₹{routeData.surgeBonusInr}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-white font-bold text-xs pt-1 border-t border-zinc-800">
+                    <div className="flex justify-between text-[#193c34] font-bold text-xs pt-1 border-t border-[#e2e6de]">
                       <span>Total Paid:</span>
                       <span>₹{routeData.finalFareInr}</span>
                     </div>
@@ -1383,19 +1383,19 @@ export default function CustomerPortalView({
                       );
                       setIsInvoiceModalOpen(true);
                     }}
-                    className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 cursor-pointer"
+                    className="w-full py-3 px-3 rounded-full bg-[#193c34] hover:bg-[#122c26] text-white text-xs font-semibold transition-all flex items-center justify-center gap-1.5 safar-card-shadow cursor-pointer"
                   >
                     <FileText className="h-4 w-4" />
-                    <span>View Official GST Tax Invoice &amp; Carbon Credits</span>
+                    <span>View Official GST Tax Invoice</span>
                   </button>
 
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => window.print()}
-                      className="py-2.5 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="py-2.5 px-3 rounded-full bg-white hover:bg-[#ecf1e8] border border-[#e2e6de] text-[#193c34] text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer safar-card-shadow"
                     >
-                      <Printer className="h-3.5 w-3.5 text-zinc-400" />
+                      <Printer className="h-3.5 w-3.5 text-[#6b7a74]" />
                       <span>Print Summary</span>
                     </button>
 
@@ -1407,7 +1407,7 @@ export default function CustomerPortalView({
                         setAssignedDriver(null);
                         setRideOtp("");
                       }}
-                      className="py-2.5 px-3 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="py-2.5 px-3 rounded-full bg-[#f87746] hover:bg-[#e06334] text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer safar-card-shadow shadow-md shadow-[#f87746]/20"
                     >
                       <span>Book Another Ride</span>
                     </button>
@@ -1427,23 +1427,23 @@ export default function CustomerPortalView({
             />
 
             {/* Quick Live Surge Teaser underneath map */}
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 flex items-center justify-between text-xs">
+            <div className="rounded-[24px] border border-[#e2e6de] bg-white p-4 safar-card-shadow flex items-center justify-between text-xs text-[#193c34]">
               <div className="flex items-center gap-2.5">
-                <span className="p-2 rounded-xl bg-amber-500/20 text-amber-400 text-base">⚡</span>
+                <span className="p-2 rounded-full bg-[#ecf1e8] text-[#193c34] text-base">⚡</span>
                 <div>
-                  <span className="font-bold text-white block">Surge Shock Handling Engine Active</span>
-                  <span className="text-[10px] text-zinc-400">
-                    Live surge requests at {pickupQuery.split(",")[0]}: {routeData.surgeMultiplier}x Multiplier
+                  <span className="font-semibold text-[#193c34] block">Predictive Surge Radar Active</span>
+                  <span className="text-[11px] text-[#6b7a74]">
+                    Marketplace surge at {pickupQuery.split(",")[0]}: {routeData.surgeMultiplier}x Multiplier
                   </span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveTab("SURGE_STREAM")}
-                className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-amber-300 text-xs font-bold transition-all flex items-center gap-1"
+                className="px-4 py-1.5 rounded-full bg-[#fafaf6] hover:bg-[#ecf1e8] border border-[#e2e6de] text-[#193c34] text-xs font-semibold transition-all flex items-center gap-1.5"
               >
-                <span>View All Surge Requests</span>
-                <ArrowRight className="h-3 w-3" />
+                <span>Surge Radar</span>
+                <ArrowRight className="h-3 w-3 text-[#6b7a74]" />
               </button>
             </div>
           </div>
@@ -1462,70 +1462,70 @@ export default function CustomerPortalView({
 
       {/* VIEW 3: DEDICATED RIDER RIDE HISTORY & RECEIPTS */}
       {activeTab === "HISTORY" && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5 sm:p-7 shadow-2xl space-y-5 animate-fadeIn">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
+        <div className="rounded-[28px] border border-[#e2e6de] bg-white p-5 sm:p-7 safar-card-shadow space-y-5 animate-fadeIn text-[#193c34]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#e2e6de] pb-4">
             <div>
-              <h3 className="text-xl font-black text-white flex items-center gap-2">
+              <h3 className="text-xl font-bold text-[#193c34] flex items-center gap-2">
                 <span>My Trips &amp; Ride History</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono font-bold">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#ecf1e8] text-[#193c34] font-semibold">
                   {rideHistory.length} Completed
                 </span>
               </h3>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                Past rides, payment receipts, GST tax invoices, and driver ratings.
+              <p className="text-xs text-[#6b7a74] mt-0.5">
+                Past journeys, verified tax invoices, and carbon offset logs.
               </p>
             </div>
 
             <button
               type="button"
               onClick={fetchRideHistory}
-              className="px-3.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-1.5 rounded-full border border-[#e2e6de] bg-white hover:bg-[#ecf1e8] text-[#193c34] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer safar-card-shadow"
             >
-              <FileText className="h-3.5 w-3.5 text-emerald-400" />
+              <FileText className="h-3.5 w-3.5 text-[#193c34]" />
               <span>Refresh History</span>
             </button>
           </div>
 
           {rideHistory.length === 0 ? (
             <div className="py-12 text-center space-y-2">
-              <Car className="h-10 w-10 text-zinc-600 mx-auto" />
-              <h4 className="text-sm font-bold text-zinc-300">No completed trips yet</h4>
-              <p className="text-xs text-zinc-500">Book your first ride on the &apos;Request a Ride&apos; tab to see it logged here!</p>
+              <Car className="h-10 w-10 text-[#6b7a74] mx-auto" />
+              <h4 className="text-sm font-semibold text-[#193c34]">No completed trips yet</h4>
+              <p className="text-xs text-[#6b7a74]">Book your first journey on the &apos;Request a Ride&apos; tab to see it here.</p>
             </div>
           ) : (
             <div className="space-y-3">
               {rideHistory.map((ride) => (
                 <div
                   key={ride.id}
-                  className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 hover:bg-zinc-900 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                  className="rounded-[20px] border border-[#e2e6de] bg-[#fbfbf9] p-4.5 hover:bg-white transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-[#193c34] safar-card-shadow"
                 >
-                  <div className="space-y-1 flex-1 min-w-0">
+                  <div className="space-y-1.5 flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 font-bold">
+                      <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white border border-[#e2e6de] text-[#193c34] font-semibold">
                         {ride.id}
                       </span>
-                      <span className="text-xs font-bold text-white">{ride.timestamp}</span>
-                      <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 text-[10px] font-bold">
+                      <span className="text-xs font-semibold text-[#193c34]">{ride.timestamp}</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#ecf1e8] text-[#193c34] text-[10px] font-semibold">
                         {ride.vehicleType ? ride.vehicleType.replace("UBER_", "Uber ") : "Uber Cab"}
                       </span>
                       {ride.surgeMultiplier > 1.0 && (
-                        <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/30">
+                        <span className="px-2 py-0.5 rounded-full bg-[#f87746]/10 text-[#f87746] font-mono text-[10px] font-bold border border-[#f87746]/30">
                           ⚡ {ride.surgeMultiplier}x Surge
                         </span>
                       )}
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold border border-emerald-500/30">
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#ecf1e8] text-[#193c34] text-[10px] font-semibold">
                         ✓ Completed
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-300 pt-1 truncate">
-                      <span className="text-zinc-400 truncate">{ride.pickupAddress}</span>
-                      <ArrowRight className="h-3 w-3 text-zinc-500 shrink-0" />
-                      <span className="text-white font-semibold truncate">{ride.dropoffAddress}</span>
+                    <div className="flex items-center gap-1.5 text-xs text-[#193c34] pt-1 truncate">
+                      <span className="text-[#6b7a74] truncate">{ride.pickupAddress}</span>
+                      <ArrowRight className="h-3 w-3 text-[#6b7a74] shrink-0" />
+                      <span className="font-semibold truncate">{ride.dropoffAddress}</span>
                     </div>
 
-                    <div className="text-[11px] text-zinc-400 flex items-center gap-2 pt-0.5">
-                      <span>Driver: <strong className="text-zinc-200">{ride.driverName || "Rajesh Kumar"}</strong></span>
+                    <div className="text-[11px] text-[#6b7a74] flex items-center gap-2 pt-0.5">
+                      <span>Driver: <strong className="text-[#193c34]">{ride.driverName || "Rajesh Kumar"}</strong></span>
                       <span>&bull;</span>
                       <span>Vehicle: {ride.vehicleModel || "Dzire"} ({ride.licensePlate || "KA 01 MJ 4829"})</span>
                     </div>
@@ -1533,10 +1533,10 @@ export default function CustomerPortalView({
 
                   <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
                     <div className="text-right">
-                      <span className="text-base font-black text-white font-mono block">
+                      <span className="text-base font-bold text-[#193c34] font-mono block">
                         ₹{ride.fareInr}
                       </span>
-                      <span className="text-[10px] text-zinc-400 block font-mono">
+                      <span className="text-[10px] text-[#6b7a74] block font-mono">
                         {ride.paymentMode} &bull; Paid
                       </span>
                     </div>
@@ -1547,9 +1547,9 @@ export default function CustomerPortalView({
                         setSelectedInvoiceRide(ride);
                         setIsInvoiceModalOpen(true);
                       }}
-                      className="px-3 py-1.5 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-full border border-[#e2e6de] bg-white hover:bg-[#ecf1e8] text-[#193c34] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer safar-card-shadow"
                     >
-                      <FileText className="h-3.5 w-3.5 text-emerald-400" />
+                      <FileText className="h-3.5 w-3.5 text-[#193c34]" />
                       <span>Tax Invoice</span>
                     </button>
                   </div>
@@ -1710,24 +1710,24 @@ export default function CustomerPortalView({
         <button
           type="button"
           onClick={() => setIsAiDrawerOpen(!isAiDrawerOpen)}
-          className="flex items-center gap-2 px-4 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs shadow-2xl transition-all border border-zinc-200 ring-4 ring-black/40 group animate-pulse"
+          className="flex items-center gap-2 px-5 py-3 rounded-full bg-[#193c34] hover:bg-[#122c26] text-white font-semibold text-xs safar-card-shadow transition-all border border-[#193c34] group"
         >
-          <span className="p-1 rounded-full bg-black text-white text-xs">🤖</span>
-          <span>{isAiDrawerOpen ? "Close AI Copilot" : "Ask Uber AI Assistant"}</span>
+          <span className="p-1 rounded-full bg-white/20 text-white text-xs">✨</span>
+          <span>{isAiDrawerOpen ? "Close Assistant" : "Ask Copilot"}</span>
         </button>
       </div>
 
       {/* FLOATING AI ASSISTANT DRAWER */}
       {isAiDrawerOpen && (
-        <div className="fixed bottom-20 right-4 sm:right-6 w-[94vw] sm:w-[440px] max-h-[80vh] z-50 rounded-3xl border border-zinc-800 bg-zinc-950/98 shadow-2xl backdrop-blur-2xl overflow-hidden animate-scaleUp flex flex-col">
-          <div className="flex items-center justify-between p-3.5 border-b border-zinc-800 bg-zinc-900/90">
+        <div className="fixed bottom-20 right-4 sm:right-6 w-[94vw] sm:w-[440px] max-h-[80vh] z-50 rounded-[28px] border border-[#e2e6de] bg-white safar-card-shadow backdrop-blur-2xl overflow-hidden animate-scaleUp flex flex-col text-[#193c34]">
+          <div className="flex items-center justify-between p-3.5 border-b border-[#e2e6de] bg-[#fafaf6]">
             <div className="flex items-center gap-2">
-              <span className="p-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold">● Active</span>
-              <span className="font-extrabold text-xs text-white">Uber AI Assistant</span>
+              <span className="px-2 py-0.5 rounded-full bg-[#ecf1e8] text-[#193c34] text-[10px] font-bold">● Active</span>
+              <span className="font-bold text-xs text-[#193c34]">Uber Copilot</span>
             </div>
             <button
               onClick={() => setIsAiDrawerOpen(false)}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              className="p-1.5 rounded-full text-[#6b7a74] hover:text-[#193c34] hover:bg-[#ecf1e8] transition-colors"
             >
               <X className="h-4 w-4" />
             </button>

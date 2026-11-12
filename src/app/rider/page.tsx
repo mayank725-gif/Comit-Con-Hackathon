@@ -112,67 +112,62 @@ export default function RiderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black bg-grid-pattern text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
+    <div className="min-h-screen bg-[#fafaf6] text-[#193c34] flex flex-col font-sans selection:bg-[#ecf1e8]">
       {/* Standalone Rider Navigation Bar */}
-      <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-black/95 backdrop-blur-xl px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-40 w-full border-b border-[#e2e6de] bg-white/85 backdrop-blur-md px-4 py-3.5 sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           {/* Brand Logo & Mode Indicator */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-xl sm:text-2xl font-black tracking-tighter text-white">
+            <Link href="/" className="flex items-center gap-2 group">
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-[#193c34] group-hover:text-[#f87746] transition-colors">
                 Uber
               </span>
-              <span className="rounded-md bg-white text-black px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
+              <span className="rounded-full bg-[#ecf1e8] text-[#193c34] px-2.5 py-0.5 text-[11px] font-bold tracking-wide">
                 Rider
               </span>
             </Link>
 
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-mono text-emerald-400 font-bold">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>PORTAL 01 // PASSENGER (PHONE 1)</span>
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ecf1e8] border border-[#d2dcd5] text-[11px] text-[#193c34] font-medium">
+              <span className="h-2 w-2 rounded-full bg-[#193c34] animate-pulse" />
+              <span>Live Passenger Console</span>
             </div>
           </div>
 
           {/* User Profile & Quick Switch to Driver Portal */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {riderUser && (
               <button
                 type="button"
                 onClick={() => setIsRiderAuthOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-xs transition-all"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e2e6de] bg-white hover:border-[#193c34] text-xs transition-all safar-card-shadow text-[#193c34]"
                 title="Click to view or switch rider profile"
               >
                 <img
                   src={riderUser.avatar}
                   alt={riderUser.name}
-                  className="w-5 h-5 rounded-full object-cover border border-emerald-400"
+                  className="w-5 h-5 rounded-full object-cover border border-[#193c34]/20"
                 />
-                <span className="font-bold text-white hidden md:inline">{riderUser.name}</span>
-                <span className="text-[10px] text-zinc-400 font-mono">★ {riderUser.rating}</span>
+                <span className="font-bold text-[#193c34] hidden md:inline">{riderUser.name}</span>
+                <span className="text-[11px] text-[#6b7a74]">★ {riderUser.rating}</span>
               </button>
             )}
 
-            <div className="sm:hidden flex items-center gap-1 text-[10px] font-mono text-emerald-400 font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Rider Phone</span>
-            </div>
-
             <Link
               href="/driver"
-              className="px-3.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 shrink-0"
+              className="px-4 py-1.5 rounded-full border border-[#e2e6de] bg-white hover:bg-[#ecf1e8] text-[#193c34] font-semibold text-xs transition-all flex items-center gap-2 shrink-0 safar-card-shadow"
               title="Open Driver Portal on Phone 2 or switch view"
             >
-              <Car className="h-3.5 w-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Open Driver Portal (Phone 2)</span>
-              <span className="sm:hidden">Driver App</span>
-              <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
+              <Car className="h-3.5 w-3.5 text-[#f87746]" />
+              <span className="hidden sm:inline">Driver Partner</span>
+              <span className="sm:hidden">Driver</span>
+              <ArrowRight className="h-3.5 w-3.5 text-[#6b7a74]" />
             </Link>
           </div>
         </div>
       </header>
 
       {/* Main Rider Booking View */}
-      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-6">
         {state ? (
           <CustomerPortalView
             state={state}
@@ -186,9 +181,9 @@ export default function RiderPage() {
             onLogoutRider={handleLogoutRider}
           />
         ) : (
-          <div className="w-full h-96 rounded-3xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center space-y-3">
-            <div className="h-8 w-8 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
-            <span className="text-xs font-mono text-zinc-400">Loading Rider Portal &amp; Live Marketplace...</span>
+          <div className="w-full h-96 rounded-[28px] border border-[#e2e6de] bg-white safar-card-shadow flex flex-col items-center justify-center space-y-3">
+            <div className="h-8 w-8 rounded-full border-2 border-[#193c34] border-t-transparent animate-spin" />
+            <span className="text-xs text-[#6b7a74]">Connecting to Live Marketplace...</span>
           </div>
         )}
       </main>

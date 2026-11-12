@@ -20,6 +20,34 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Safar-AI Inspired Warm Organic Minimalist Styling */
+:root {
+  --safar-bg: #fafaf6;
+  --safar-ink: #193c34;
+  --safar-muted: #6b7a74;
+  --safar-line: #e2e6de;
+  --safar-card: #ffffff;
+  --safar-accent: #f87746;
+  --safar-sage: #ecf1e8;
+}
+
+.safar-card-shadow {
+  box-shadow: 0 20px 40px -12px rgba(25, 60, 52, 0.08), 0 2px 6px rgba(25, 60, 52, 0.02);
+}
+
+.safar-hover-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.safar-hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 25px 50px -12px rgba(25, 60, 52, 0.14);
+}
+
+.font-editorial {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
 /* Subtle High-End Dot Grid Background Pattern (Linear / Vercel Aesthetic) */
 .bg-grid-pattern {
   background-size: 32px 32px;

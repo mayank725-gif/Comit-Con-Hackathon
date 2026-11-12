@@ -513,238 +513,160 @@ export default function Home() {
 
   const focusedZone = selectedZone ? state.zones[selectedZone] : null;
 
-  // Primary Role Selection Gateway Flow: "Are you riding or driving today?"
+  // Primary Role Selection Gateway Flow: Safar-AI Inspired Warm Minimalist Canvas
   if (gatewayView === "CHOICE") {
     return (
-      <div className="min-h-screen bg-black bg-grid-pattern text-zinc-100 flex flex-col font-sans selection:bg-zinc-800 relative">
-        {/* Ambient Radial Accent Glows */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 radial-glow-emerald pointer-events-none" />
-        <div className="absolute top-0 right-1/4 w-96 h-96 radial-glow-amber pointer-events-none" />
-
-        {/* Minimal High-End Operations Header */}
-        <header className="relative z-10 w-full border-b border-zinc-800/80 bg-black/90 backdrop-blur-xl px-4 py-3.5 sm:px-8">
-          <div className="mx-auto flex max-w-7xl items-center justify-between">
+      <div className="min-h-screen bg-[#fafaf6] text-[#193c34] flex flex-col font-sans selection:bg-[#ecf1e8] selection:text-[#193c34]">
+        {/* Minimal Organic Header */}
+        <header className="w-full border-b border-[#e2e6de] bg-[#fafaf6]/90 backdrop-blur-md px-6 py-5 sm:px-10">
+          <div className="mx-auto flex max-w-6xl items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-xl sm:text-2xl font-black tracking-tighter text-white">Uber</span>
-              <span className="h-4 w-[1px] bg-zinc-800" />
-              <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-400">
-                <span className="font-bold text-white tracking-wide">MICHELANGELO</span>
-                <span className="px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-700/80 text-[10px] text-emerald-400 font-bold">
-                  v2.4 KERNEL
-                </span>
-              </div>
+              <span className="text-2xl font-black tracking-tight text-[#193c34]">
+                Uber
+              </span>
+              <span className="h-4 w-[1px] bg-[#dde2da]" />
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#ecf1e8] text-[#193c34] border border-[#dde2da]">
+                Michelangelo 2.0
+              </span>
             </div>
 
-            <div className="flex items-center gap-4 text-xs font-mono">
-              <div className="hidden md:flex items-center gap-2 text-zinc-400">
-                <span className="text-zinc-500">P99 LATENCY:</span>
-                <span className="text-cyan-400 font-bold">8.4ms</span>
-                <span className="text-zinc-700">&bull;</span>
-                <span className="text-zinc-500">FLEET:</span>
-                <span className="text-emerald-400 font-bold">{state.drivers.length} ACTIVE</span>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-[#ecf1e8] border border-[#dde2da] text-xs font-medium text-[#193c34]">
+                <span className="h-2 w-2 rounded-full bg-[#10b981] animate-pulse" />
+                <span>Live Two-Way Synchronization</span>
               </div>
-
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-950/90 border border-zinc-800 shadow-sm">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] text-zinc-300 font-bold">
-                  LIVE SSE SYNC
-                </span>
-              </div>
+              <span className="text-xs font-mono text-[#6b7a74] hidden md:inline">
+                {state.drivers.length} Cabs Online
+              </span>
             </div>
           </div>
         </header>
 
-        {/* Hero Role Selection Gateway */}
-        <main className="relative z-10 flex-1 flex flex-col justify-center items-center py-12 px-4 sm:px-6 max-w-6xl mx-auto w-full space-y-10 animate-fadeIn">
-          {/* Header Title & System Manifesto */}
-          <div className="text-center space-y-4 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/90 border border-zinc-800 text-zinc-300 font-mono text-xs font-semibold shadow-inner">
-              <Terminal className="h-3.5 w-3.5 text-cyan-400" />
-              <span className="text-zinc-400">ROLE SELECTION GATEWAY</span>
-              <span className="text-zinc-600">//</span>
-              <span className="text-emerald-400 font-bold">TWO-WAY DISPATCH ENGINE</span>
+        {/* Hero Section with Generous Breathing Room */}
+        <main className="flex-1 flex flex-col justify-center items-center py-12 sm:py-20 px-4 sm:px-8 max-w-5xl mx-auto w-full space-y-12 animate-fadeIn">
+          {/* Headline & Philosophy */}
+          <div className="text-center space-y-4 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#ecf1e8] border border-[#dde2da] text-xs font-semibold text-[#193c34]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#f87746]" />
+              <span>01 / CHOOSE YOUR JOURNEY</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-              Autonomous Mobility &amp; Dynamic Equilibrium
+            <h1 className="text-4xl sm:text-6xl font-extrabold text-[#193c34] tracking-tight leading-[1.1]">
+              Every journey,{" "}
+              <span className="font-editorial italic font-normal text-[#f87746]">
+                beautifully simple.
+              </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-normal">
-              Select your role to launch your dedicated production interface with mandatory authentication, sub-50ms dispatch handshakes, real-time telemetry, and persistent trip history.
+            <p className="text-base sm:text-lg text-[#6b7a74] leading-relaxed">
+              Book a seamless ride across the city, or partner with us to drive and earn on your schedule with real-time route equilibrium.
             </p>
           </div>
 
-          {/* System Telemetry Bar (High-Density Engineering Metrics) */}
-          <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-xs">
-            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-3.5 backdrop-blur-md space-y-1">
-              <span className="text-[10px] uppercase text-zinc-400 font-semibold tracking-wider block">
-                Fleet Units Online
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl font-black text-white">{state.drivers.length} Commercial Cabs</span>
-              </div>
-              <span className="text-[10px] text-emerald-400 font-bold block">
-                Across 6 Metro Hubs
-              </span>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-3.5 backdrop-blur-md space-y-1">
-              <span className="text-[10px] uppercase text-zinc-400 font-semibold tracking-wider block">
-                Market Equilibrium
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl font-black text-amber-400">{state.metrics.cityAvgSurge}x Avg</span>
-              </div>
-              <span className="text-[10px] text-zinc-400 block truncate">
-                Anti-Herd Damping Engaged
-              </span>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-3.5 backdrop-blur-md space-y-1">
-              <span className="text-[10px] uppercase text-zinc-400 font-semibold tracking-wider block">
-                KS-Drift Guard
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl font-black text-emerald-400">p &lt; 0.001</span>
-              </div>
-              <span className="text-[10px] text-zinc-400 block">
-                Self-heals in 3.2s
-              </span>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-3.5 backdrop-blur-md space-y-1">
-              <span className="text-[10px] uppercase text-zinc-400 font-semibold tracking-wider block">
-                Safety Handshake
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl font-black text-white">4-Digit PIN</span>
-              </div>
-              <span className="text-[10px] text-emerald-400 font-bold block">
-                Mutual OTP Verification
-              </span>
-            </div>
-          </div>
-
-          {/* Two Massive Bespoke Terminal Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-            {/* Card 1: Rider Experience Terminal */}
+          {/* Two Framed Inset Canvas Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-7 w-full">
+            {/* Card 1: Rider (Passenger) */}
             <Link
               href="/rider"
-              className="group relative rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950 via-zinc-950 to-zinc-900/60 p-7 sm:p-8 hover:border-zinc-500 transition-all duration-300 shadow-2xl flex flex-col justify-between space-y-6 hover:-translate-y-0.5 active:scale-[0.99]"
+              className="group relative rounded-[28px] border border-[#e2e6de] bg-white p-8 sm:p-10 safar-card-shadow safar-hover-lift flex flex-col justify-between space-y-8"
             >
-              <div className="space-y-5">
+              <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                    <Compass className="h-6 w-6 text-black" />
+                  <div className="w-13 h-13 rounded-2xl bg-[#ecf1e8] text-[#193c34] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                    <Compass className="h-6 w-6 text-[#193c34]" />
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-zinc-900/90 border border-zinc-800 text-[11px] font-mono font-bold text-zinc-300">
-                    PORTAL 01 // PASSENGER
+                  <span className="px-3.5 py-1 rounded-full bg-[#fafaf6] border border-[#dde2da] text-xs font-bold text-[#6b7a74]">
+                    Phone 1 &bull; Passenger
                   </span>
                 </div>
 
-                <div className="space-y-1.5">
-                  <h2 className="text-2xl font-black text-white group-hover:text-emerald-400 transition-colors">
-                    Rider Experience Terminal
+                <div className="space-y-2">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193c34] tracking-tight group-hover:text-[#f87746] transition-colors">
+                    Book a Ride
                   </h2>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    Book vehicles, monitor live crowd wave dispersal, verify 4-digit driver safety OTP, and download official GST tax invoices.
+                  <p className="text-sm text-[#6b7a74] leading-relaxed">
+                    Doorstep pickups, upfront fare protection, verified 4-digit safety PIN, and instant GST tax invoices.
                   </p>
                 </div>
 
-                <ul className="space-y-2.5 text-xs text-zinc-300 border-t border-zinc-800/80 pt-4 font-medium">
-                  <li className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Mandatory Rider sign-in with 1-click profiles</span>
+                <ul className="space-y-3 text-xs text-[#193c34] border-t border-[#f0f2ee] pt-5 font-medium">
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
+                    <span>Upfront fare guarantee with surge equilibrium</span>
                   </li>
-                  <li className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Upfront fare locking &amp; 3.8x anti-gouging surge cap</span>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
+                    <span>Mutual 4-digit Safety PIN verification</span>
                   </li>
-                  <li className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Multi-arterial crowd dispersal &amp; staggered waves</span>
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Autonomous Safety Sentinel with Silent SOS beacon</span>
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>GST tax invoices (HSN 996412) &amp; Carbon Certificates</span>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
+                    <span>Downloadable GST tax invoices &amp; Carbon Credits</span>
                   </li>
                 </ul>
               </div>
 
-              <div className="w-full py-3.5 px-4 rounded-2xl bg-white group-hover:bg-zinc-200 text-black font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl">
-                <span>Launch Rider Portal (Phone 1)</span>
+              <div className="w-full py-4 px-6 rounded-full bg-[#f87746] group-hover:bg-[#e66838] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98]">
+                <span>Continue as Rider</span>
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
 
-            {/* Card 2: Driver Partner Terminal */}
+            {/* Card 2: Driver (Partner Fleet) */}
             <Link
               href="/driver"
-              className="group relative rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950 via-zinc-950 to-zinc-900/60 p-7 sm:p-8 hover:border-amber-500/80 transition-all duration-300 shadow-2xl flex flex-col justify-between space-y-6 hover:-translate-y-0.5 active:scale-[0.99]"
+              className="group relative rounded-[28px] border border-[#e2e6de] bg-white p-8 sm:p-10 safar-card-shadow safar-hover-lift flex flex-col justify-between space-y-8"
             >
-              <div className="space-y-5">
+              <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-400 text-black flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                    <Gauge className="h-6 w-6 text-black" />
+                  <div className="w-13 h-13 rounded-2xl bg-[#ecf1e8] text-[#193c34] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                    <Gauge className="h-6 w-6 text-[#193c34]" />
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-zinc-900/90 border border-zinc-800 text-[11px] font-mono font-bold text-amber-300">
-                    PORTAL 02 // PARTNER FLEET
+                  <span className="px-3.5 py-1 rounded-full bg-[#fafaf6] border border-[#dde2da] text-xs font-bold text-[#6b7a74]">
+                    Phone 2 &bull; Driver Partner
                   </span>
                 </div>
 
-                <div className="space-y-1.5">
-                  <h2 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors">
-                    Driver Partner Terminal
+                <div className="space-y-2">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193c34] tracking-tight group-hover:text-[#193c34]/80 transition-colors">
+                    Drive &amp; Earn
                   </h2>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    Receive incoming dispatches in sub-50ms, verify passenger PINs, monitor predictive surge radars, and track net earnings.
+                  <p className="text-sm text-[#6b7a74] leading-relaxed">
+                    Sub-50ms dispatch alerts, live turn-by-turn navigation HUD, predictive surge radar, and instant net payouts.
                   </p>
                 </div>
 
-                <ul className="space-y-2.5 text-xs text-zinc-300 border-t border-zinc-800/80 pt-4 font-medium">
-                  <li className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
-                    <span>Mandatory Driver sign-in &amp; work territory setup</span>
+                <ul className="space-y-3 text-xs text-[#193c34] border-t border-[#f0f2ee] pt-5 font-medium">
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
+                    <span>Real-time audio dispatch alerts &amp; route radar</span>
                   </li>
-                  <li className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
-                    <span>Real-time dispatch alerts with audio ring chime</span>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
+                    <span>Predictive surge radar (15-30 min forecasts)</span>
                   </li>
-                  <li className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
-                    <span>Michelangelo Predictive Radar (15-30m forecasts)</span>
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
-                    <span>EV Battery Telemetry &amp; DC Fast Charger Directory</span>
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
-                    <span>Automated gross &amp; net payouts with receipt viewer</span>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
+                    <span>Automated gross &amp; net payouts with shift logs</span>
                   </li>
                 </ul>
               </div>
 
-              <div className="w-full py-3.5 px-4 rounded-2xl bg-amber-400 group-hover:bg-amber-300 text-black font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl">
-                <span>Launch Driver Partner Portal (Phone 2)</span>
+              <div className="w-full py-4 px-6 rounded-full bg-[#193c34] group-hover:bg-[#143029] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98]">
+                <span>Continue as Driver Partner</span>
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
           </div>
 
-          {/* Desktop Dual Console Trigger */}
+          {/* Quiet Desktop Workspace Switcher */}
           <div className="pt-2 text-center">
             <button
               type="button"
               onClick={() => setGatewayView("WORKSPACE")}
-              className="text-xs text-zinc-400 hover:text-white underline underline-offset-4 font-mono font-medium transition-colors cursor-pointer flex items-center justify-center gap-2 mx-auto"
+              className="text-xs text-[#6b7a74] hover:text-[#193c34] font-medium transition-colors cursor-pointer flex items-center justify-center gap-2 mx-auto"
             >
-              <Layers className="h-3.5 w-3.5 text-cyan-400" />
-              <span>Testing on a single laptop? Open Split-View Desktop Workspace Console &rarr;</span>
+              <Layers className="h-3.5 w-3.5 text-[#f87746]" />
+              <span>Testing on a laptop? Open Split-View Operations Console &rarr;</span>
             </button>
           </div>
         </main>
