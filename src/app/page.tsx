@@ -64,6 +64,15 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isChatLoading, setIsChatLoading] = useState(false);
 
+  // State for Safar-AI styled homepage interactive tabs & booking
+  const [homeTab, setHomeTab] = useState<1 | 2 | 3>(1);
+  const [homePickup, setHomePickup] = useState("M. Chinnaswamy Stadium, MG Road");
+  const [homeDropoff, setHomeDropoff] = useState("Kempegowda Int'l Airport (BLR T2)");
+  const [homeVehicle, setHomeVehicle] = useState<"UBER_GO" | "UBER_PREMIER" | "UBER_XL">("UBER_GO");
+  const [isHomeBooking, setIsHomeBooking] = useState(false);
+  const [homeBookingSuccess, setHomeBookingSuccess] = useState(false);
+  const [isCopilotDrawerOpen, setIsCopilotDrawerOpen] = useState(false);
+
   // Driver Authentication & Work Area State (Self-hosted Custom Database)
   const [currentUser, setCurrentUser] = useState<DriverUser | null>(null);
   const [currentProfile, setCurrentProfile] = useState<DriverWorkProfile | null>(null);
@@ -499,28 +508,6 @@ export default function Home() {
       setIsChatLoading(false);
     }
   };
-
-  if (!state) {
-    return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center space-y-3 font-sans">
-        <div className="h-8 w-8 rounded-full border-2 border-white border-t-transparent animate-spin" />
-        <span className="text-xs font-mono text-zinc-400">
-          Starting Uber 2.0 Real-Time Marketplace Engine...
-        </span>
-      </div>
-    );
-  }
-
-  const focusedZone = selectedZone ? state.zones[selectedZone] : null;
-
-  // State for Safar-AI styled homepage interactive tabs & booking
-  const [homeTab, setHomeTab] = useState<1 | 2 | 3>(1);
-  const [homePickup, setHomePickup] = useState("M. Chinnaswamy Stadium, MG Road");
-  const [homeDropoff, setHomeDropoff] = useState("Kempegowda Int'l Airport (BLR T2)");
-  const [homeVehicle, setHomeVehicle] = useState<"UBER_GO" | "UBER_PREMIER" | "UBER_XL">("UBER_GO");
-  const [isHomeBooking, setIsHomeBooking] = useState(false);
-  const [homeBookingSuccess, setHomeBookingSuccess] = useState(false);
-  const [isCopilotDrawerOpen, setIsCopilotDrawerOpen] = useState(false);
 
   // Primary Role Selection Gateway Flow: 100% Safar-AI Inspired Warm Minimalist Canvas
   if (gatewayView === "CHOICE") {
@@ -1263,6 +1250,19 @@ export default function Home() {
       </div>
     );
   }
+
+  if (!state) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center space-y-3 font-sans">
+        <div className="h-8 w-8 rounded-full border-2 border-white border-t-transparent animate-spin" />
+        <span className="text-xs font-mono text-zinc-400">
+          Starting Uber 2.0 Real-Time Marketplace Engine...
+        </span>
+      </div>
+    );
+  }
+
+  const focusedZone = selectedZone ? state.zones[selectedZone] : null;
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
