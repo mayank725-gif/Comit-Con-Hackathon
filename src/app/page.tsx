@@ -513,163 +513,753 @@ export default function Home() {
 
   const focusedZone = selectedZone ? state.zones[selectedZone] : null;
 
-  // Primary Role Selection Gateway Flow: Safar-AI Inspired Warm Minimalist Canvas
+  // State for Safar-AI styled homepage interactive tabs & booking
+  const [homeTab, setHomeTab] = useState<1 | 2 | 3>(1);
+  const [homePickup, setHomePickup] = useState("M. Chinnaswamy Stadium, MG Road");
+  const [homeDropoff, setHomeDropoff] = useState("Kempegowda Int'l Airport (BLR T2)");
+  const [homeVehicle, setHomeVehicle] = useState<"UBER_GO" | "UBER_PREMIER" | "UBER_XL">("UBER_GO");
+  const [isHomeBooking, setIsHomeBooking] = useState(false);
+  const [homeBookingSuccess, setHomeBookingSuccess] = useState(false);
+  const [isCopilotDrawerOpen, setIsCopilotDrawerOpen] = useState(false);
+
+  // Primary Role Selection Gateway Flow: 100% Safar-AI Inspired Warm Minimalist Canvas
   if (gatewayView === "CHOICE") {
     return (
-      <div className="min-h-screen bg-[#fafaf6] text-[#193c34] flex flex-col font-sans selection:bg-[#ecf1e8] selection:text-[#193c34]">
-        {/* Minimal Organic Header */}
-        <header className="w-full border-b border-[#e2e6de] bg-[#fafaf6]/90 backdrop-blur-md px-6 py-5 sm:px-10">
+      <div className="min-h-screen bg-[#fafaf6] text-[#15342a] flex flex-col font-sans selection:bg-[#ecf2ea] selection:text-[#15342a]">
+        {/* Safar-AI Top Navigation Bar */}
+        <header className="sticky top-0 z-40 w-full border-b border-[#e6e8e2] bg-[#fafaf6]/92 backdrop-blur-md px-6 py-4 sm:px-10">
           <div className="mx-auto flex max-w-6xl items-center justify-between">
+            {/* Brand Logo */}
             <div className="flex items-center gap-3">
-              <span className="text-2xl font-black tracking-tight text-[#193c34]">
-                Uber
-              </span>
-              <span className="h-4 w-[1px] bg-[#dde2da]" />
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#ecf1e8] text-[#193c34] border border-[#dde2da]">
-                Michelangelo 2.0
-              </span>
+              <Link href="/" className="flex items-center gap-2 group">
+                <span className="text-xl sm:text-2xl font-black tracking-tight text-[#15342a] group-hover:text-[#1d4437] transition-colors">
+                  ✳ UBER 2.0
+                </span>
+                <span className="hidden md:inline text-[9px] font-bold tracking-[0.2em] text-[#667069] uppercase pl-1 border-l border-[#dde2da]">
+                  DISPATCH SMARTER. MOVE FREELY.
+                </span>
+              </Link>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-[#ecf1e8] border border-[#dde2da] text-xs font-medium text-[#193c34]">
-                <span className="h-2 w-2 rounded-full bg-[#10b981] animate-pulse" />
-                <span>Live Two-Way Synchronization</span>
-              </div>
-              <span className="text-xs font-mono text-[#6b7a74] hidden md:inline">
-                {state.drivers.length} Cabs Online
-              </span>
+            {/* Center Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold text-[#15342a]">
+              <button
+                type="button"
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="hover:text-[#1d4437] transition-colors"
+              >
+                Home
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setHomeTab(1);
+                  document.getElementById("safar-canvas")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="hover:text-[#1d4437] transition-colors"
+              >
+                Plan your ride
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setHomeTab(2);
+                  document.getElementById("safar-canvas")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="hover:text-[#1d4437] transition-colors"
+              >
+                Driver partner
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setHomeTab(3);
+                  document.getElementById("safar-canvas")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="hover:text-[#1d4437] transition-colors"
+              >
+                Travel diaries
+              </button>
+              <Link href="/rider" className="hover:text-[#1d4437] transition-colors">
+                Rider Portal
+              </Link>
+              <Link href="/driver" className="hover:text-[#1d4437] transition-colors">
+                Driver App
+              </Link>
+            </nav>
+
+            {/* Right Controls */}
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => {}}
+                className="p-2 rounded-full border border-[#e6e8e2] bg-white hover:bg-[#fafaf8] text-[#15342a] text-xs transition-colors"
+                title="Toggle visual mode"
+              >
+                ☾
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setHomeTab(3);
+                  document.getElementById("safar-canvas")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="px-3.5 py-1.5 rounded-full border border-[#e6e8e2] bg-white text-xs font-semibold text-[#15342a] safar-card-shadow hover:bg-[#fafaf8] transition-all"
+              >
+                My trips 0
+              </button>
+
+              <Link
+                href="/rider"
+                className="px-4 py-2 rounded-full bg-[#1d4437] hover:bg-[#15342a] text-white text-xs font-semibold transition-all safar-card-shadow flex items-center gap-1.5"
+              >
+                <span>Request ride ↗</span>
+              </Link>
             </div>
           </div>
         </header>
 
-        {/* Hero Section with Generous Breathing Room */}
-        <main className="flex-1 flex flex-col justify-center items-center py-12 sm:py-20 px-4 sm:px-8 max-w-5xl mx-auto w-full space-y-12 animate-fadeIn">
-          {/* Headline & Philosophy */}
-          <div className="text-center space-y-4 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#ecf1e8] border border-[#dde2da] text-xs font-semibold text-[#193c34]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#f87746]" />
-              <span>01 / CHOOSE YOUR JOURNEY</span>
+        {/* Hero Section (Safar-AI Styled) */}
+        <section className="pt-14 sm:pt-20 pb-10 px-4 sm:px-8 max-w-5xl mx-auto w-full text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#ecf2ea] text-[11px] font-bold tracking-[0.2em] text-[#1d4437] uppercase">
+            <span>✦ LESS WAITING. MORE LIVING.</span>
+          </div>
+
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-[#15342a] tracking-tight leading-[1.08]">
+            Explore the city,{" "}
+            <span className="font-editorial italic font-normal text-[#1d4437]">
+              your way.
+            </span>
+          </h1>
+
+          <p className="text-base sm:text-lg text-[#667069] max-w-2xl mx-auto leading-relaxed">
+            Plan smarter, travel better, and create unforgettable journeys with guaranteed upfront fares. Your next ride starts here.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setHomeTab(1);
+                document.getElementById("safar-canvas")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="px-6 py-3 rounded-full bg-[#1d4437] hover:bg-[#15342a] text-white text-sm font-semibold transition-all safar-card-shadow flex items-center gap-2 shadow-sm cursor-pointer"
+            >
+              <span>Plan my ride ↗</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setHomeTab(2);
+                document.getElementById("safar-canvas")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="px-6 py-3 rounded-full border border-[#e6e8e2] bg-white hover:bg-[#fafaf8] text-[#15342a] text-sm font-semibold transition-all safar-card-shadow flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Drive &amp; earn →</span>
+            </button>
+          </div>
+
+          <div className="pt-4 text-xs text-[#667069] flex items-center justify-center gap-2 flex-wrap font-medium">
+            <span>☀️ 🚗 ⚡ 🛡️</span>
+            <span>&bull;</span>
+            <span>25,000+ happy riders</span>
+            <span>&bull;</span>
+            <span>Zero surge haggling</span>
+            <span>&bull;</span>
+            <span>Real-time GPS safety shield</span>
+            <span>&bull;</span>
+            <span className="text-[#1d4437] font-semibold">↗ BENGALURU, MUMBAI, DELHI NCR</span>
+          </div>
+        </section>
+
+        {/* Popular City Hubs / Destinations Cards (Like Jibhi & Pondicherry in Safar-AI) */}
+        <section className="px-4 sm:px-8 max-w-5xl mx-auto w-full pb-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Card 1 */}
+            <div className="rounded-[24px] border border-[#e6e8e2] bg-white p-6 safar-card-shadow flex flex-col justify-between space-y-4 text-left">
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold text-[#15342a]">Kempegowda Int&apos;l Airport</h3>
+                <p className="text-xs text-[#667069] leading-relaxed">
+                  Express highway corridor, dedicated cab lanes, and executive sedans.
+                </p>
+              </div>
+              <div className="border-t border-[#f0f2ee] pt-3 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-[#667069] uppercase tracking-wider block">
+                    FAIR UPFRONT FARE FROM
+                  </span>
+                  <span className="text-lg font-bold text-[#15342a] font-mono">₹820 / trip &bull; est.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHomeDropoff("Kempegowda Int'l Airport (BLR T2)");
+                    setHomeTab(1);
+                    document.getElementById("safar-canvas")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="w-9 h-9 rounded-full border border-[#e6e8e2] bg-[#fafaf6] hover:bg-[#ecf2ea] flex items-center justify-center text-[#15342a] transition-colors cursor-pointer"
+                  title="Plan ride to Airport"
+                >
+                  ↗
+                </button>
+              </div>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl font-extrabold text-[#193c34] tracking-tight leading-[1.1]">
-              Every journey,{" "}
-              <span className="font-editorial italic font-normal text-[#f87746]">
-                beautifully simple.
-              </span>
-            </h1>
+            {/* Card 2 */}
+            <div className="rounded-[24px] border border-[#e6e8e2] bg-white p-6 safar-card-shadow flex flex-col justify-between space-y-4 text-left">
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold text-[#15342a]">Bellandur Outer Ring Road</h3>
+                <p className="text-xs text-[#667069] leading-relaxed">
+                  Daily corporate shuttles, GST input tax credit, and zero wait times.
+                </p>
+              </div>
+              <div className="border-t border-[#f0f2ee] pt-3 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-[#667069] uppercase tracking-wider block">
+                    FAIR UPFRONT FARE FROM
+                  </span>
+                  <span className="text-lg font-bold text-[#15342a] font-mono">₹280 / trip &bull; est.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHomeDropoff("Bellandur Outer Ring Road Tech Corridor");
+                    setHomeTab(1);
+                    document.getElementById("safar-canvas")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="w-9 h-9 rounded-full border border-[#e6e8e2] bg-[#fafaf6] hover:bg-[#ecf2ea] flex items-center justify-center text-[#15342a] transition-colors cursor-pointer"
+                  title="Plan ride to Bellandur"
+                >
+                  ↗
+                </button>
+              </div>
+            </div>
 
-            <p className="text-base sm:text-lg text-[#6b7a74] leading-relaxed">
-              Book a seamless ride across the city, or partner with us to drive and earn on your schedule with real-time route equilibrium.
+            {/* Card 3 */}
+            <div className="rounded-[24px] border border-[#e6e8e2] bg-white p-6 safar-card-shadow flex flex-col justify-between space-y-4 text-left">
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold text-[#15342a]">M. Chinnaswamy Stadium</h3>
+                <p className="text-xs text-[#667069] leading-relaxed">
+                  Michelangelo ML surge buffer: 65% fleet preserved for fair pricing.
+                </p>
+              </div>
+              <div className="border-t border-[#f0f2ee] pt-3 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-[#667069] uppercase tracking-wider block">
+                    FAIR UPFRONT FARE FROM
+                  </span>
+                  <span className="text-lg font-bold text-[#15342a] font-mono">₹340 / trip &bull; est.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHomeDropoff("M. Chinnaswamy Stadium & MG Road CBD");
+                    setHomeTab(1);
+                    document.getElementById("safar-canvas")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="w-9 h-9 rounded-full border border-[#e6e8e2] bg-[#fafaf6] hover:bg-[#ecf2ea] flex items-center justify-center text-[#15342a] transition-colors cursor-pointer"
+                  title="Plan ride to Stadium"
+                >
+                  ↗
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-center text-[11px] text-[#667069] pt-4">
+            All prices are guaranteed upfront estimates per trip with zero driver renegotiation. Ratings are verified passenger scores.
+          </p>
+        </section>
+
+        {/* The Signature Safar-AI Large Framed Canvas Container */}
+        <section id="safar-canvas" className="px-4 sm:px-8 max-w-5xl mx-auto w-full pb-16">
+          <div className="rounded-[32px] md:rounded-[36px] bg-white border border-[#e6e8e2] safar-card-shadow p-6 sm:p-10 md:p-12 space-y-8 text-left">
+            {/* Canvas Header */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold tracking-[0.2em] text-[#667069] uppercase block">
+                ONE PLATFORM. EVERY CHAPTER.
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-[#15342a] tracking-tight leading-tight">
+                Plan it. Live it.{" "}
+                <span className="font-editorial italic font-normal text-[#1d4437]">
+                  Keep it.
+                </span>
+              </h2>
+              <p className="text-xs sm:text-sm text-[#667069]">
+                Bengaluru &bull; 24/7 Verified Fleet &bull; Upfront Guaranteed Pricing &bull; Live GPS Safety Shield
+              </p>
+            </div>
+
+            {/* The 3 Numbered Pill Tabs (EXACT Safar-AI Layout from screenshot) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button
+                type="button"
+                onClick={() => setHomeTab(1)}
+                className={`py-3.5 px-5 rounded-2xl font-semibold text-xs sm:text-sm transition-all text-left flex items-center gap-3 cursor-pointer ${
+                  homeTab === 1
+                    ? "bg-[#1d4437] text-white safar-card-shadow shadow-md"
+                    : "border border-[#e6e8e2] bg-white text-[#15342a] hover:bg-[#fafaf8]"
+                }`}
+              >
+                <span className={`font-mono text-xs ${homeTab === 1 ? "text-white/70" : "text-[#667069]"}`}>01</span>
+                <span>Plan your ride</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setHomeTab(2)}
+                className={`py-3.5 px-5 rounded-2xl font-semibold text-xs sm:text-sm transition-all text-left flex items-center gap-3 cursor-pointer ${
+                  homeTab === 2
+                    ? "bg-[#1d4437] text-white safar-card-shadow shadow-md"
+                    : "border border-[#e6e8e2] bg-white text-[#15342a] hover:bg-[#fafaf8]"
+                }`}
+              >
+                <span className={`font-mono text-xs ${homeTab === 2 ? "text-white/70" : "text-[#667069]"}`}>02</span>
+                <span>Driver partner</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setHomeTab(3)}
+                className={`py-3.5 px-5 rounded-2xl font-semibold text-xs sm:text-sm transition-all text-left flex items-center gap-3 cursor-pointer ${
+                  homeTab === 3
+                    ? "bg-[#1d4437] text-white safar-card-shadow shadow-md"
+                    : "border border-[#e6e8e2] bg-white text-[#15342a] hover:bg-[#fafaf8]"
+                }`}
+              >
+                <span className={`font-mono text-xs ${homeTab === 3 ? "text-white/70" : "text-[#667069]"}`}>03</span>
+                <span>Travel diaries &amp; receipts</span>
+              </button>
+            </div>
+
+            {/* Notification Status Banner */}
+            <div className="rounded-xl bg-[#f2f4ec] text-[#2c4035] px-4 py-3 flex items-center justify-between text-xs font-medium">
+              <div className="flex items-center gap-2">
+                <span className="text-[#1d4437]">✦ One connected network</span>
+                <span className="text-[#667069]">&bull;</span>
+                <span>Bengaluru CBD &bull; 48 Active Cabs Nearby</span>
+              </div>
+              <Link href="/rider" className="text-[#1d4437] hover:underline flex items-center gap-1 font-semibold">
+                <span>Launch full portal</span>
+                <span>↗</span>
+              </Link>
+            </div>
+
+            {/* TAB 1 CONTENT: Plan Your Ride */}
+            {homeTab === 1 && (
+              <div className="space-y-8 animate-fadeIn pt-2">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-[#f0f2ee] pb-6">
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold tracking-[0.2em] text-[#667069] uppercase block">
+                      YOUR RIDE. YOUR RULES.
+                    </span>
+                    <h3 className="text-2xl sm:text-4xl font-extrabold text-[#15342a] tracking-tight">
+                      A little input.{" "}
+                      <span className="font-editorial italic font-normal text-[#1d4437] block sm:inline">
+                        A whole lot of adventure.
+                      </span>
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#667069] pt-0.5">
+                      Bas batao, kahaan jaana hai? We&apos;ll put the pieces together.
+                    </p>
+                  </div>
+
+                  <div className="max-w-xs text-right hidden md:block">
+                    <p className="font-editorial italic text-base text-[#385244] leading-snug">
+                      ✦ Built around your budget, your people, your pace.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step 01 Section & Form */}
+                <div className="rounded-[28px] border border-[#e6e8e2] bg-[#fbfbf9] p-6 sm:p-8 space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#ecf2ea] text-[#1d4437] font-bold text-sm flex items-center justify-center shrink-0">
+                      01
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-[#15342a]">Let&apos;s start with the essentials</h4>
+                      <p className="text-xs text-[#667069]">No spreadsheets. No endless tabs. Upfront price protection.</p>
+                    </div>
+                  </div>
+
+                  {/* Route Timeline Inputs */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-[#15342a] block">
+                        Pickup Location
+                      </label>
+                      <input
+                        type="text"
+                        value={homePickup}
+                        onChange={(e) => setHomePickup(e.target.value)}
+                        placeholder="Where from?"
+                        className="w-full bg-white border border-[#e6e8e2] rounded-full px-4 py-3 text-xs text-[#15342a] placeholder-[#667069] focus:outline-none focus:border-[#1d4437] transition-colors"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-[#15342a] block">
+                        Dropoff Destination
+                      </label>
+                      <input
+                        type="text"
+                        value={homeDropoff}
+                        onChange={(e) => setHomeDropoff(e.target.value)}
+                        placeholder="Where to?"
+                        className="w-full bg-white border border-[#e6e8e2] rounded-full px-4 py-3 text-xs text-[#15342a] placeholder-[#667069] focus:outline-none focus:border-[#1d4437] transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Vehicle Tiers */}
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-[#15342a] block">
+                      Choose Your Ride Option
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {[
+                        { id: "UBER_GO", name: "Uber Go", desc: "4 seats · Compact", price: "₹240", icon: "🚗" },
+                        { id: "UBER_PREMIER", name: "Uber Premier", desc: "4 seats · Executive", price: "₹380", icon: "🚘" },
+                        { id: "UBER_XL", name: "Uber XL", desc: "6 seats · Spacious SUV", price: "₹520", icon: "🚙" },
+                      ].map((v) => (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setHomeVehicle(v.id as any)}
+                          className={`p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between cursor-pointer ${
+                            homeVehicle === v.id
+                              ? "border-[#1d4437] bg-white safar-card-shadow ring-1 ring-[#1d4437]"
+                              : "border-[#e6e8e2] bg-white hover:border-[#1d4437]/40"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-xl">{v.icon}</span>
+                            <div>
+                              <span className="text-xs font-bold text-[#15342a] block">{v.name}</span>
+                              <span className="text-[10px] text-[#667069]">{v.desc}</span>
+                            </div>
+                          </div>
+                          <span className="font-mono font-bold text-xs text-[#15342a]">{v.price}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Booking CTA */}
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f2ee]">
+                    <div className="text-xs text-[#667069]">
+                      <span>Guaranteed price &bull; SAC 996412 Tax Invoice eligible</span>
+                    </div>
+
+                    <Link
+                      href="/rider"
+                      className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#1d4437] hover:bg-[#15342a] text-white text-xs font-bold transition-all safar-card-shadow flex items-center justify-center gap-2"
+                    >
+                      <span>Continue to Book on Rider Portal</span>
+                      <span>↗</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2 CONTENT: Driver Partner */}
+            {homeTab === 2 && (
+              <div className="space-y-8 animate-fadeIn pt-2">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-[#f0f2ee] pb-6">
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold tracking-[0.2em] text-[#667069] uppercase block">
+                      YOUR SHIFT. YOUR EARNINGS.
+                    </span>
+                    <h3 className="text-2xl sm:text-4xl font-extrabold text-[#15342a] tracking-tight">
+                      Drive on your own terms,{" "}
+                      <span className="font-editorial italic font-normal text-[#1d4437] block sm:inline">
+                        keep what you earn.
+                      </span>
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#667069] pt-0.5">
+                      Sub-50ms dispatch alerts, live turn-by-turn navigation HUD, and instant IMPS bank cashout.
+                    </p>
+                  </div>
+
+                  <div className="max-w-xs text-right hidden md:block">
+                    <p className="font-editorial italic text-base text-[#385244] leading-snug">
+                      ✦ 100% transparent payouts with zero surprise fees.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-[28px] border border-[#e6e8e2] bg-[#fbfbf9] p-6 sm:p-8 space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-2xl bg-white border border-[#e6e8e2] safar-card-shadow space-y-1">
+                      <span className="text-[10px] text-[#667069] font-bold uppercase tracking-wider block">
+                        TODAY&apos;S SHIFT TARGET
+                      </span>
+                      <span className="text-2xl font-bold text-[#15342a] font-mono block">₹3,200</span>
+                      <span className="text-[10px] text-[#1d4437]">Avg. hourly rate: ₹420/hr</span>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-white border border-[#e6e8e2] safar-card-shadow space-y-1">
+                      <span className="text-[10px] text-[#667069] font-bold uppercase tracking-wider block">
+                        ACTIVE SURGE BONUS
+                      </span>
+                      <span className="text-2xl font-bold text-[#f87746] font-mono block">3.5x Multiplier</span>
+                      <span className="text-[10px] text-[#667069]">Chinnaswamy Stadium &bull; Event Wave</span>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-white border border-[#e6e8e2] safar-card-shadow space-y-1">
+                      <span className="text-[10px] text-[#667069] font-bold uppercase tracking-wider block">
+                        INSTANT CASHOUT
+                      </span>
+                      <span className="text-2xl font-bold text-[#1d4437] font-mono block">IMPS Fast</span>
+                      <span className="text-[10px] text-[#667069]">Direct to verified bank account</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f2ee]">
+                    <span className="text-xs text-[#667069]">
+                      Ready to accept trips? Switch to Driver App on Phone 2
+                    </span>
+
+                    <Link
+                      href="/driver"
+                      className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#1d4437] hover:bg-[#15342a] text-white text-xs font-bold transition-all safar-card-shadow flex items-center justify-center gap-2"
+                    >
+                      <span>Launch Driver Partner App</span>
+                      <span>↗</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3 CONTENT: Travel Diaries & Tax Invoices */}
+            {homeTab === 3 && (
+              <div className="space-y-8 animate-fadeIn pt-2">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-[#f0f2ee] pb-6">
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold tracking-[0.2em] text-[#667069] uppercase block">
+                      TRAVEL DIARIES AI — CAPTURE, VERIFY &amp; CLAIM
+                    </span>
+                    <h3 className="text-2xl sm:text-4xl font-extrabold text-[#15342a] tracking-tight">
+                      Some moments deserve{" "}
+                      <span className="font-editorial italic font-normal text-[#1d4437] block sm:inline">
+                        more than a camera roll.
+                      </span>
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#667069] pt-0.5">
+                      Your itinerary becomes an album. Your verified rides become corporate tax invoices.
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-xs px-3 py-1.5 rounded-full bg-[#ecf2ea] text-[#1d4437] font-medium border border-[#dde2da]">
+                      ▢ Device-only storage &bull; Private
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-[#ebe4d8] bg-[#f7f3ec] p-4 text-xs text-[#5c5245] space-y-1 leading-relaxed">
+                  <span className="font-bold block">Tax Compliance &bull; SAC 996412:</span>
+                  <p>
+                    All commercial rides include 5% GST Input Tax Credit (ITC) eligibility. Download official corporate invoices with QR codes for your accounting.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    { id: "UBR-7281", from: "Indiranagar 100ft Rd", to: "Kempegowda Int'l Airport", fare: "₹820", time: "Today, 08:30 AM", status: "Verified &bull; Paid" },
+                    { id: "UBR-6192", from: "Koramangala 4th Block", to: "Bellandur Tech Corridor", fare: "₹240", time: "Yesterday, 06:15 PM", status: "Verified &bull; Paid" },
+                  ].map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-2xl border border-[#e6e8e2] bg-[#fbfbf9] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#e6e8e2] text-[#15342a]">
+                            {item.id}
+                          </span>
+                          <span className="text-[#667069]">{item.time}</span>
+                          <span className="text-[#1d4437] font-semibold">{item.status}</span>
+                        </div>
+                        <div className="text-[#15342a] font-medium">
+                          {item.from} &rarr; {item.to}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 self-end sm:self-center">
+                        <span className="font-mono font-bold text-sm text-[#15342a]">{item.fare}</span>
+                        <Link
+                          href="/rider"
+                          className="px-3.5 py-1.5 rounded-full border border-[#e6e8e2] bg-white text-[#15342a] hover:bg-[#ecf2ea] font-semibold text-xs transition-colors"
+                        >
+                          View Invoice
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* 3 Articles Row (Safar-AI Discover / Plan / Go layout) */}
+        <section className="px-4 sm:px-8 max-w-5xl mx-auto w-full pb-16 space-y-6">
+          <div className="text-center space-y-2">
+            <span className="text-[11px] font-bold tracking-[0.2em] text-[#667069] uppercase block">
+              SMALL TEAM. BIG DISPATCH.
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#15342a] tracking-tight">
+              Mobility should feel like freedom.
+            </h2>
+            <p className="text-xs sm:text-sm text-[#667069] max-w-xl mx-auto">
+              Uber 2.0 brings your destinations, drivers and rupees together in one beautiful place.
             </p>
           </div>
 
-          {/* Two Framed Inset Canvas Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-7 w-full">
-            {/* Card 1: Rider (Passenger) */}
-            <Link
-              href="/rider"
-              className="group relative rounded-[28px] border border-[#e2e6de] bg-white p-8 sm:p-10 safar-card-shadow safar-hover-lift flex flex-col justify-between space-y-8"
-            >
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="w-13 h-13 rounded-2xl bg-[#ecf1e8] text-[#193c34] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-                    <Compass className="h-6 w-6 text-[#193c34]" />
-                  </div>
-                  <span className="px-3.5 py-1 rounded-full bg-[#fafaf6] border border-[#dde2da] text-xs font-bold text-[#6b7a74]">
-                    Phone 1 &bull; Passenger
-                  </span>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-4 text-left">
+            <div className="rounded-[24px] border border-[#e6e8e2] bg-white p-6 safar-card-shadow space-y-2">
+              <span className="text-[11px] font-mono text-[#667069] font-bold">01 / DISPATCH</span>
+              <h4 className="text-lg font-bold text-[#15342a]">Find your ride.</h4>
+              <p className="text-xs text-[#667069] leading-relaxed">
+                Predictive fleet matching and dynamic pricing that balances passenger demand with fair driver earnings.
+              </p>
+            </div>
 
-                <div className="space-y-2">
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193c34] tracking-tight group-hover:text-[#f87746] transition-colors">
-                    Book a Ride
-                  </h2>
-                  <p className="text-sm text-[#6b7a74] leading-relaxed">
-                    Doorstep pickups, upfront fare protection, verified 4-digit safety PIN, and instant GST tax invoices.
-                  </p>
-                </div>
+            <div className="rounded-[24px] border border-[#e6e8e2] bg-white p-6 safar-card-shadow space-y-2">
+              <span className="text-[11px] font-mono text-[#667069] font-bold">02 / SAFETY</span>
+              <h4 className="text-lg font-bold text-[#15342a]">Safety Sentinel.</h4>
+              <p className="text-xs text-[#667069] leading-relaxed">
+                4-digit mutual OTP verification, 24/7 crash detection, route drift monitor, and instant SOS alerts.
+              </p>
+            </div>
 
-                <ul className="space-y-3 text-xs text-[#193c34] border-t border-[#f0f2ee] pt-5 font-medium">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
-                    <span>Upfront fare guarantee with surge equilibrium</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
-                    <span>Mutual 4-digit Safety PIN verification</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
-                    <span>Downloadable GST tax invoices &amp; Carbon Credits</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="w-full py-4 px-6 rounded-full bg-[#f87746] group-hover:bg-[#e66838] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98]">
-                <span>Continue as Rider</span>
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* Card 2: Driver (Partner Fleet) */}
-            <Link
-              href="/driver"
-              className="group relative rounded-[28px] border border-[#e2e6de] bg-white p-8 sm:p-10 safar-card-shadow safar-hover-lift flex flex-col justify-between space-y-8"
-            >
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="w-13 h-13 rounded-2xl bg-[#ecf1e8] text-[#193c34] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-                    <Gauge className="h-6 w-6 text-[#193c34]" />
-                  </div>
-                  <span className="px-3.5 py-1 rounded-full bg-[#fafaf6] border border-[#dde2da] text-xs font-bold text-[#6b7a74]">
-                    Phone 2 &bull; Driver Partner
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-[#193c34] tracking-tight group-hover:text-[#193c34]/80 transition-colors">
-                    Drive &amp; Earn
-                  </h2>
-                  <p className="text-sm text-[#6b7a74] leading-relaxed">
-                    Sub-50ms dispatch alerts, live turn-by-turn navigation HUD, predictive surge radar, and instant net payouts.
-                  </p>
-                </div>
-
-                <ul className="space-y-3 text-xs text-[#193c34] border-t border-[#f0f2ee] pt-5 font-medium">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
-                    <span>Real-time audio dispatch alerts &amp; route radar</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
-                    <span>Predictive surge radar (15-30 min forecasts)</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-4 w-4 text-[#10b981] shrink-0" />
-                    <span>Automated gross &amp; net payouts with shift logs</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="w-full py-4 px-6 rounded-full bg-[#193c34] group-hover:bg-[#143029] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98]">
-                <span>Continue as Driver Partner</span>
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
+            <div className="rounded-[24px] border border-[#e6e8e2] bg-white p-6 safar-card-shadow space-y-2">
+              <span className="text-[11px] font-mono text-[#667069] font-bold">03 / GO</span>
+              <h4 className="text-lg font-bold text-[#15342a]">More moments. Less stress.</h4>
+              <p className="text-xs text-[#667069] leading-relaxed">
+                Automated GST invoices, expense tagging for teams, and verified carbon credit offset tracking.
+              </p>
+            </div>
           </div>
+        </section>
 
-          {/* Quiet Desktop Workspace Switcher */}
-          <div className="pt-2 text-center">
-            <button
-              type="button"
-              onClick={() => setGatewayView("WORKSPACE")}
-              className="text-xs text-[#6b7a74] hover:text-[#193c34] font-medium transition-colors cursor-pointer flex items-center justify-center gap-2 mx-auto"
-            >
-              <Layers className="h-3.5 w-3.5 text-[#f87746]" />
-              <span>Testing on a laptop? Open Split-View Operations Console &rarr;</span>
-            </button>
+        {/* Editorial Quote Banner */}
+        <section className="px-4 sm:px-8 max-w-4xl mx-auto w-full pb-16 text-center space-y-3">
+          <span className="text-4xl text-[#1d4437] font-serif">&ldquo;</span>
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-[#15342a] tracking-tight leading-snug">
+            The best part of city travel? Getting there without the stress.
+          </h3>
+          <p className="text-xs sm:text-sm text-[#667069] max-w-lg mx-auto">
+            Start yours with upfront guaranteed pricing that leaves zero room for haggling.
+          </p>
+        </section>
+
+        {/* Contact / Help Section */}
+        <section className="px-4 sm:px-8 max-w-5xl mx-auto w-full pb-16">
+          <div className="rounded-[28px] border border-[#e6e8e2] bg-white p-8 sm:p-10 safar-card-shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-6 text-left">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold tracking-[0.2em] text-[#667069] uppercase block">
+                LET&apos;S GET YOU OUT THERE
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-[#15342a] tracking-tight">
+                Your next journey is one tap away.
+              </h3>
+              <p className="text-xs text-[#667069]">
+                +91 88878 84955 &bull; Questions, support, or instant dispatch assistance.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 flex-wrap">
+              <Link
+                href="/rider"
+                className="px-5 py-2.5 rounded-full bg-[#1d4437] hover:bg-[#15342a] text-white text-xs font-semibold safar-card-shadow transition-colors"
+              >
+                Book a Ride ↗
+              </Link>
+              <button
+                type="button"
+                onClick={() => setGatewayView("WORKSPACE")}
+                className="px-5 py-2.5 rounded-full border border-[#e6e8e2] bg-white hover:bg-[#fafaf8] text-[#15342a] text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Developer Console →
+              </button>
+            </div>
           </div>
-        </main>
+        </section>
+
+        {/* Minimal Editorial Footer */}
+        <footer className="border-t border-[#e6e8e2] bg-[#fafaf6] py-10 px-6 sm:px-10 text-xs text-[#667069] text-left">
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <span className="font-bold text-[#15342a] text-sm block">✳ UBER 2.0</span>
+              <p className="text-[11px]">Go places. Move freely. Michelangelo ML Platform.</p>
+            </div>
+
+            <div className="flex items-center gap-5 text-[11px] font-semibold text-[#15342a]">
+              <Link href="/rider" className="hover:underline">Rider App</Link>
+              <Link href="/driver" className="hover:underline">Driver App</Link>
+              <button
+                type="button"
+                onClick={() => setGatewayView("WORKSPACE")}
+                className="hover:underline cursor-pointer"
+              >
+                Operations Workspace
+              </button>
+            </div>
+
+            <p className="text-[10px] text-[#667069]">
+              &copy; 2026 UBER 2.0 &bull; Hackathon prototype &bull; All trips insured &amp; tracked.
+            </p>
+          </div>
+        </footer>
+
+        {/* Floating Action Pill in Bottom Right Corner (Safar-AI Signature) */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <button
+            type="button"
+            onClick={() => setIsCopilotDrawerOpen(!isCopilotDrawerOpen)}
+            className="flex items-center gap-2 px-5 py-3 rounded-full bg-[#1d4437] hover:bg-[#15342a] text-white text-xs font-semibold shadow-2xl transition-all cursor-pointer group safar-card-shadow active:scale-95"
+          >
+            <span>✦</span>
+            <span>{isCopilotDrawerOpen ? "Close Copilot" : "Ask Uber Copilot"}</span>
+          </button>
+        </div>
+
+        {/* Floating Copilot Drawer */}
+        {isCopilotDrawerOpen && (
+          <div className="fixed bottom-20 right-4 sm:right-6 w-[94vw] sm:w-[420px] max-h-[75vh] z-50 rounded-[28px] border border-[#e6e8e2] bg-white safar-card-shadow overflow-hidden flex flex-col text-left">
+            <div className="flex items-center justify-between p-3.5 border-b border-[#e6e8e2] bg-[#fafaf6]">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full bg-[#ecf2ea] text-[#1d4437] text-[10px] font-bold">
+                  ● Active
+                </span>
+                <span className="font-bold text-xs text-[#15342a]">Uber AI Assistant</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCopilotDrawerOpen(false)}
+                className="text-[#667069] hover:text-[#15342a] text-xs font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-2 overflow-y-auto max-h-[60vh]">
+              <DriverAssistantChat
+                messages={chatMessages}
+                onSendMessage={handleSendMessage}
+                isLoading={isChatLoading}
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
