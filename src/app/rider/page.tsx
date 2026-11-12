@@ -112,9 +112,9 @@ export default function RiderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
+    <div className="min-h-screen bg-black bg-grid-pattern text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
       {/* Standalone Rider Navigation Bar */}
-      <header className="sticky top-0 z-40 w-full border-b border-zinc-800 bg-black/95 backdrop-blur-xl px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-black/95 backdrop-blur-xl px-4 py-3 sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           {/* Brand Logo & Mode Indicator */}
           <div className="flex items-center gap-3">
@@ -129,7 +129,7 @@ export default function RiderPage() {
 
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-mono text-emerald-400 font-bold">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>📱 Phone 1 Mode &bull; Live Two-Way Synced</span>
+              <span>PORTAL 01 // PASSENGER (PHONE 1)</span>
             </div>
           </div>
 

@@ -486,9 +486,9 @@ export default function DriverPage() {
   const focusedZone = selectedZone && state?.zones ? state.zones[selectedZone] : null;
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
+    <div className="min-h-screen bg-black bg-grid-pattern text-zinc-100 flex flex-col font-sans selection:bg-zinc-800">
       {/* Standalone Driver Navigation Bar */}
-      <header className="sticky top-0 z-40 w-full border-b border-zinc-800 bg-black/95 backdrop-blur-xl px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-black/95 backdrop-blur-xl px-4 py-3 sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           {/* Logo & Online Status */}
           <div className="flex items-center gap-3">
@@ -513,11 +513,12 @@ export default function DriverPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab("map")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
                   activeTab === "map" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                 }`}
               >
-                🗺️ Driver Map
+                <MapPin className="h-3.5 w-3.5" />
+                <span>Driver Map</span>
               </button>
               <button
                 type="button"
@@ -526,7 +527,8 @@ export default function DriverPage() {
                   activeTab === "trips" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                 }`}
               >
-                <span>📋 Trip Log</span>
+                <FileText className="h-3.5 w-3.5" />
+                <span>Trip Log</span>
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
                   activeTab === "trips" ? "bg-black/20 text-black" : "bg-zinc-800 text-zinc-300"
                 }`}>
@@ -536,20 +538,22 @@ export default function DriverPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab("telemetry")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
                   activeTab === "telemetry" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                 }`}
               >
-                📊 City Status
+                <Activity className="h-3.5 w-3.5" />
+                <span>City Status</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("benchmarks")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
                   activeTab === "benchmarks" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                 }`}
               >
-                🏆 Earnings Growth
+                <TrendingUp className="h-3.5 w-3.5" />
+                <span>Earnings Growth</span>
               </button>
               <button
                 type="button"
